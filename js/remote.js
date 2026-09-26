@@ -59,6 +59,19 @@
     requestAnimationFrame(() => ($("log").scrollTop = $("log").scrollHeight));
   }
 
+  // Fable One asks before running a plan ("... Go ahead, sir?") and takes
+  // "go ahead" or "cancel" as the answer (main.py CONFIRM_YES/NO_PATTERN).
+  const ASKS_TO_CONFIRM = /go ahead,?\s*(sir)?\s*\?\s*$/i;
+
+  // Plan steps arrive as code - "1. ask_hermes(task: 'x')". Show them as words.
+  function readable(text) {
+    return String(text).replace(/^(\s*\d+\.\s+)([a-z_]+)\((.*)\)\s*$/gim, (whole, num, name, args) => {
+      const title = name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      const values = [...args.matchAll(/[a-z_]+:\s*('([^']*)'|"([^"]*)"|[^,]+)/gi)].map((m) => (m[2] ?? m[3] ?? m[1]).trim());
+      return `${num}${title}${values.length ? `: ${values.join(", ")}` : ""}`;
+    });
+  }
+
   // The card shows the latest exchange.
   function showCard({ asked = "", answer = "", at = 0, working = false, fresh = false }) {
     $("asked").innerHTML = asked ? `You: <b></b>` : "";
@@ -67,10 +80,13 @@
     if (working) {
       box.innerHTML = '<span class="typing" aria-label="Fable One is working"><b></b><b></b><b></b></span>';
     } else {
-      box.textContent = answer;
+      box.textContent = readable(answer);
       box.classList.toggle("fresh", fresh);
       box.scrollTop = 0;
     }
+    // A question waiting for a yes or no gets two buttons.
+    const confirm = $("confirm");
+    confirm.hidden = working || !ASKS_TO_CONFIRM.test(answer);
     $("card").classList.toggle("working", working);
     $("card-time").textContent = at ? clock(at) : "";
   }
@@ -193,6 +209,23 @@
   }
 
   // --- talking: hold the orb, or tap the mic ---------------------------------------------------------------------
+  // Android's Chrome hands back each growing version of a sentence as its own
+  // result ("why", "why did", "why did the chicken..."). Joining them sent
+  // "whywhy didwhy did the chicken..." to the PC (seen in its log, 2026-09-26).
+  // So pieces are merged: a longer version replaces the shorter one, a piece
+  // already said is dropped, and only genuinely new words are added.
+  function mergeSpeech(said, piece) {
+    const a = String(said || "").trim();
+    const b = String(piece || "").trim();
+    if (!a) return b;
+    if (!b) return a;
+    const la = a.toLowerCase();
+    const lb = b.toLowerCase();
+    if (lb.startsWith(la)) return b;
+    if (la.startsWith(lb) || la.endsWith(lb)) return a;
+    return `${a} ${b}`;
+  }
+
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null;
   let listening = false;
@@ -241,16 +274,20 @@
     rec = new Recognition();
     rec.lang = navigator.language || "en-US";
     rec.interimResults = true;
-    rec.continuous = true;
+    // One sentence at a time: continuous mode on Android repeats itself.
+    rec.continuous = false;
     let finalText = "";
     rec.onstart = () => setListening(true);
     rec.onresult = (event) => {
+      let finals = "";
       let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) finalText += event.results[i][0].transcript;
-        else interim += event.results[i][0].transcript;
+      for (let i = 0; i < event.results.length; i++) {
+        const piece = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finals = mergeSpeech(finals, piece);
+        else interim = mergeSpeech(interim, piece);
       }
-      input.value = (finalText + " " + interim).trim();
+      finalText = finals;
+      input.value = mergeSpeech(finals, interim);
       grow();
       F.orb.setLevel(0.6);
     };
@@ -289,6 +326,14 @@
     }
   });
   $("mic").addEventListener("click", () => (listening ? stopListening() : startListening()));
+  $("confirm-yes").addEventListener("click", (e) => {
+    e.stopPropagation();
+    send("go ahead");
+  });
+  $("confirm-no").addEventListener("click", (e) => {
+    e.stopPropagation();
+    send("cancel");
+  });
 
   // --- the chat box -------------------------------------------------------------------------------------------------------
   function grow() {

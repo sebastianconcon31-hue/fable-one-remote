@@ -95,6 +95,10 @@
   .card .asked b { color: var(--ink); font-weight: 600; }
   .card .answer { font-size: 18.5px; line-height: 1.42; letter-spacing: -.005em; white-space: pre-wrap; word-wrap: break-word; max-height: calc(34dvh - 70px); overflow-y: auto; user-select: text; -webkit-user-select: text; }
   .card .answer.fresh { animation: rise .4s cubic-bezier(.2, .8, .2, 1) both; }
+  .confirm { display: flex; gap: 8px; margin-top: 12px; }
+  .confirm button { flex: 1; padding: 12px; border-radius: 16px; border: 1px solid var(--line); background: transparent; font-weight: 600; cursor: pointer; transition: transform .12s; }
+  .confirm button:active { transform: scale(.96); }
+  .confirm #confirm-yes { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .card .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--muted); }
   .card .foot span:last-child { font: 600 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
   .typing { display: inline-flex; gap: 5px; padding: 6px 0 2px; }
@@ -176,6 +180,10 @@
     <section class="card glass" id="card" aria-live="polite">
       <p class="asked" id="asked"></p>
       <div class="answer" id="answer"></div>
+      <div class="confirm" id="confirm" hidden>
+        <button type="button" id="confirm-yes">Go ahead</button>
+        <button type="button" id="confirm-no">Cancel</button>
+      </div>
       <div class="foot"><span id="card-time"></span><span>Swipe up for history</span></div>
     </section>
   </div>
