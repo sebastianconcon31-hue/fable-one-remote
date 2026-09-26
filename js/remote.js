@@ -1,43 +1,45 @@
-// Fable One Remote: the phone's chat with Fable One on the PC.
+// Fable One Remote: the phone's line to Fable One on the PC.
 //
-// Every message goes through the same encrypted relay the Chromebook page
-// uses (relay.js here, voice-launcher/web_relay.py on the PC), so the PC runs
-// it exactly like a spoken command - Fable One's own router, rules and gates,
-// with destructive commands refused remotely. This page holds no secret of its
-// own: the pairing code is typed in once and kept only on the phone.
+// Every message goes through the encrypted relay the Chromebook page uses
+// (relay.js here, voice-launcher/web_relay.py on the PC), so the PC runs it
+// exactly like a spoken command - Fable One's own router, rules and gates,
+// with destructive commands refused remotely. The page holds no secret of its
+// own: the pairing code comes from a pairing link or is typed in once, and is
+// kept only on the phone.
+//
+// Made for the hand: hold the orb to talk (it buzzes when it starts
+// listening), the latest answer sits on a card that tilts with the phone, the
+// whole conversation is a swipe up, and the chips are real commands.
 (() => {
   const F = window.Fable;
   const $ = (id) => document.getElementById(id);
-  const log = $("log");
   const input = $("input");
-  const KEYS = { code: "fable.remote.code", chat: "fable.remote.chat", theme: "fable.remote.theme" };
+  const KEYS = { code: "fable.remote.code", chat: "fable.remote.chat", theme: "fable.remote.theme", unpaired: "fable.remote.unpaired", held: "fable.remote.held" };
   const REPLY_TIMEOUT_MS = 90000;
+  // Things Fable One on the PC really does (its CAPABILITIES_SPEECH).
+  const CHIPS = ["Status check", "What's on my screen?", "Pause the music", "Turn the volume up", "Take a screenshot", "Recap my day", "What can you do?"];
+  const buzz = (pattern) => navigator.vibrate && navigator.vibrate(pattern);
 
-  // --- theme -----------------------------------------------------------------------------
+  // --- theme -----------------------------------------------------------------------------------------
   function applyTheme(theme) {
     const t = ["mono", "light", "blue", "paper"].includes(theme) ? theme : "mono";
     document.documentElement.dataset.fable = t;
     F.store.set(KEYS.theme, t);
     document.querySelectorAll("#themes button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.theme === t)));
     requestAnimationFrame(() => {
-      const ground = getComputedStyle(document.documentElement).getPropertyValue("--ground").trim();
-      document.querySelector('meta[name="theme-color"]').content = ground;
+      document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--ground").trim();
       F.bus.emit("theme");
     });
   }
   applyTheme(F.store.get(KEYS.theme, "mono"));
   document.querySelectorAll("#themes button").forEach((b) => b.addEventListener("click", () => applyTheme(b.dataset.theme)));
 
-  // --- the conversation -------------------------------------------------------------------------
+  // --- the conversation -------------------------------------------------------------------------------
   let chat = F.store.getJSON(KEYS.chat, []);
-  const save = () => F.store.setJSON(KEYS.chat, chat.slice(-80));
+  const save = () => F.store.setJSON(KEYS.chat, chat.slice(-100));
   const clock = (at) => new Date(at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
-  function scrollDown() {
-    requestAnimationFrame(() => (log.scrollTop = log.scrollHeight));
-  }
-
-  function bubble(kind, text, at) {
+  function historyBubble(kind, text, at) {
     const el = document.createElement("div");
     el.className = `msg ${kind}`;
     el.textContent = text;
@@ -46,35 +48,52 @@
       t.textContent = clock(at);
       el.appendChild(t);
     }
-    log.appendChild(el);
-    scrollDown();
+    $("log").appendChild(el);
     return el;
   }
 
-  function typing() {
-    const el = document.createElement("div");
-    el.className = "msg fable";
-    el.innerHTML = '<span class="typing" aria-label="Fable One is working"><b></b><b></b><b></b></span>';
-    log.appendChild(el);
-    scrollDown();
-    return el;
+  function renderHistory() {
+    $("log").innerHTML = "";
+    if (!chat.length) historyBubble("note", "Nothing yet. Hold the orb and talk, or type below.");
+    for (const m of chat) historyBubble(m.from === "me" ? "me" : m.error ? "fable error" : "fable", m.text, m.at);
+    requestAnimationFrame(() => ($("log").scrollTop = $("log").scrollHeight));
   }
 
-  function render() {
-    log.innerHTML = "";
-    if (!chat.length) bubble("note", "Message Fable One on your PC. It runs what you ask and answers here.");
-    for (const m of chat) bubble(m.from === "me" ? "me" : "fable", m.text, m.at);
+  // The card shows the latest exchange.
+  function showCard({ asked = "", answer = "", at = 0, working = false, fresh = false }) {
+    $("asked").innerHTML = asked ? `You: <b></b>` : "";
+    if (asked) $("asked").querySelector("b").textContent = asked;
+    const box = $("answer");
+    if (working) {
+      box.innerHTML = '<span class="typing" aria-label="Fable One is working"><b></b><b></b><b></b></span>';
+    } else {
+      box.textContent = answer;
+      box.classList.toggle("fresh", fresh);
+      box.scrollTop = 0;
+    }
+    $("card").classList.toggle("working", working);
+    $("card-time").textContent = at ? clock(at) : "";
   }
 
-  function remember(from, text) {
-    chat.push({ from, text, at: Date.now() });
+  function cardFromHistory() {
+    const lastMe = [...chat].reverse().find((m) => m.from === "me");
+    const lastFable = [...chat].reverse().find((m) => m.from !== "me");
+    if (!lastFable && !lastMe) {
+      showCard({ answer: "Hi. I'm Fable One, on your PC. Hold the orb and talk, tap a command below, or type." });
+      return;
+    }
+    showCard({ asked: lastMe ? lastMe.text : "", answer: lastFable ? lastFable.text : "", at: (lastFable || lastMe).at });
+  }
+
+  function remember(from, text, extra = {}) {
+    chat.push({ from, text, at: Date.now(), ...extra });
     save();
   }
 
-  // --- the connection --------------------------------------------------------------------------------
+  // --- the connection ---------------------------------------------------------------------------------------
   let client = null;
   let host = "";
-  const waiting = new Map(); // command id -> { el, spoken, timer }
+  const waiting = new Map(); // command id -> { timer, spoken }
 
   const STATUS = {
     connecting: () => "Connecting...",
@@ -92,7 +111,7 @@
     $("sheet-host").textContent = host ? `Paired with Fable One on ${host}.` : "Talking to Fable One on your PC.";
     if (state === "offline" && was !== "offline") {
       F.orb.flash();
-      bubble("note", "Your PC isn't answering - it's off or asleep, or Fable One isn't running. Messages will work again once it's back.");
+      buzz([30, 60, 30]);
     }
   }
 
@@ -105,24 +124,12 @@
     if (!w) return;
     waiting.delete(id);
     clearTimeout(w.timer);
-    w.el.remove();
-    bubble("fable", text, Date.now());
     remember("fable", text);
+    showCard({ asked: chat.filter((m) => m.from === "me").slice(-1)[0]?.text || "", answer: text, at: Date.now(), fresh: true });
+    renderHistory();
     F.orb.burst();
-    if (w.spoken && native) {
-      native.speak(text.replace(/https?:\/\/\S+/g, "the link"));
-    } else if (w.spoken && window.speechSynthesis) {
-      F.orb.setState("speaking");
-      const u = new SpeechSynthesisUtterance(text.replace(/https?:\/\/\S+/g, "the link"));
-      u.onboundary = () => F.orb.setLevel(0.5 + Math.random() * 0.4);
-      u.onend = () => F.orb.setState("idle");
-      u.onerror = () => F.orb.setState("idle");
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
-    } else {
-      F.orb.setState("speaking");
-      setTimeout(() => waiting.size === 0 && F.orb.setState("idle"), 1400);
-    }
+    buzz([12, 50, 12]);
+    speak(text, w.spoken);
   }
 
   function connect(code) {
@@ -135,34 +142,158 @@
     const text = String(raw || "").trim();
     if (!text) return;
     if (!client) return showPair();
-    bubble("me", text, Date.now());
     remember("me", text);
-    const el = typing();
+    renderHistory();
+    showCard({ asked: text, working: true });
+    F.orb.send();
     F.orb.setState("thinking");
-    F.orb.tap();
+    buzz(12);
     try {
       const id = await client.send(text);
       const timer = setTimeout(() => {
         if (!waiting.has(id)) return;
         waiting.delete(id);
-        el.remove();
-        bubble("fable error", "No answer from your PC after 90 seconds. It may be asleep, or Fable One isn't running.", Date.now());
+        const why = "No answer from your PC after 90 seconds. It may be asleep, or Fable One isn't running.";
+        remember("fable", why, { error: true });
+        showCard({ asked: text, answer: why, at: Date.now(), fresh: true });
+        renderHistory();
         F.orb.flash();
         F.orb.setState("idle");
       }, REPLY_TIMEOUT_MS);
-      waiting.set(id, { el, spoken, timer });
+      waiting.set(id, { timer, spoken });
     } catch (e) {
-      el.remove();
-      bubble("fable error", `Couldn't send: ${e.message || e}`, Date.now());
+      const why = `Couldn't send: ${e.message || e}`;
+      remember("fable", why, { error: true });
+      showCard({ asked: text, answer: why, at: Date.now(), fresh: true });
+      renderHistory();
       F.orb.flash();
       F.orb.setState("idle");
     }
   }
 
-  // --- the chat box ---------------------------------------------------------------------------------------
+  // --- speaking the answer (when you talked) ------------------------------------------------------------------
+  const native = window.FableNative || null; // the Android app's bridge, when there
+  function speak(text, spoken) {
+    const words = text.replace(/https?:\/\/\S+/g, "the link");
+    if (spoken && native) {
+      native.speak(words);
+      return;
+    }
+    if (spoken && window.speechSynthesis) {
+      F.orb.setState("speaking");
+      const u = new SpeechSynthesisUtterance(words);
+      u.onboundary = () => F.orb.setLevel(0.5 + Math.random() * 0.4);
+      u.onend = u.onerror = () => F.orb.setState("idle");
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+      return;
+    }
+    F.orb.setState("speaking");
+    setTimeout(() => waiting.size === 0 && F.orb.setState("idle"), 1400);
+  }
+
+  // --- talking: hold the orb, or tap the mic ---------------------------------------------------------------------
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null;
+  let listening = false;
+
+  function setListening(on) {
+    listening = on;
+    $("mic").classList.toggle("live", on);
+    $("hint").classList.toggle("live", on);
+    $("hint").textContent = on ? "Listening - let go to send" : "Hold the orb to talk";
+    F.orb.setState(on ? "listening" : waiting.size ? "thinking" : "idle");
+  }
+
+  window.FableNativeEvents = {
+    on(type, text) {
+      if (type === "start") setListening(true);
+      else if (type === "level") F.orb.setLevel(parseFloat(text) || 0);
+      else if (type === "partial") {
+        input.value = text;
+        grow();
+      } else if (type === "final" || type === "error") {
+        setListening(false);
+        if (type === "final" && text.trim()) {
+          input.value = "";
+          grow();
+          send(text, true);
+        } else if (text === "not-allowed") {
+          showCard({ answer: "I need the microphone to hear you. Allow it in the phone's settings for Fable One." });
+        }
+      } else if (type === "speaking") F.orb.setState("speaking");
+      else if (type === "spoke") F.orb.setState("idle");
+    },
+  };
+
+  function startListening() {
+    if (listening) return;
+    if (native) {
+      native.stopSpeaking();
+      native.listen();
+      return;
+    }
+    if (!Recognition) {
+      showCard({ answer: "This phone's browser can't do speech here. Use the microphone on your keyboard instead." });
+      return;
+    }
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    rec = new Recognition();
+    rec.lang = navigator.language || "en-US";
+    rec.interimResults = true;
+    rec.continuous = true;
+    let finalText = "";
+    rec.onstart = () => setListening(true);
+    rec.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) finalText += event.results[i][0].transcript;
+        else interim += event.results[i][0].transcript;
+      }
+      input.value = (finalText + " " + interim).trim();
+      grow();
+      F.orb.setLevel(0.6);
+    };
+    rec.onend = () => {
+      rec = null;
+      setListening(false);
+      const text = (finalText || input.value).trim();
+      if (text) {
+        input.value = "";
+        grow();
+        send(text, true);
+      }
+    };
+    rec.onerror = (e) => {
+      if (e.error === "not-allowed") showCard({ answer: "The microphone is blocked. Allow it for this app in Chrome's site settings." });
+    };
+    rec.start();
+  }
+
+  function stopListening() {
+    if (native) native.stopListening();
+    else if (rec) rec.stop();
+  }
+
+  F.bus.on("scene-hold-start", () => {
+    buzz(25);
+    F.store.set(KEYS.held, "1");
+    startListening();
+  });
+  F.bus.on("scene-hold-end", stopListening);
+  F.bus.on("scene-tap", () => {
+    if (listening) return stopListening();
+    if (!F.store.get(KEYS.held)) {
+      $("hint").textContent = "Hold it down while you talk";
+      setTimeout(() => !listening && ($("hint").textContent = "Hold the orb to talk"), 2200);
+    }
+  });
+  $("mic").addEventListener("click", () => (listening ? stopListening() : startListening()));
+
+  // --- the chat box -------------------------------------------------------------------------------------------------------
   function grow() {
     input.style.height = "auto";
-    input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+    input.style.height = `${Math.min(input.scrollHeight, 110)}px`;
     $("send").disabled = !input.value.trim();
   }
   input.addEventListener("input", () => {
@@ -180,114 +311,66 @@
     const text = input.value;
     input.value = "";
     grow();
+    input.blur();
     send(text);
   });
 
-  // Talk: the phone's own speech recognition; the words go to the PC as text.
-  // Inside the Android app, Android's recognizer and voice do it (the app's
-  // web view has no speech of its own); in a browser, the browser's.
-  const native = window.FableNative || null;
-  let nativeListening = false;
-  window.FableNativeEvents = {
-    on(type, text) {
-      if (type === "start") {
-        $("mic").classList.add("live");
-        F.orb.setState("listening");
-      } else if (type === "level") {
-        F.orb.setLevel(parseFloat(text) || 0);
-      } else if (type === "partial") {
-        input.value = text;
-        grow();
-      } else if (type === "final" || type === "error") {
-        nativeListening = false;
-        $("mic").classList.remove("live");
-        if (type === "final" && text.trim()) {
-          input.value = "";
-          grow();
-          send(text, true);
-        } else {
-          F.orb.setState("idle");
-          if (text === "not-allowed") bubble("note", "Fable One needs the microphone to hear you. Allow it in the phone's Settings > Apps > Fable One > Permissions.");
-          else if (text === "network") bubble("note", "The phone's speech service needs the internet.");
-          else if (text === "no-recognizer") bubble("note", "This phone has no speech recognition service. Type instead.");
-        }
-      } else if (type === "speaking") {
-        F.orb.setState("speaking");
-      } else if (type === "spoke") {
-        F.orb.setState("idle");
-      }
-    },
-  };
+  $("chips").innerHTML = CHIPS.map((c) => `<button class="chip glass" type="button">${F.escapeHtml(c)}</button>`).join("");
+  $("chips").querySelectorAll(".chip").forEach((chip) => chip.addEventListener("click", () => send(chip.textContent)));
 
-  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let rec = null;
-  function toggleMic() {
-    if (native) {
-      if (nativeListening) {
-        native.stopListening();
-        return;
-      }
-      nativeListening = true;
-      native.stopSpeaking();
-      native.listen();
-      return;
-    }
-    if (!Recognition) {
-      bubble("note", "This browser can't do speech here - use the microphone on your keyboard instead.");
-      return;
-    }
-    if (rec) return rec.stop();
-    rec = new Recognition();
-    rec.lang = navigator.language || "en-US";
-    rec.interimResults = true;
-    let finalText = "";
-    rec.onstart = () => {
-      $("mic").classList.add("live");
-      F.orb.setState("listening");
-    };
-    rec.onresult = (event) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) finalText += event.results[i][0].transcript;
-        else interim += event.results[i][0].transcript;
-      }
-      input.value = (finalText + " " + interim).trim();
-      grow();
-      F.orb.setLevel(0.6);
-    };
-    rec.onend = () => {
-      $("mic").classList.remove("live");
-      rec = null;
-      const text = finalText.trim();
-      if (text) {
-        input.value = "";
-        grow();
-        send(text, true);
-      } else {
-        F.orb.setState("idle");
-      }
-    };
-    rec.onerror = (e) => {
-      if (e.error === "not-allowed") bubble("note", "The microphone is blocked for this app. Allow it in the phone's app settings.");
-    };
-    rec.start();
-  }
-  $("mic").addEventListener("click", toggleMic);
-  F.bus.on("orb-click", toggleMic);
+  // --- the card tilts with the phone ----------------------------------------------------------------------------------------
+  let base = null;
+  window.addEventListener("deviceorientation", (e) => {
+    if (e.beta === null || e.gamma === null) return;
+    if (!base) base = { beta: e.beta, gamma: e.gamma };
+    base.beta += (e.beta - base.beta) * 0.01;
+    base.gamma += (e.gamma - base.gamma) * 0.01;
+    const card = $("card");
+    card.style.setProperty("--tilt-x", `${Math.max(-8, Math.min(8, -(e.beta - base.beta) * 0.35)).toFixed(2)}deg`);
+    card.style.setProperty("--tilt-y", `${Math.max(-10, Math.min(10, (e.gamma - base.gamma) * 0.45)).toFixed(2)}deg`);
+  });
 
-  // --- pairing ------------------------------------------------------------------------------------------------
+  // --- sheets: history (swipe up), pairing, menu ------------------------------------------------------------------------------
   const scrim = $("scrim");
-  function showPair() {
+  const sheets = ["history", "pair", "sheet"];
+  function openSheet(id) {
+    sheets.forEach((s) => ($(s).hidden = s !== id));
     scrim.hidden = false;
-    $("pair").hidden = false;
-    setTimeout(() => $("code").focus(), 300);
+    if (id === "history") renderHistory();
   }
-  function hideSheets() {
+  function closeSheets() {
+    if (!$("pair").hidden && !F.store.get(KEYS.code)) return; // pairing can't be skipped
+    sheets.forEach((s) => ($(s).hidden = true));
     scrim.hidden = true;
-    $("pair").hidden = true;
-    $("sheet").hidden = true;
   }
+  const showPair = () => {
+    openSheet("pair");
+    setTimeout(() => $("code").focus(), 300);
+  };
+  $("card").addEventListener("click", () => openSheet("history"));
+  $("open-history").addEventListener("click", () => openSheet("history"));
+  $("close-history").addEventListener("click", closeSheets);
+  $("menu").addEventListener("click", () => openSheet("sheet"));
+  $("close-sheet").addEventListener("click", closeSheets);
+  scrim.addEventListener("click", closeSheets);
 
+  // Swipe up on the card opens the history; swipe down on a sheet's top closes it.
+  let swipe = null;
+  $("card").addEventListener("touchstart", (e) => (swipe = { y: e.touches[0].clientY }), { passive: true });
+  $("card").addEventListener("touchend", (e) => {
+    if (swipe && swipe.y - e.changedTouches[0].clientY > 40) openSheet("history");
+    swipe = null;
+  });
+  document.querySelectorAll(".sheet .grip, .sheet h2").forEach((grip) => {
+    let start = null;
+    grip.addEventListener("touchstart", (e) => (start = e.touches[0].clientY), { passive: true });
+    grip.addEventListener("touchend", (e) => {
+      if (start !== null && e.changedTouches[0].clientY - start > 50) closeSheets();
+      start = null;
+    });
+  });
+
+  // --- pairing ---------------------------------------------------------------------------------------------------------------------
   function tryPair(raw) {
     const code = FableRelay.normalise(raw);
     const result = $("pair-result");
@@ -303,12 +386,13 @@
         if (state === "online") {
           probe.stop();
           F.store.set(KEYS.code, code);
-          F.store.del("fable.remote.unpaired");
+          F.store.del(KEYS.unpaired);
           host = detail || host;
           result.textContent = `Paired${host ? ` with ${host}` : ""}.`;
           result.className = "result ok";
+          buzz([10, 40, 10]);
           setTimeout(() => {
-            hideSheets();
+            closeSheets();
             connect(code);
           }, 700);
         } else if (state === "offline" || state === "relay-down") {
@@ -323,21 +407,12 @@
   $("pair-go").addEventListener("click", () => tryPair($("code").value));
   $("code").addEventListener("keydown", (e) => e.key === "Enter" && tryPair($("code").value));
 
-  // --- menu ------------------------------------------------------------------------------------------------------
-  $("menu").addEventListener("click", () => {
-    scrim.hidden = false;
-    $("sheet").hidden = false;
-  });
-  $("close-sheet").addEventListener("click", hideSheets);
-  scrim.addEventListener("click", () => {
-    if (!$("pair").hidden && !F.store.get(KEYS.code)) return; // pairing can't be skipped
-    hideSheets();
-  });
   $("clear").addEventListener("click", () => {
     chat = [];
     save();
-    render();
-    hideSheets();
+    renderHistory();
+    cardFromHistory();
+    closeSheets();
   });
   let unpairArmed = false;
   $("unpair").addEventListener("click", () => {
@@ -351,38 +426,39 @@
       return;
     }
     F.store.del(KEYS.code);
-    F.store.set("fable.remote.unpaired", "1");
+    F.store.set(KEYS.unpaired, "1");
     if (client) client.stop();
     client = null;
     host = "";
-    hideSheets();
     onStatus("connecting");
     $("status-text").textContent = "Not paired";
     showPair();
   });
 
-  // --- start --------------------------------------------------------------------------------------------------------
-  render();
-  grow();
+  // --- start ------------------------------------------------------------------------------------------------------------------------
   // A pairing link: .../#pair=CODE. The part after # never leaves the phone
-  // (browsers don't send it to the website), and it is wiped from the address
+  // (browsers don't send it to the website), and it's wiped from the address
   // bar and history as soon as it's read.
   const fromLink = /^#pair=([A-Za-z0-9-]{16,24})$/.exec(location.hash);
   if (fromLink) {
     F.store.set(KEYS.code, FableRelay.normalise(fromLink[1]));
-    F.store.del("fable.remote.unpaired");
+    F.store.del(KEYS.unpaired);
     history.replaceState(null, "", location.pathname + location.search);
   }
-
   // The owner's Android app is built already paired (js/paired.js); the
   // public website never is.
-  const builtIn = window.FABLE_PAIRED && !F.store.get("fable.remote.unpaired") ? FableRelay.normalise(window.FABLE_PAIRED) : "";
+  const builtIn = window.FABLE_PAIRED && !F.store.get(KEYS.unpaired) ? FableRelay.normalise(window.FABLE_PAIRED) : "";
+
+  renderHistory();
+  cardFromHistory();
+  grow();
   const saved = F.store.get(KEYS.code) || builtIn;
   if (saved) connect(saved);
   else {
     $("status-text").textContent = "Not paired";
     showPair();
   }
+  if (F.store.get(KEYS.held)) $("hint").textContent = "Hold the orb to talk";
   if ("serviceWorker" in navigator && location.protocol === "https:" && !native) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
