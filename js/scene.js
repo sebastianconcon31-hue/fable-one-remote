@@ -9,18 +9,23 @@
 //   stars   a far starfield; the view drifts with the phone's tilt
 //
 // What keeps it smooth on a phone:
+//   - it draws only as often as it needs to: 30 frames a second at rest, the
+//     full rate only while something moves, 20 while typing, none while a
+//     sheet covers it (full detail at 60 a second, always, was "very laggy"
+//     on the owner's Moto G15 Power)
+//   - the detail is picked on the phone itself: Graphics > Auto starts at a
+//     step that suits the GPU and steps down while frames are being missed,
+//     never so far that it looks blocky (see TIERS)
+//   - the canvas is opaque, so it isn't one more full-screen layer to blend
 //   - the sphere is an indexed mesh, so each point on it is shaded once
-//     rather than six times (the earlier build's biggest cost)
 //   - nothing is allocated per frame, so the garbage collector never stalls it
 //   - the tilt is smoothed, so sensor jitter can't shake the picture
-//   - if frames run slow it first thins the particles, then holds a steady
-//     30 frames a second; it never drops the resolution far enough to look
-//     blocky
 //   - the canvas doesn't resize while the keyboard slides in and out
 //
 // It keeps F.orb's interface (setState, setLevel, burst, tap, flash, busy,
-// ripple, send, pulse) and emits scene-hold-start / scene-hold-end /
-// scene-tap for the page to turn into listening.
+// ripple, send, pulse), adds typing, cover, setGraphics and graphicsInfo,
+// and emits scene-hold-start / scene-hold-end / scene-tap for the page to
+// turn into listening.
 (() => {
   const F = window.Fable;
   const root = document.documentElement;
@@ -32,20 +37,18 @@
   function useFallback() {
     if (canvas) canvas.hidden = true;
     if (fallback) fallback.hidden = false;
-    F.orb = { webgl: false, setState: (s) => fallback && (fallback.dataset.state = s), setLevel: noop, kick: noop, flash: noop, ripple: noop, burst: noop, tap: noop, busy: noop, send: noop, pulse: noop, recolor: noop };
+    F.orb = { webgl: false, setState: (s) => fallback && (fallback.dataset.state = s), setLevel: noop, kick: noop, flash: noop, ripple: noop, burst: noop, tap: noop, busy: noop, send: noop, pulse: noop, recolor: noop, typing: noop, cover: noop, setGraphics: noop, graphicsInfo: () => null };
   }
   if (!canvas || !window.THREE) return useFallback();
 
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+    // Opaque: nothing behind the scene ever shows through it, and a
+    // see-through canvas is one more full-screen layer to blend every frame.
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
   } catch (e) {
     return useFallback();
   }
-  const MAX_RATIO = Math.min(window.devicePixelRatio || 1, 1.6);
-  const MIN_RATIO = Math.min(window.devicePixelRatio || 1, 1.1);
-  let pixelRatio = MAX_RATIO;
-  renderer.setPixelRatio(pixelRatio);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
@@ -219,7 +222,7 @@
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geometry.setAttribute("seed", new THREE.BufferAttribute(seeds, 3));
-    const u = { uTime: U.uTime, uLevel: U.uLevel, uRim: U.uRim, uSwirl: { value: 0.15 }, uSpread: { value: 1 }, uBurst: { value: 0 }, uSize: { value: sizeBase * pixelRatio } };
+    const u = { uTime: U.uTime, uLevel: U.uLevel, uRim: U.uRim, uSwirl: { value: 0.15 }, uSpread: { value: 1 }, uBurst: { value: 0 }, uSize: { value: sizeBase } };
     const points = new THREE.Points(geometry, new THREE.ShaderMaterial({
       uniforms: u,
       vertexShader: `
@@ -338,6 +341,7 @@
     danger = cssColor("--danger", "#ff5a52");
     U.uRim.value = rimColor.clone();
     U.uGround.value = cssColor("--ground", "#000000");
+    renderer.setClearColor(U.uGround.value, 1);
     const glowColor = cssColor("--orb-glow-color", "#ffffff");
     glow.material.color = glowColor;
     heart.material.color = glowColor.clone();
@@ -406,6 +410,7 @@
     } catch (_) {}
     const onOrb = hitOrb(e.clientX, e.clientY);
     pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, moved: false, held: false, onOrb };
+    wake();
     if (onOrb) {
       ripple(onOrb);
       // Holding the orb means "listen"; a drag cancels it.
@@ -426,6 +431,7 @@
       drag.yaw += (e.clientX - pointer.lastX) * 0.006;
       drag.pitch = THREE.MathUtils.clamp(drag.pitch + (e.clientY - pointer.lastY) * 0.004, -0.45, 0.45);
       spinVelocity += (e.clientX - pointer.lastX) * 0.01;
+      wake();
     }
     pointer.lastX = e.clientX;
     pointer.lastY = e.clientY;
@@ -457,56 +463,182 @@
     sparkT = 0;
   }
 
-  // --- pace: thin the particles first, then hold a steady 30 fps; never go blocky -----------------------------------------------
-  let frameCost = 16;
-  let samples = 0;
-  let level30 = false;
-  let quality = 2; // 2 full, 1 fewer particles
-  function adapt(ms) {
-    frameCost += (ms - frameCost) * 0.05;
-    if (++samples < 120) return;
-    samples = 0;
-    if (frameCost > 24 && quality === 2) {
-      quality = 1;
-      halo.points.geometry.setDrawRange(0, Math.round(halo.count * 0.55));
-      disk.points.geometry.setDrawRange(0, Math.round(disk.count * 0.55));
-      if (pixelRatio > MIN_RATIO) {
-        pixelRatio = MIN_RATIO;
-        renderer.setPixelRatio(pixelRatio);
-        halo.u.uSize.value = 2.3 * pixelRatio;
-        disk.u.uSize.value = 1.9 * pixelRatio;
-        resize();
-      }
-    } else if (frameCost > 26 && quality === 1 && !level30) {
-      level30 = true; // an even 30 looks smoother than an uneven 40
+  // --- pace: missed frames ---------------------------------------------------------------------------------------------------------
+  // A frame that arrives a refresh or more after it was due was missed: the
+  // phone couldn't keep up. Stretches around loading, a sheet or the keyboard
+  // moving aren't counted - those stutter on any phone and say nothing about
+  // the scene.
+  let refresh = 1000 / 60; // measured from the first 40 back-to-back frames
+  const firstGaps = [];
+  let lastTick = 0;
+  let frames = 0;
+  let late = 0;
+  let missed = 0;
+  let windowStart = 0;
+  let settleUntil = performance.now() + 2500;
+  let typing = false;
+  let covered = false;
+  let drawn = 0;
+  let drawnSince = performance.now();
+  let fpsNow = 0;
+
+  function watch(gap, interval, now) {
+    if (now < settleUntil || firstGaps.length < 40) {
+      frames = late = 0;
+      windowStart = now;
+      return;
     }
+    frames++;
+    if (gap > interval + refresh * 0.7) late++;
+    if (now - windowStart < 2000) return;
+    missed = late / frames;
+    // Auto steps down, never back up: stepping up again would just oscillate.
+    if (mode === "auto" && frames >= 20 && missed > 0.15 && tier < TIERS.length - 1) setTier(tier + 1);
+    frames = late = 0;
+    windowStart = now;
   }
 
+  // Is anything moving that deserves the full frame rate?
+  function moving(now) {
+    return state !== "idle" || pointer !== null || sparkT < 1 || now < flashUntil
+      || kick > 0.05 || burst > 0.05 || busy > 0.05 || level > 0.03 || Math.abs(spinVelocity) > 0.05;
+  }
+
+  // --- how much to draw: four steps, all the same look --------------------------------------------------------------------------
+  //   ratio  canvas pixels per screen point (a phone screen has about 2.6)
+  //   parts  share of the halo and disk particles drawn
+  //   mesh   the orb's surface detail
+  //   fps    frames a second while something moves; rest, while it idles
+  // Nothing goes below 1 pixel per point, which is where it starts to look
+  // blocky, and the mesh stays fine enough for the ripples: at 56 x 42 the
+  // orb's outline went lumpy.
+  const TIERS = [
+    { name: "full", ratio: 1.6, parts: 1, mesh: [120, 90], fps: 60, rest: 30 },
+    { name: "high", ratio: 1.4, parts: 0.7, mesh: [108, 81], fps: 60, rest: 30 },
+    { name: "light", ratio: 1.25, parts: 0.55, mesh: [96, 72], fps: 30, rest: 30 },
+    { name: "lightest", ratio: 1.05, parts: 0.4, mesh: [84, 63], fps: 30, rest: 20 },
+  ];
+  // Phone GPUs well below a flagship's (the owner's Mali-G52 MC2 among them): Auto starts on "light".
+  const WEAK_GPU = /Mali-(?:4|T|G31|G51|G52|G57)|Adreno\D*(?:[1-5]\d\d|6[01]\d)\b|PowerVR|SwiftShader|llvmpipe|Software/i;
+  const FIXED = { full: 0, light: TIERS.length - 1 };
+  let mode = "auto";
+  let tier = 0;
+  let T = TIERS[0];
+
+  const gpu = (() => {
+    try {
+      const gl = renderer.getContext();
+      const info = gl.getExtension("WEBGL_debug_renderer_info");
+      return String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || "");
+    } catch (e) {
+      return "";
+    }
+  })();
+
+  function autoTier() {
+    if (WEAK_GPU.test(gpu)) return 2;
+    const phone = window.matchMedia("(pointer: coarse)").matches && Math.min(screen.width, screen.height) < 700;
+    return phone ? 1 : 0;
+  }
+
+  function setTier(n) {
+    tier = Math.max(0, Math.min(TIERS.length - 1, n));
+    T = TIERS[tier];
+    const ratio = Math.min(window.devicePixelRatio || 1, T.ratio);
+    renderer.setPixelRatio(ratio);
+    halo.u.uSize.value = 2.3 * ratio;
+    disk.u.uSize.value = 1.9 * ratio;
+    halo.points.geometry.setDrawRange(0, Math.round(halo.count * T.parts));
+    disk.points.geometry.setDrawRange(0, Math.round(disk.count * T.parts));
+    if (shell.geometry.parameters.widthSegments !== T.mesh[0]) {
+      shell.geometry.dispose();
+      shell.geometry = new THREE.SphereGeometry(1, T.mesh[0], T.mesh[1]);
+    }
+    root.dataset.gfx = T.name;
+    resize();
+    settleUntil = performance.now() + 1500;
+  }
+
+  function setMode(m) {
+    mode = m in FIXED ? m : "auto";
+    setTier(mode === "auto" ? autoTier() : FIXED[mode]);
+  }
+  setMode("auto");
+
   // --- the frame -----------------------------------------------------------------------------------------------------------------
+  // A frame is asked for only when one is due: an animation frame the scene
+  // doesn't draw still costs the phone a round of style, layout and
+  // compositing checks. Anything that starts moving wakes it at once.
   const clock = new THREE.Clock();
   let t = 0;
   let paused = false;
-  let skip = false;
-  let last = performance.now();
+  let lastDraw = 0;
+  let lastCap = 0;
+  let asked = false;
+  let sleeper = 0;
+
+  function ask() {
+    if (asked || paused || covered) return;
+    asked = true;
+    requestAnimationFrame(frame);
+  }
+  function wake() {
+    clearTimeout(sleeper);
+    sleeper = 0;
+    ask();
+  }
+  // Ask a little under a refresh before the frame is due; it's drawn on the refresh after.
+  function sleepUntil(due) {
+    clearTimeout(sleeper);
+    const wait = due - performance.now() - refresh * 0.75;
+    if (wait <= 1 || firstGaps.length < 40) {
+      sleeper = 0;
+      ask();
+    } else {
+      sleeper = setTimeout(() => {
+        sleeper = 0;
+        ask();
+      }, wait);
+    }
+  }
   document.addEventListener("visibilitychange", () => {
     paused = document.hidden;
     if (!paused) {
       clock.getDelta();
-      last = performance.now();
-      requestAnimationFrame(frame);
+      settleUntil = performance.now() + 1500;
+      wake();
     }
   });
 
   function frame(now) {
-    if (paused) return;
-    requestAnimationFrame(frame);
-    if (level30) {
-      skip = !skip;
-      if (skip) return;
+    asked = false;
+    if (paused || covered) return;
+    if (firstGaps.length < 40) {
+      // The screen's refresh: a low-but-not-lowest gap, so one odd short one can't skew it.
+      const gap = now - lastTick;
+      if (lastTick && gap > 3 && gap < 100) firstGaps.push(gap);
+      if (firstGaps.length === 40) refresh = firstGaps.slice().sort((a, b) => a - b)[10];
+      lastTick = now;
     }
-    const ms = now - last;
-    last = now;
-    const dt = Math.min(clock.getDelta(), 0.05);
+    const cap = typing ? Math.min(20, T.rest) : moving(now) ? T.fps : T.rest;
+    const interval = 1000 / cap;
+    const since = now - lastDraw;
+    if (since < interval - 4) {
+      // Woken early, or the screen refreshes faster than the cap.
+      sleepUntil(lastDraw + interval);
+      return;
+    }
+    if (cap === lastCap) watch(since, interval, now);
+    lastCap = cap;
+    lastDraw = now;
+    sleepUntil(now + interval);
+    drawn++;
+    if (now - drawnSince >= 1000) {
+      fpsNow = Math.round((drawn * 1000) / (now - drawnSince));
+      drawn = 0;
+      drawnSince = now;
+    }
+    const dt = Math.min(clock.getDelta(), 0.1);
     const target = PRESETS[state] || PRESETS.idle;
     const ease = Math.min(1, dt * 3);
     for (const k in cur) cur[k] += (target[k] - cur[k]) * ease;
@@ -584,45 +716,68 @@
     stars.position.set(-tilt.x * 0.6, tilt.y * 0.4, 0);
 
     renderer.render(scene, camera);
-    adapt(ms);
   }
 
   recolor();
-  F.bus.on("theme", recolor);
-  requestAnimationFrame(frame);
+  F.bus.on("theme", () => {
+    recolor();
+    wake();
+  });
+  wake();
 
+  // Every change of mood wakes the scene, so it answers at once rather than on its next slow frame.
+  const waking = (fn) => (...args) => {
+    const result = fn(...args);
+    wake();
+    return result;
+  };
   F.orb = {
     webgl: true,
-    setState(s) {
+    setState: waking((s) => {
       state = PRESETS[s] ? s : s === "acting" ? "thinking" : "idle";
-    },
-    setLevel(v) {
+    }),
+    setLevel: waking((v) => {
       levelTarget = Math.max(levelTarget, Math.min(1, Math.max(0, v)));
-    },
-    kick() {
+    }),
+    kick: waking(() => {
       kick = 1;
-    },
-    flash() {
+    }),
+    flash: waking(() => {
       flashUntil = performance.now() + 900;
       kick = 0.6;
-    },
-    ripple,
-    burst() {
+    }),
+    ripple: waking(ripple),
+    burst: waking(() => {
       burst = 1;
       kick = Math.max(kick, 0.5);
       spinVelocity += 1.2;
-    },
-    tap() {
+    }),
+    tap: waking(() => {
       kick = Math.max(kick, 0.3);
       spinVelocity += 0.12;
-    },
-    busy() {
+    }),
+    busy: waking(() => {
       busy = 1;
-    },
-    send,
-    pulse() {
+    }),
+    send: waking(send),
+    pulse: waking(() => {
       burst = Math.max(burst, 0.6);
-    },
+    }),
     recolor,
+    // The keyboard is up: fewer frames, so typing stays quick.
+    typing: waking((on) => {
+      typing = Boolean(on);
+      settleUntil = performance.now() + 1200;
+    }),
+    // A sheet covers the scene: stop drawing it until it's gone.
+    cover: waking((on) => {
+      covered = Boolean(on);
+      settleUntil = performance.now() + 1200;
+    }),
+    // "auto", "full" or "light" (Graphics in the menu).
+    setGraphics: setMode,
+    graphicsInfo() {
+      return { mode, tier: T.name, fps: fpsNow, missed: Math.round(missed * 100), gpu };
+    },
   };
 })();

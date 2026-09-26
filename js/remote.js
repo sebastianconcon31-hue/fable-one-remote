@@ -14,7 +14,7 @@
   const F = window.Fable;
   const $ = (id) => document.getElementById(id);
   const input = $("input");
-  const KEYS = { code: "fable.remote.code", chat: "fable.remote.chat", theme: "fable.remote.theme", unpaired: "fable.remote.unpaired", held: "fable.remote.held" };
+  const KEYS = { code: "fable.remote.code", chat: "fable.remote.chat", theme: "fable.remote.theme", unpaired: "fable.remote.unpaired", held: "fable.remote.held", graphics: "fable.remote.graphics" };
   const REPLY_TIMEOUT_MS = 90000;
   // Things Fable One on the PC really does (its CAPABILITIES_SPEECH).
   const CHIPS = ["Status check", "What's on my screen?", "Pause the music", "Turn the volume up", "Take a screenshot", "Recap my day", "What can you do?"];
@@ -33,6 +33,29 @@
   }
   applyTheme(F.store.get(KEYS.theme, "mono"));
   document.querySelectorAll("#themes button").forEach((b) => b.addEventListener("click", () => applyTheme(b.dataset.theme)));
+
+  // --- graphics: Auto, Full or Light (scene.js has the steps) ---------------------------------------
+  const DETAIL = { full: "full", high: "high", light: "light", lightest: "the lightest" };
+  function showGraphics() {
+    const info = F.orb.graphicsInfo();
+    if (!info) {
+      $("gfx-now").textContent = "This phone can't draw the 3D orb, so it shows a still one.";
+      return;
+    }
+    const rate = info.fps ? `, ${info.fps} frames a second` : "";
+    $("gfx-now").textContent = info.mode === "auto"
+      ? `Auto picks the most this phone can draw smoothly. Now: ${DETAIL[info.tier] || info.tier} detail${rate}.`
+      : `Now: ${DETAIL[info.tier] || info.tier} detail${rate}.`;
+  }
+  function applyGraphics(choice) {
+    const mode = ["auto", "full", "light"].includes(choice) ? choice : "auto";
+    F.store.set(KEYS.graphics, mode);
+    F.orb.setGraphics(mode);
+    document.querySelectorAll("#graphics button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gfx === mode)));
+    showGraphics();
+  }
+  applyGraphics(F.store.get(KEYS.graphics, "auto"));
+  document.querySelectorAll("#graphics button").forEach((b) => b.addEventListener("click", () => applyGraphics(b.dataset.gfx)));
 
   // --- the conversation -------------------------------------------------------------------------------
   let chat = F.store.getJSON(KEYS.chat, []);
@@ -345,6 +368,9 @@
     grow();
     F.orb.tap();
   });
+  // While the keyboard is up the scene draws less, so typing stays quick.
+  input.addEventListener("focus", () => F.orb.typing(true));
+  input.addEventListener("blur", () => F.orb.typing(false));
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
       e.preventDefault();
@@ -364,29 +390,44 @@
   $("chips").querySelectorAll(".chip").forEach((chip) => chip.addEventListener("click", () => send(chip.textContent)));
 
   // --- the card tilts with the phone ----------------------------------------------------------------------------------------
+  // The sensor fires about 60 times a second; the card is restyled at most 20
+  // times, only when the angle really changed, and its transition smooths the
+  // steps. At the lightest graphics it stays still.
   let base = null;
+  let tiltAt = 0;
+  let tiltWas = "";
+  const card = $("card");
   window.addEventListener("deviceorientation", (e) => {
     if (e.beta === null || e.gamma === null) return;
     if (!base) base = { beta: e.beta, gamma: e.gamma };
     base.beta += (e.beta - base.beta) * 0.01;
     base.gamma += (e.gamma - base.gamma) * 0.01;
-    const card = $("card");
-    card.style.setProperty("--tilt-x", `${Math.max(-8, Math.min(8, -(e.beta - base.beta) * 0.35)).toFixed(2)}deg`);
-    card.style.setProperty("--tilt-y", `${Math.max(-10, Math.min(10, (e.gamma - base.gamma) * 0.45)).toFixed(2)}deg`);
+    const now = performance.now();
+    if (now - tiltAt < 50) return;
+    tiltAt = now;
+    const still = document.documentElement.dataset.gfx === "lightest";
+    const x = still ? 0 : Math.max(-8, Math.min(8, -(e.beta - base.beta) * 0.35));
+    const y = still ? 0 : Math.max(-10, Math.min(10, (e.gamma - base.gamma) * 0.45));
+    const next = `rotateX(${x.toFixed(1)}deg) rotateY(${y.toFixed(1)}deg)`;
+    if (next !== tiltWas) card.style.transform = tiltWas = next;
   });
 
   // --- sheets: history (swipe up), pairing, menu ------------------------------------------------------------------------------
   const scrim = $("scrim");
   const sheets = ["history", "pair", "sheet"];
+  // The scene stops drawing while a sheet covers it.
   function openSheet(id) {
     sheets.forEach((s) => ($(s).hidden = s !== id));
     scrim.hidden = false;
     if (id === "history") renderHistory();
+    if (id === "sheet") showGraphics();
+    F.orb.cover(true);
   }
   function closeSheets() {
     if (!$("pair").hidden && !F.store.get(KEYS.code)) return; // pairing can't be skipped
     sheets.forEach((s) => ($(s).hidden = true));
     scrim.hidden = true;
+    F.orb.cover(false);
   }
   const showPair = () => {
     openSheet("pair");

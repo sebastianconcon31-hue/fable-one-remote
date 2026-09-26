@@ -75,22 +75,17 @@
 
   /* The latest exchange, on a glass card that tilts with the phone. */
   .deck { perspective: 900px; padding: 0 14px; }
+  /* The tilt is set from script at most 20 times a second, and the short
+     transition - which the compositor runs by itself - smooths between them.
+     (A light that ran round the edge while Fable One worked is gone: the
+     card's own edge clipped it out of sight, and it still repainted the whole
+     card every frame. The typing dots already say it's working.) */
   .card {
     position: relative; border-radius: 26px; padding: 14px 16px 16px; max-height: 34dvh; overflow: hidden; cursor: pointer;
-    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transform-style: preserve-3d; transition: transform .15s ease-out;
+    transition: transform .15s ease-out;
     box-shadow: 0 16px 40px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .07);
     will-change: transform;
   }
-  /* A light that runs round the card's edge while Fable One works. */
-  .card::before {
-    content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none;
-    background: conic-gradient(from var(--spin, 0deg), transparent 0 70%, color-mix(in srgb, var(--orb-glow-color) 85%, white) 85%, transparent 100%);
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
-    opacity: 0; transition: opacity .3s;
-  }
-  .card.working::before { opacity: 1; animation: spin 1.6s linear infinite; }
-  @property --spin { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
-  @keyframes spin { to { --spin: 360deg; } }
   .card .asked { font-size: 13px; color: var(--muted); margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .card .asked b { color: var(--ink); font-weight: 600; }
   .card .answer { font-size: 18.5px; line-height: 1.42; letter-spacing: -.005em; white-space: pre-wrap; word-wrap: break-word; max-height: calc(34dvh - 70px); overflow-y: auto; user-select: text; -webkit-user-select: text; }
@@ -106,7 +101,7 @@
   .typing b:nth-child(2) { animation-delay: .15s; }
   .typing b:nth-child(3) { animation-delay: .3s; }
   @keyframes bounce { 30% { transform: translateY(-6px); opacity: 1; } }
-  @keyframes rise { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
 
   /* One-tap commands: real things Fable One on the PC does. */
   .chips { display: flex; gap: 8px; overflow-x: auto; padding: 12px 14px 2px; scrollbar-width: none; }
@@ -120,13 +115,16 @@
   .box:focus-within { border-color: color-mix(in srgb, var(--orb-glow-color) 40%, var(--line)); }
   #input { resize: none; border: 0; outline: 0; background: transparent; padding: 11px 0; max-height: 110px; min-height: 26px; line-height: 1.4; user-select: text; -webkit-user-select: text; }
   #input::placeholder { color: var(--muted); }
-  .round { width: 48px; height: 48px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: transparent; transition: transform .12s ease, background .2s ease; }
+  .round { position: relative; width: 48px; height: 48px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: transparent; transition: transform .12s ease, background .2s ease; }
   .round:active { transform: scale(.9); }
   .round svg { width: 22px; height: 22px; }
   .round.send { background: var(--accent); color: var(--accent-ink); }
   .round.send:disabled { opacity: .3; }
-  .round.live { background: var(--danger); color: #fff; animation: glow 1.1s infinite; }
-  @keyframes glow { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--danger) 25%, transparent); } }
+  .round.live { background: var(--danger); color: #fff; }
+  /* The listening glow fades a fixed ring in and out, which the compositor
+     does alone; animating the shadow itself repainted the button every frame. */
+  .round.live::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 7px color-mix(in srgb, var(--danger) 25%, transparent); animation: glow 1.1s infinite; }
+  @keyframes glow { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
 
   /* Sheets: history, pairing, menu. */
   .scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, .5); z-index: 10; animation: fade .2s both; }
@@ -154,6 +152,8 @@
   .themes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 8px 0 4px; }
   .themes button { padding: 11px 4px; border-radius: 14px; border: 1px solid var(--line); background: var(--ground); font-size: 13px; cursor: pointer; }
   .themes button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+  .themes.three { grid-template-columns: repeat(3, 1fr); }
+  .gfx-now { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
   .caps { font: 600 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 14px; }
   @media (prefers-reduced-motion: reduce) { .card, .sheet, .scrim, .card .answer.fresh { animation: none !important; transition: none; } }
 </style>
@@ -232,6 +232,13 @@
     <button type="button" data-theme="blue">Blue</button>
     <button type="button" data-theme="paper">Paper</button>
   </div>
+  <div class="caps">Graphics</div>
+  <div class="themes three" id="graphics">
+    <button type="button" data-gfx="auto">Auto</button>
+    <button type="button" data-gfx="full">Full</button>
+    <button type="button" data-gfx="light">Light</button>
+  </div>
+  <p class="gfx-now" id="gfx-now">Auto picks the most this phone can draw smoothly. Light is the smoothest.</p>
   <button class="wide ghost" id="clear" type="button">Clear chat</button>
   <button class="wide danger" id="unpair" type="button">Unpair this phone</button>
   <button class="wide ghost" id="close-sheet" type="button">Done</button>
