@@ -1,7 +1,7 @@
 // Keeps the app itself on the phone, so it opens instantly and even with a
 // weak signal. Only this app's own files are cached; the relay (ntfy.sh) is
 // never touched. build.py stamps the version, so a new build replaces the old.
-const CACHE = "fable-remote-20260926125721";
+const CACHE = "fable-remote-20260926125757";
 const SHELL = [
   "./", "index.html", "manifest.webmanifest",
   "js/three.min.js", "js/util.js", "js/scene.js", "js/relay.js", "js/remote.js",
