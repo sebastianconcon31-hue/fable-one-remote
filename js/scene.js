@@ -1,20 +1,26 @@
-// The phone app's 3D scene: Fable One as a small machine you hold.
+// The phone app's 3D scene: the Fable One orb, built to run smoothly on a
+// phone GPU (the owner's is a Moto G15 Power, Mali-G52 class).
 //
-//   core        a rippling glass orb with a glowing heart
-//   gyroscope   three metal rings turning on different axes, studded with
-//               machined notches, reflecting a soft studio light
-//   satellites  faceted crystals on tilted orbits, each with a faint path
-//   floor       a grid far below that glows under the orb and sends out a
-//               ring whenever an answer arrives
-//   dust        motes drifting upward through the light
-//   flyers      a spark that carries each message from your thumb into the orb
+//   orb     a glass sphere rippled by noise, with contour lines riding the
+//           ripples and normals taken from the rippled surface, so it shades
+//           like real glass; a glowing heart inside
+//   halo    a shell of particles breathing round it, and a tilted disk
+//   rings   three thin orbits, each with a bead of light running round it
+//   stars   a far starfield; the view drifts with the phone's tilt
 //
-// Made for a phone: tilting it shifts the view (gyro), dragging spins it,
-// holding the orb means "listening" (the page decides), and it renders at a
-// lower resolution on its own if the GPU can't keep up.
+// What keeps it smooth on a phone:
+//   - the sphere is an indexed mesh, so each point on it is shaded once
+//     rather than six times (the earlier build's biggest cost)
+//   - nothing is allocated per frame, so the garbage collector never stalls it
+//   - the tilt is smoothed, so sensor jitter can't shake the picture
+//   - if frames run slow it first thins the particles, then holds a steady
+//     30 frames a second; it never drops the resolution far enough to look
+//     blocky
+//   - the canvas doesn't resize while the keyboard slides in and out
 //
 // It keeps F.orb's interface (setState, setLevel, burst, tap, flash, busy,
-// ripple) so the chat code drives it the same way, and adds send() and pulse().
+// ripple, send, pulse) and emits scene-hold-start / scene-hold-end /
+// scene-tap for the page to turn into listening.
 (() => {
   const F = window.Fable;
   const root = document.documentElement;
@@ -36,44 +42,15 @@
   } catch (e) {
     return useFallback();
   }
-  let pixelRatio = Math.min(window.devicePixelRatio || 1, 1.75);
+  const MAX_RATIO = Math.min(window.devicePixelRatio || 1, 1.6);
+  const MIN_RATIO = Math.min(window.devicePixelRatio || 1, 1.1);
+  let pixelRatio = MAX_RATIO;
   renderer.setPixelRatio(pixelRatio);
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-  const TARGET = new THREE.Vector3(0, 0.25, 0);
-
-  // --- a soft studio for the metal to reflect ------------------------------------------
-  function studio(tint) {
-    const env = new THREE.Scene();
-    const geo = new THREE.SphereGeometry(10, 32, 16);
-    const colors = [];
-    const pos = geo.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      const y = pos.getY(i) / 10;
-      const v = 0.02 + Math.max(0, y) * 0.22 + Math.exp(-Math.pow((y - 0.35) * 5, 2)) * 0.5;
-      colors.push(v * tint.r, v * tint.g, v * tint.b);
-    }
-    geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-    env.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide })));
-    // Two softboxes: a key from above-left and a strip light to the right.
-    const box = (w, h, x, y, z, s) => {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(s, s, s) }));
-      m.position.set(x, y, z);
-      m.lookAt(0, 0, 0);
-      env.add(m);
-    };
-    box(6, 3, -4, 7, 3, 3.2);
-    box(1.2, 7, 7, 1, -2, 2.2);
-    box(8, 1, 0, -3, -8, 0.8);
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    const texture = pmrem.fromScene(env, 0.04).texture;
-    pmrem.dispose();
-    return texture;
-  }
+  const world = new THREE.Group();
+  scene.add(world);
 
   const NOISE = `
     vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
@@ -103,266 +80,237 @@
   const U = {
     uTime: { value: 0 },
     uAmp: { value: 0.08 },
-    uFreq: { value: 1.5 },
-    uLevel: { value: 0 },
+    uFreq: { value: 1.4 },
     uPulse: { value: 0 },
-    uRim: { value: new THREE.Color("#ffffff") },
+    uLevel: { value: 0 },
     uCore: { value: new THREE.Color("#ffffff") },
+    uRim: { value: new THREE.Color("#ffffff") },
     uGround: { value: new THREE.Color("#000000") },
     uHit: { value: new THREE.Vector3(0, 0, 1) },
     uHitAge: { value: 10 },
   };
 
-  // --- the core -----------------------------------------------------------------------------------
-  const core = new THREE.Group();
-  core.position.copy(TARGET);
-  scene.add(core);
+  // --- the orb ----------------------------------------------------------------------------------------
+  const orb = new THREE.Group();
+  world.add(orb);
 
   const shell = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(1, 26),
+    // Indexed: every point is shaded once, not once per triangle it belongs to.
+    new THREE.SphereGeometry(1, 120, 90),
     new THREE.ShaderMaterial({
       uniforms: U,
       vertexShader: NOISE + `
-        uniform float uTime, uAmp, uFreq, uLevel, uPulse, uHitAge;
+        uniform float uTime, uAmp, uFreq, uPulse, uLevel, uHitAge;
         uniform vec3 uHit;
-        varying vec3 vN; varying vec3 vV; varying float vD;
-        float disp(vec3 n){
-          float d = (snoise(n * uFreq + vec3(0.0, uTime * 0.55, uTime * 0.3)) + 0.3 * snoise(n * uFreq * 2.4 - uTime * 0.4)) * (uAmp + uLevel * 0.2);
-          d += uPulse * (0.5 + 0.5 * sin(uTime * 7.0)) * 0.04 + uLevel * 0.04;
+        varying vec3 vNormal; varying vec3 vView; varying float vDisp;
+        float displace(vec3 n){
+          float a = snoise(n * uFreq + vec3(0.0, uTime * 0.6, uTime * 0.3));
+          float b = snoise(n * uFreq * 2.3 - uTime * 0.4) * 0.35;
+          float d = (a + b) * (uAmp + uLevel * 0.22) + uPulse * (0.5 + 0.5 * sin(uTime * 7.0)) * 0.05 + uLevel * 0.05;
           float k = distance(n, uHit);
-          d += 0.14 * exp(-uHitAge * 2.6) * sin(k * 20.0 - uHitAge * 15.0) * exp(-k * 2.0) * step(k, uHitAge * 1.4 + 0.2);
+          d += 0.15 * exp(-uHitAge * 2.6) * sin(k * 22.0 - uHitAge * 16.0) * exp(-k * 2.2) * step(k, uHitAge * 1.4 + 0.2);
           return d;
         }
         void main(){
           vec3 n = normalize(position);
-          float d = disp(n);
-          vec3 p = n * (0.92 + d);
-          vec3 t = normalize(abs(n.y) > 0.99 ? cross(n, vec3(1.0,0.0,0.0)) : cross(n, vec3(0.0,1.0,0.0)));
+          float d = displace(n);
+          vec3 p = n * (1.2 + d);
+          vec3 t = normalize(abs(n.y) > 0.99 ? cross(n, vec3(1.0, 0.0, 0.0)) : cross(n, vec3(0.0, 1.0, 0.0)));
           vec3 b = cross(n, t);
-          vec3 n1 = normalize(n + t * 0.015); vec3 n2 = normalize(n + b * 0.015);
-          vec3 bent = normalize(cross(n1 * (0.92 + disp(n1)) - p, n2 * (0.92 + disp(n2)) - p));
+          vec3 n1 = normalize(n + t * 0.012);
+          vec3 n2 = normalize(n + b * 0.012);
+          vec3 bent = normalize(cross(n1 * (1.2 + displace(n1)) - p, n2 * (1.2 + displace(n2)) - p));
           if (dot(bent, n) < 0.0) bent = -bent;
-          vD = d;
+          vDisp = d;
           vec4 mv = modelViewMatrix * vec4(p, 1.0);
-          vN = normalize(normalMatrix * bent);
-          vV = normalize(-mv.xyz);
+          vNormal = normalize(normalMatrix * bent);
+          vView = normalize(-mv.xyz);
           gl_Position = projectionMatrix * mv;
         }`,
       fragmentShader: `
-        uniform vec3 uRim, uCore, uGround; uniform float uTime, uLevel;
-        varying vec3 vN; varying vec3 vV; varying float vD;
+        uniform vec3 uCore, uRim, uGround; uniform float uTime, uLevel;
+        varying vec3 vNormal; varying vec3 vView; varying float vDisp;
         void main(){
-          vec3 N = normalize(vN); vec3 V = normalize(vV);
-          vec3 L = normalize(vec3(-0.5, 0.8, 0.5));
-          float fres = pow(1.0 - max(dot(N, V), 0.0), 2.2);
-          float spec = pow(max(dot(N, normalize(L + V)), 0.0), 70.0) * 1.2;
-          float env = smoothstep(0.0, 1.0, reflect(-V, N).y) * 0.35;
-          float band = abs(fract(vD * 14.0 - uTime * 0.25) - 0.5);
-          float line = (1.0 - smoothstep(0.0, 0.05, band)) * (0.2 + 0.6 * uLevel);
-          vec3 col = mix(uGround, uCore, 0.05 + max(dot(N, L), 0.0) * 0.35) + uRim * (env + spec);
-          col = mix(col, uRim, clamp(fres + line, 0.0, 1.0));
-          gl_FragColor = vec4(col, clamp(0.5 + fres * 0.6 + spec * 0.5 + line * 0.4, 0.0, 1.0));
+          vec3 N = normalize(vNormal);
+          vec3 V = normalize(vView);
+          vec3 key = normalize(vec3(-0.5, 0.7, 0.6));
+          float fres = pow(1.0 - max(dot(N, V), 0.0), 2.3);
+          float diff = max(dot(N, key), 0.0) * 0.55;
+          float spec = pow(max(dot(N, normalize(key + V)), 0.0), 60.0) * 1.1;
+          float env = smoothstep(-0.1, 0.9, reflect(-V, N).y) * 0.3;
+          vec3 body = mix(uGround, uCore, 0.04 + diff * 0.5 + vDisp * 0.9);
+          float band = abs(fract(vDisp * 16.0 - uTime * 0.25) - 0.5);
+          float line = (1.0 - smoothstep(0.0, 0.05, band)) * (0.22 + 0.55 * uLevel);
+          vec3 col = body + uRim * (env * 0.6 + spec);
+          col = mix(col, uRim, clamp(fres * 1.05 + line, 0.0, 1.0));
+          gl_FragColor = vec4(col, clamp(0.55 + fres * 0.6 + spec * 0.5 + line * 0.4, 0.0, 1.0));
         }`,
       transparent: true,
       depthWrite: false,
     })
   );
-  shell.renderOrder = 5;
-  core.add(shell);
+  shell.renderOrder = 3;
+  orb.add(shell);
+
+  const coreU = { uTime: U.uTime, uLevel: U.uLevel, uRim: U.uRim, uCore: U.uCore, uEnergy: { value: 0.4 } };
+  const core = new THREE.Mesh(
+    new THREE.SphereGeometry(0.52, 32, 24),
+    new THREE.ShaderMaterial({
+      uniforms: coreU,
+      vertexShader: NOISE + `
+        uniform float uTime, uEnergy;
+        varying float vN; varying vec3 vNormal; varying vec3 vView;
+        void main(){
+          vec3 n = normalize(position);
+          vN = snoise(n * 2.4 + uTime * (0.6 + uEnergy));
+          vec3 p = n * (0.52 + vN * 0.05 * (0.6 + uEnergy));
+          vec4 mv = modelViewMatrix * vec4(p, 1.0);
+          vNormal = normalize(normalMatrix * n);
+          vView = normalize(-mv.xyz);
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `
+        uniform vec3 uRim, uCore; uniform float uLevel, uEnergy;
+        varying float vN; varying vec3 vNormal; varying vec3 vView;
+        void main(){
+          float facing = max(dot(normalize(vNormal), normalize(vView)), 0.0);
+          float glow = (0.35 + 0.65 * facing) * (0.55 + 0.45 * vN) * (0.5 + uEnergy * 0.8 + uLevel * 0.7);
+          gl_FragColor = vec4(mix(uCore, uRim, 0.5) * glow, clamp(glow, 0.0, 1.0));
+        }`,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  core.renderOrder = 1;
+  orb.add(core);
 
   function glowTexture() {
     const c = document.createElement("canvas");
     c.width = c.height = 128;
     const g = c.getContext("2d");
     const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-    grad.addColorStop(0, "rgba(255,255,255,1)");
-    grad.addColorStop(0.25, "rgba(255,255,255,0.35)");
+    grad.addColorStop(0, "rgba(255,255,255,0.95)");
+    grad.addColorStop(0.3, "rgba(255,255,255,0.3)");
     grad.addColorStop(1, "rgba(255,255,255,0)");
     g.fillStyle = grad;
     g.fillRect(0, 0, 128, 128);
-    const t = new THREE.CanvasTexture(c);
-    t.encoding = THREE.sRGBEncoding;
-    return t;
+    return new THREE.CanvasTexture(c);
   }
   const glowMap = glowTexture();
-  const sprite = (size, opacity, additive = true) => {
+  const sprite = (size, opacity, additive) => {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowMap, transparent: true, depthWrite: false, opacity, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending }));
     s.scale.setScalar(size);
     return s;
   };
-  const heart = sprite(1.3, 0.8);
-  heart.renderOrder = 4;
-  core.add(heart);
-  const halo = sprite(4.6, 0.22);
-  halo.renderOrder = 1;
-  core.add(halo);
+  const glow = sprite(4.4, 0.28, false);
+  glow.position.z = -0.8;
+  glow.renderOrder = 0;
+  orb.add(glow);
+  const heart = sprite(1.8, 0.5, true);
+  heart.renderOrder = 2;
+  orb.add(heart);
 
-  // --- lights ---------------------------------------------------------------------------------------
-  scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-  const key = new THREE.DirectionalLight(0xffffff, 1.5);
-  key.position.set(-3, 5, 4);
-  scene.add(key);
-  const rimLight = new THREE.DirectionalLight(0xffffff, 1.1);
-  rimLight.position.set(3, 1.5, -5);
-  scene.add(rimLight);
-  const coreLight = new THREE.PointLight(0xffffff, 1.2, 7, 2);
-  core.add(coreLight);
-
-  // --- the gyroscope: three machined rings --------------------------------------------------------
-  const metal = new THREE.MeshStandardMaterial({ color: 0xdadada, metalness: 1, roughness: 0.22, envMapIntensity: 1.3 });
-  const accent = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.6, metalness: 0.4, roughness: 0.3 });
-  const rings = [
-    { r: 1.42, tube: 0.034, axis: "x", speed: 0.35, notches: 18 },
-    { r: 1.66, tube: 0.028, axis: "y", speed: -0.25, notches: 24 },
-    { r: 1.9, tube: 0.022, axis: "z", speed: 0.18, notches: 30 },
-  ].map((spec, i) => {
-    const pivot = new THREE.Group();
-    pivot.rotation.set(i === 0 ? 1.1 : 0.4, i === 1 ? 0.7 : 0, i === 2 ? 0.6 : 0.2);
-    const spinner = new THREE.Group();
-    pivot.add(spinner);
-    spinner.add(new THREE.Mesh(new THREE.TorusGeometry(spec.r, spec.tube, 12, 140), metal));
-    // Notches round the rim: small blocks, every third one lit.
-    const block = new THREE.BoxGeometry(spec.tube * 2.6, spec.tube * 2.6, 0.09);
-    const plain = new THREE.InstancedMesh(block, metal, spec.notches);
-    const lit = new THREE.InstancedMesh(block, accent, Math.ceil(spec.notches / 3));
-    const m = new THREE.Object3D();
-    let p = 0;
-    let l = 0;
-    for (let k = 0; k < spec.notches; k++) {
-      const a = (k / spec.notches) * Math.PI * 2;
-      m.position.set(Math.cos(a) * spec.r, Math.sin(a) * spec.r, 0);
-      m.rotation.set(0, 0, a);
-      m.updateMatrix();
-      if (k % 3 === 0) lit.setMatrixAt(l++, m.matrix);
-      else plain.setMatrixAt(p++, m.matrix);
-    }
-    plain.count = p;
-    lit.count = l;
-    spinner.add(plain, lit);
-    core.add(pivot);
-    return { ...spec, spinner };
-  });
-
-  // --- satellites on orbits ---------------------------------------------------------------------------
-  const crystalMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.55, roughness: 0.12, flatShading: true, emissive: 0xffffff, emissiveIntensity: 0.12, envMapIntensity: 1.6 });
-  const satellites = [];
-  for (let i = 0; i < 7; i++) {
-    const orbit = new THREE.Group();
-    orbit.rotation.set(0.35 + Math.random() * 0.9, Math.random() * Math.PI * 2, (Math.random() - 0.5) * 0.6);
-    const radius = 2.45 + i * 0.16 + Math.random() * 0.2;
-    const pathPoints = new THREE.EllipseCurve(0, 0, radius, radius).getPoints(96).map((pt) => new THREE.Vector3(pt.x, 0, pt.y));
-    const path = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pathPoints), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.07, depthWrite: false }));
-    orbit.add(path);
-    const size = 0.07 + Math.random() * 0.07;
-    const crystal = new THREE.Mesh(i % 2 ? new THREE.OctahedronGeometry(size) : new THREE.IcosahedronGeometry(size, 0), crystalMaterial);
-    const spark = sprite(size * 5, 0.35);
-    crystal.add(spark);
-    orbit.add(crystal);
-    core.add(orbit);
-    satellites.push({ orbit, crystal, path, radius, angle: Math.random() * Math.PI * 2, speed: 0.25 + Math.random() * 0.35, spin: 0.5 + Math.random() });
-  }
-
-  // --- the floor ---------------------------------------------------------------------------------------
-  const floorU = { uTime: U.uTime, uRim: U.uRim, uWaves: { value: new THREE.Vector4(99, 99, 99, 99) }, uGlow: { value: 0.5 } };
-  const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(60, 60, 1, 1),
-    new THREE.ShaderMaterial({
-      uniforms: floorU,
+  // --- particles: a breathing halo and a tilted disk -------------------------------------------------------
+  function particles(count, place, sizeBase) {
+    const positions = new Float32Array(count * 3);
+    const seeds = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) place(i, positions, seeds);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("seed", new THREE.BufferAttribute(seeds, 3));
+    const u = { uTime: U.uTime, uLevel: U.uLevel, uRim: U.uRim, uSwirl: { value: 0.15 }, uSpread: { value: 1 }, uBurst: { value: 0 }, uSize: { value: sizeBase * pixelRatio } };
+    const points = new THREE.Points(geometry, new THREE.ShaderMaterial({
+      uniforms: u,
       vertexShader: `
-        varying vec3 vW;
-        void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-      fragmentShader: `
-        uniform vec3 uRim; uniform float uTime, uGlow; uniform vec4 uWaves;
-        varying vec3 vW;
-        float wave(float age, float r){ return age > 6.0 ? 0.0 : exp(-pow((r - age * 3.2) * 2.2, 2.0)) * exp(-age * 0.6); }
+        attribute vec3 seed;
+        uniform float uTime, uLevel, uSwirl, uSpread, uSize, uBurst;
+        varying float vAlpha;
         void main(){
-          vec2 p = vW.xz;
-          float r = length(p);
-          vec2 g = abs(fract(p * 0.85) - 0.5) / fwidth(p * 0.85);
-          float grid = 1.0 - min(min(g.x, g.y), 1.0);
-          float fade = exp(-r * 0.16);
-          float glow = exp(-r * r * 0.35) * uGlow;
-          float rings = wave(uWaves.x, r) + wave(uWaves.y, r) + wave(uWaves.z, r) + wave(uWaves.w, r);
-          float a = grid * 0.32 * fade + glow * 0.55 + rings * 0.9 * fade + grid * rings * 0.8;
-          gl_FragColor = vec4(uRim, clamp(a, 0.0, 1.0));
+          float ang = uTime * uSwirl * seed.y + seed.x;
+          float c = cos(ang), s = sin(ang);
+          vec3 p = vec3(position.x * c - position.z * s, position.y, position.x * s + position.z * c);
+          float r = seed.z * uSpread + sin(uTime * 1.3 * seed.y + seed.x) * 0.06 + uLevel * 0.4 * (0.4 + 0.6 * sin(seed.x * 3.0 + uTime * 5.0)) + uBurst * (0.8 + seed.y);
+          vec4 mv = modelViewMatrix * vec4(p * r, 1.0);
+          vAlpha = (0.3 + 0.7 * smoothstep(-3.0, 2.0, p.z * r)) * (1.0 - smoothstep(2.4, 3.6, r)) * (1.0 - uBurst * 0.4);
+          gl_PointSize = uSize * (0.6 + seed.y) * (7.0 / -mv.z) * (1.0 + uBurst * 0.8);
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `
+        uniform vec3 uRim;
+        varying float vAlpha;
+        void main(){
+          vec2 d = gl_PointCoord - 0.5;
+          float r2 = dot(d, d);
+          if (r2 > 0.25) discard;
+          gl_FragColor = vec4(uRim, (1.0 - sqrt(r2) * 2.0) * vAlpha * 0.85);
         }`,
       transparent: true,
       depthWrite: false,
-      extensions: { derivatives: true },
-    })
-  );
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -2.35;
-  floor.renderOrder = 0;
-  scene.add(floor);
-
-  // A beam of light from the floor up to the orb.
-  const beam = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.05, 0.55, 2.4, 32, 1, true),
-    new THREE.ShaderMaterial({
-      uniforms: { uRim: U.uRim, uLevel: U.uLevel },
-      vertexShader: `varying float vY; void main(){ vY = uv.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-      fragmentShader: `uniform vec3 uRim; uniform float uLevel; varying float vY;
-        void main(){ gl_FragColor = vec4(uRim, (1.0 - vY) * 0.12 * (1.0 + uLevel * 2.0)); }`,
-      transparent: true,
-      depthWrite: false,
       blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide,
-    })
-  );
-  beam.position.y = -1.15;
-  scene.add(beam);
-
-  // --- dust ------------------------------------------------------------------------------------------------
-  const DUST = 380;
-  const dustPos = new Float32Array(DUST * 3);
-  const dustSeed = new Float32Array(DUST);
-  for (let i = 0; i < DUST; i++) {
-    dustPos.set([(Math.random() - 0.5) * 12, Math.random() * 9 - 3, (Math.random() - 0.5) * 10 - 1], i * 3);
-    dustSeed[i] = Math.random();
+    }));
+    points.renderOrder = 4;
+    return { points, u, count };
   }
-  const dustGeo = new THREE.BufferGeometry();
-  dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
-  dustGeo.setAttribute("seed", new THREE.BufferAttribute(dustSeed, 1));
-  const dustU = { uTime: U.uTime, uRim: U.uRim, uSize: { value: 2.6 * pixelRatio }, uBurst: { value: 0 } };
-  const dust = new THREE.Points(dustGeo, new THREE.ShaderMaterial({
-    uniforms: dustU,
-    vertexShader: `
-      attribute float seed; uniform float uTime, uSize, uBurst; varying float vA;
-      void main(){
-        vec3 p = position;
-        p.y = mod(p.y + uTime * (0.08 + seed * 0.12) + 3.0, 9.0) - 3.0;
-        p.x += sin(uTime * 0.3 + seed * 20.0) * 0.2;
-        vec3 away = normalize(p - vec3(0.0, 0.25, 0.0));
-        p += away * uBurst * (0.6 + seed);
-        vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        vA = (0.25 + 0.75 * seed) * smoothstep(-3.0, -1.5, p.y) * (1.0 - smoothstep(4.5, 6.0, p.y));
-        gl_PointSize = uSize * (0.5 + seed) * (6.0 / -mv.z);
-        gl_Position = projectionMatrix * mv;
-      }`,
-    fragmentShader: `uniform vec3 uRim; varying float vA;
-      void main(){ float d = length(gl_PointCoord - 0.5); if (d > 0.5) discard; gl_FragColor = vec4(uRim, (1.0 - d * 2.0) * vA * 0.7); }`,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  }));
-  scene.add(dust);
+  const halo = particles(800, (i, pos, seed) => {
+    const z = Math.random() * 2 - 1;
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.sqrt(1 - z * z);
+    pos.set([r * Math.cos(a), z, r * Math.sin(a)], i * 3);
+    seed.set([Math.random() * 6.283, 0.4 + Math.random() * 0.9, 1.55 + Math.pow(Math.random(), 1.8) * 0.9], i * 3);
+  }, 2.3);
+  world.add(halo.points);
+  const disk = particles(560, (i, pos, seed) => {
+    const a = Math.random() * Math.PI * 2;
+    pos.set([Math.cos(a), (Math.random() - 0.5) * 0.05, Math.sin(a)], i * 3);
+    const radius = 1.75 + Math.pow(Math.random(), 0.7) * 0.9;
+    seed.set([Math.random() * 6.283, 1.6 / radius, radius], i * 3);
+  }, 1.9);
+  disk.points.rotation.set(1.18, 0, 0.32);
+  world.add(disk.points);
 
-  // --- flyers: a spark per message, from the thumb to the orb --------------------------------------------------
-  const flyers = [];
-  for (let i = 0; i < 4; i++) {
-    const s = sprite(0.45, 0);
-    s.renderOrder = 6;
-    scene.add(s);
-    flyers.push({ s, t: 1, from: new THREE.Vector3(), mid: new THREE.Vector3() });
-  }
+  const starGeometry = new THREE.BufferGeometry();
+  const starPositions = new Float32Array(320 * 3);
+  for (let i = 0; i < 320; i++) starPositions.set([(Math.random() - 0.5) * 30, (Math.random() - 0.5) * 34, -10 - Math.random() * 14], i * 3);
+  starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+  const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({ size: 0.06, transparent: true, opacity: 0.6, depthWrite: false }));
+  scene.add(stars);
 
-  // --- moods -------------------------------------------------------------------------------------------------------
+  // --- rings, each with a bead of light ------------------------------------------------------------------------------
+  const rings = [
+    { radius: 1.66, tilt: [1.35, 0.0, 0.25], speed: 0.9, opacity: 0.32 },
+    { radius: 1.9, tilt: [0.5, 0.9, 0.0], speed: -0.6, opacity: 0.2 },
+    { radius: 2.12, tilt: [2.2, -0.6, 0.4], speed: 0.45, opacity: 0.14 },
+  ].map((spec) => {
+    const pivot = new THREE.Group();
+    pivot.rotation.set(spec.tilt[0], spec.tilt[1], spec.tilt[2]);
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(spec.radius, 0.009, 6, 200),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: spec.opacity, depthWrite: false })
+    );
+    pivot.add(ring);
+    const bead = new THREE.Mesh(new THREE.SphereGeometry(0.04, 12, 10), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    const beadGlow = sprite(0.38, 0.8, true);
+    bead.add(beadGlow);
+    pivot.add(bead);
+    world.add(pivot);
+    return { ...spec, pivot, ring, bead, beadGlow, angle: Math.random() * 6.283 };
+  });
+
+  // --- the spark that carries a message into the orb --------------------------------------------------------------------
+  const spark = sprite(0.5, 0, true);
+  spark.renderOrder = 5;
+  world.add(spark);
+  const sparkFrom = new THREE.Vector3();
+  const sparkMid = new THREE.Vector3();
+  let sparkT = 1;
+
+  // --- moods --------------------------------------------------------------------------------------------------------------
   const PRESETS = {
-    idle:      { amp: 0.07, speed: 0.4, ring: 1.0, orbit: 1.0, pulse: 0, freq: 1.5, heart: 0.7, glow: 0.45 },
-    listening: { amp: 0.13, speed: 1.0, ring: 1.8, orbit: 1.4, pulse: 0, freq: 2.0, heart: 1.1, glow: 0.8 },
-    thinking:  { amp: 0.1, speed: 0.9, ring: 4.0, orbit: 3.4, pulse: 0, freq: 2.8, heart: 1.3, glow: 0.7 },
-    speaking:  { amp: 0.12, speed: 0.75, ring: 1.6, orbit: 1.3, pulse: 1, freq: 1.8, heart: 1.2, glow: 0.9 },
+    idle:      { amp: 0.07, speed: 0.35, spin: 0.10, pulse: 0, freq: 1.4, swirl: 0.15, spread: 1.0, energy: 0.35, ring: 1.0 },
+    listening: { amp: 0.14, speed: 1.00, spin: 0.25, pulse: 0, freq: 2.0, swirl: 0.35, spread: 0.9, energy: 0.8, ring: 1.6 },
+    thinking:  { amp: 0.11, speed: 0.80, spin: 1.10, pulse: 0, freq: 3.0, swirl: 1.40, spread: 0.86, energy: 1.1, ring: 3.2 },
+    speaking:  { amp: 0.12, speed: 0.70, spin: 0.20, pulse: 1, freq: 1.8, swirl: 0.30, spread: 1.05, energy: 0.9, ring: 1.4 },
   };
   let state = "idle";
   const cur = { ...PRESETS.idle };
@@ -372,7 +320,7 @@
   let burst = 0;
   let busy = 0;
   let flashUntil = 0;
-  const waves = [99, 99, 99, 99];
+  let spinVelocity = 0;
 
   function cssColor(name, fallbackColor) {
     const value = getComputedStyle(root).getPropertyValue(name).trim();
@@ -385,105 +333,99 @@
   let rimColor = new THREE.Color("#ffffff");
   let danger = new THREE.Color("#ff5a52");
   function recolor() {
+    U.uCore.value = cssColor("--orb-core", "#ffffff");
     rimColor = cssColor("--orb-rim", "#ffffff");
     danger = cssColor("--danger", "#ff5a52");
     U.uRim.value = rimColor.clone();
-    U.uCore.value = cssColor("--orb-core", "#ffffff");
     U.uGround.value = cssColor("--ground", "#000000");
+    const glowColor = cssColor("--orb-glow-color", "#ffffff");
+    glow.material.color = glowColor;
+    heart.material.color = glowColor.clone();
+    stars.material.color = rimColor.clone();
     const light = U.uGround.value.getHSL({}).l > 0.5;
-    const tint = cssColor("--orb-glow-color", "#ffffff");
-    if (metal.envMap) metal.envMap.dispose();
-    const envMap = studio(light ? new THREE.Color(0.9, 0.9, 0.9) : tint.clone().lerp(new THREE.Color(1, 1, 1), 0.6));
-    metal.envMap = envMap;
-    metal.color = light ? new THREE.Color(0x3a3a3a) : new THREE.Color(0xdadada);
-    crystalMaterial.envMap = envMap;
-    crystalMaterial.color = U.uCore.value.clone();
-    crystalMaterial.emissive = tint.clone();
-    accent.color = tint.clone();
-    accent.emissive = tint.clone();
-    metal.needsUpdate = crystalMaterial.needsUpdate = accent.needsUpdate = true;
-    coreLight.color = tint.clone();
-    for (const s of [heart, halo]) s.material.color = tint.clone();
-    for (const sat of satellites) sat.path.material.color = rimColor.clone();
+    stars.visible = !light;
     const blend = light ? THREE.NormalBlending : THREE.AdditiveBlending;
-    heart.material.blending = halo.material.blending = dust.material.blending = blend;
+    halo.points.material.blending = disk.points.material.blending = core.material.blending = blend;
   }
 
+  // --- size: portrait-aware, and steady while the keyboard moves ------------------------------------------------------------
+  let distance = 7.6;
+  let lookDown = 0;
   function resize() {
-    const rect = canvas.getBoundingClientRect();
-    const w = Math.max(1, rect.width);
-    const h = Math.max(1, rect.height);
+    const w = Math.max(1, canvas.clientWidth);
+    const h = Math.max(1, canvas.clientHeight);
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // A tall phone: a wider lens, the rings sized to the width, and the orb
-    // lifted into the upper half so the chat has the bottom.
     const portrait = w / h < 1;
-    camera.fov = portrait ? 50 : 40;
+    camera.fov = portrait ? 48 : 38;
     camera.updateProjectionMatrix();
+    // Fit the outer ring to the width, and lift the orb above the card and chat box.
     const halfWidth = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-    distance = THREE.MathUtils.clamp(2.2 / halfWidth, 7, 14);
-    lookDown = portrait ? 1.05 : 0.3;
+    distance = THREE.MathUtils.clamp(2.3 / halfWidth, 6.5, 13);
+    lookDown = portrait ? 1.15 : 0;
   }
-  let distance = 8.2;
-  let lookDown = 0.3;
-  new ResizeObserver(resize).observe(canvas);
+  let resizeTimer = 0;
+  new ResizeObserver(() => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resize, 150);
+  }).observe(canvas);
   resize();
 
-  // --- the phone in the hand: tilt, drag, hold -----------------------------------------------------------------
-  let gyro = { yaw: 0, pitch: 0 };
-  let gyroBase = null;
+  // --- the phone in the hand: tilt, drag, hold ---------------------------------------------------------------------------------
+  const tilt = { x: 0, y: 0, tx: 0, ty: 0 };
+  let tiltBase = null;
   window.addEventListener("deviceorientation", (e) => {
     if (e.beta === null || e.gamma === null) return;
-    if (!gyroBase) gyroBase = { beta: e.beta, gamma: e.gamma };
-    gyroBase.beta += (e.beta - gyroBase.beta) * 0.005; // slowly re-centre on how it's held
-    gyroBase.gamma += (e.gamma - gyroBase.gamma) * 0.005;
-    gyro.yaw = THREE.MathUtils.clamp((e.gamma - gyroBase.gamma) / 30, -1, 1) * 0.35;
-    gyro.pitch = THREE.MathUtils.clamp((e.beta - gyroBase.beta) / 30, -1, 1) * 0.22;
+    if (!tiltBase) tiltBase = { beta: e.beta, gamma: e.gamma };
+    tiltBase.beta += (e.beta - tiltBase.beta) * 0.004; // re-centre slowly on how it's held
+    tiltBase.gamma += (e.gamma - tiltBase.gamma) * 0.004;
+    tilt.tx = THREE.MathUtils.clamp((e.gamma - tiltBase.gamma) / 35, -1, 1);
+    tilt.ty = THREE.MathUtils.clamp((e.beta - tiltBase.beta) / 35, -1, 1);
   });
 
-  let drag = { yaw: 0, pitch: 0, vYaw: 0, vPitch: 0 };
-  let pointer = null; // { x, y, t, moved, held, timer }
+  const drag = { yaw: 0, pitch: 0 };
+  let pointer = null;
   const raycaster = new THREE.Raycaster();
-  const sphere = new THREE.Sphere(new THREE.Vector3(), 1.0);
+  const ndc = new THREE.Vector2();
+  const hitSphere = new THREE.Sphere(new THREE.Vector3(), 1.25);
+  const hitPoint = new THREE.Vector3();
 
   function hitOrb(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
-    const ndc = new THREE.Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
+    ndc.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
     raycaster.setFromCamera(ndc, camera);
-    sphere.center.copy(core.position);
-    sphere.radius = 1.05 * core.scale.x;
-    const hit = new THREE.Vector3();
-    if (!raycaster.ray.intersectSphere(sphere, hit)) return null;
-    return shell.worldToLocal(hit).normalize();
+    hitSphere.center.setFromMatrixPosition(shell.matrixWorld);
+    hitSphere.radius = 1.3 * shell.scale.x;
+    if (!raycaster.ray.intersectSphere(hitSphere, hitPoint)) return null;
+    return shell.worldToLocal(hitPoint.clone()).normalize();
   }
 
   canvas.addEventListener("pointerdown", (e) => {
-    canvas.setPointerCapture(e.pointerId);
+    try {
+      canvas.setPointerCapture(e.pointerId);
+    } catch (_) {}
     const onOrb = hitOrb(e.clientX, e.clientY);
     pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, moved: false, held: false, onOrb };
-    if (onOrb) ripple(onOrb);
-    // Holding the orb means "listen". A drag cancels it.
     if (onOrb) {
+      ripple(onOrb);
+      // Holding the orb means "listen"; a drag cancels it.
       pointer.timer = setTimeout(() => {
         if (!pointer || pointer.moved) return;
         pointer.held = true;
         F.bus.emit("scene-hold-start");
-      }, 280);
+      }, 260);
     }
   });
   canvas.addEventListener("pointermove", (e) => {
     if (!pointer || e.pointerId !== pointer.id) return;
-    const dx = e.clientX - pointer.lastX;
-    const dy = e.clientY - pointer.lastY;
-    if (!pointer.moved && Math.hypot(e.clientX - pointer.x, e.clientY - pointer.y) > 10 && !pointer.held) {
+    if (!pointer.moved && !pointer.held && Math.hypot(e.clientX - pointer.x, e.clientY - pointer.y) > 12) {
       pointer.moved = true;
       clearTimeout(pointer.timer);
     }
     if (pointer.moved) {
-      drag.vYaw = dx * 0.006;
-      drag.vPitch = dy * 0.004;
-      drag.yaw += drag.vYaw;
-      drag.pitch = THREE.MathUtils.clamp(drag.pitch + drag.vPitch, -0.5, 0.45);
+      drag.yaw += (e.clientX - pointer.lastX) * 0.006;
+      drag.pitch = THREE.MathUtils.clamp(drag.pitch + (e.clientY - pointer.lastY) * 0.004, -0.45, 0.45);
+      spinVelocity += (e.clientX - pointer.lastX) * 0.01;
     }
     pointer.lastX = e.clientX;
     pointer.lastY = e.clientY;
@@ -499,136 +441,150 @@
   canvas.addEventListener("pointercancel", release);
 
   function ripple(at) {
-    U.uHit.value.copy(at || new THREE.Vector3((Math.random() - 0.5) * 0.6, (Math.random() - 0.5) * 0.6, 1).normalize());
+    if (at) U.uHit.value.copy(at);
+    else U.uHit.value.set((Math.random() - 0.5) * 0.6, (Math.random() - 0.5) * 0.6, 1).normalize();
     U.uHitAge.value = 0;
     kick = Math.max(kick, 0.7);
   }
 
-  function pulse() {
-    const i = waves.indexOf(Math.max(...waves));
-    waves[i] = 0;
-  }
-
   function send() {
-    const f = flyers.find((x) => x.t >= 1) || flyers[0];
-    // From just above the thumb (bottom centre of the screen) to the orb.
-    const from = new THREE.Vector3(0, -0.92, 0.5).unproject(camera);
-    const dir = from.sub(camera.position).normalize();
-    f.from.copy(camera.position).add(dir.multiplyScalar(distance * 0.55));
-    f.mid.copy(f.from).lerp(core.position, 0.5).add(new THREE.Vector3((Math.random() - 0.5) * 1.6, 1.2, 0.6));
-    f.t = 0;
+    // From just above the thumb to the orb, on a curve.
+    sparkFrom.set(0, -0.95, 0.4).unproject(camera);
+    sparkFrom.sub(camera.position).normalize().multiplyScalar(distance * 0.5).add(camera.position);
+    sparkMid.copy(sparkFrom).lerp(orb.position, 0.5);
+    sparkMid.x += (Math.random() - 0.5) * 1.4;
+    sparkMid.y += 1.1;
+    sparkT = 0;
   }
 
-  // --- adaptive quality --------------------------------------------------------------------------------------------
-  let slow = 0;
+  // --- pace: thin the particles first, then hold a steady 30 fps; never go blocky -----------------------------------------------
+  let frameCost = 16;
   let samples = 0;
-  function adapt(dt) {
-    samples++;
-    if (dt > 0.034) slow++;
-    if (samples < 90) return;
-    if (slow > 45 && pixelRatio > 0.75) {
-      pixelRatio = Math.max(0.75, pixelRatio - 0.4);
-      renderer.setPixelRatio(pixelRatio);
-      dustU.uSize.value = 2.6 * pixelRatio;
-      resize();
-    }
+  let level30 = false;
+  let quality = 2; // 2 full, 1 fewer particles
+  function adapt(ms) {
+    frameCost += (ms - frameCost) * 0.05;
+    if (++samples < 120) return;
     samples = 0;
-    slow = 0;
+    if (frameCost > 24 && quality === 2) {
+      quality = 1;
+      halo.points.geometry.setDrawRange(0, Math.round(halo.count * 0.55));
+      disk.points.geometry.setDrawRange(0, Math.round(disk.count * 0.55));
+      if (pixelRatio > MIN_RATIO) {
+        pixelRatio = MIN_RATIO;
+        renderer.setPixelRatio(pixelRatio);
+        halo.u.uSize.value = 2.3 * pixelRatio;
+        disk.u.uSize.value = 1.9 * pixelRatio;
+        resize();
+      }
+    } else if (frameCost > 26 && quality === 1 && !level30) {
+      level30 = true; // an even 30 looks smoother than an uneven 40
+    }
   }
 
-  // --- the frame --------------------------------------------------------------------------------------------------------
+  // --- the frame -----------------------------------------------------------------------------------------------------------------
   const clock = new THREE.Clock();
   let t = 0;
   let paused = false;
+  let skip = false;
+  let last = performance.now();
   document.addEventListener("visibilitychange", () => {
     paused = document.hidden;
     if (!paused) {
       clock.getDelta();
+      last = performance.now();
       requestAnimationFrame(frame);
     }
   });
 
-  const tmp = new THREE.Vector3();
-  function frame() {
+  function frame(now) {
     if (paused) return;
+    requestAnimationFrame(frame);
+    if (level30) {
+      skip = !skip;
+      if (skip) return;
+    }
+    const ms = now - last;
+    last = now;
     const dt = Math.min(clock.getDelta(), 0.05);
     const target = PRESETS[state] || PRESETS.idle;
     const ease = Math.min(1, dt * 3);
-    for (const k of Object.keys(cur)) cur[k] += (target[k] - cur[k]) * ease;
-    const motion = reduced ? 0.3 : 1;
+    for (const k in cur) cur[k] += (target[k] - cur[k]) * ease;
+    const motion = reduced ? 0.25 : 1;
 
     level += (levelTarget - level) * Math.min(1, dt * (levelTarget > level ? 16 : 4));
     levelTarget *= Math.pow(0.15, dt);
     kick *= Math.pow(0.02, dt);
-    burst *= Math.pow(0.1, dt);
+    burst *= Math.pow(0.08, dt);
     busy *= Math.pow(0.3, dt);
-    for (let i = 0; i < 4; i++) waves[i] += dt;
+    spinVelocity *= Math.pow(0.35, dt);
 
     t += dt * cur.speed * motion;
     U.uTime.value = t;
-    U.uAmp.value = cur.amp + kick * 0.18;
+    U.uAmp.value = cur.amp + kick * 0.2;
     U.uFreq.value = cur.freq;
-    U.uLevel.value = level * motion;
     U.uPulse.value = cur.pulse;
+    U.uLevel.value = level * motion;
     U.uHitAge.value += dt;
-    floorU.uWaves.value.set(waves[0], waves[1], waves[2], waves[3]);
-    floorU.uGlow.value = cur.glow + level * 0.6 + burst * 0.5;
-    dustU.uBurst.value = burst;
-    const flashing = performance.now() < flashUntil;
-    U.uRim.value.lerp(flashing ? danger : rimColor, Math.min(1, dt * 8));
+    coreU.uEnergy.value = cur.energy + burst * 0.8 + busy * 0.5;
+    for (const layer of [halo, disk]) {
+      layer.u.uSwirl.value = cur.swirl * (layer === disk ? 1.4 : 1) + busy * 0.6;
+      layer.u.uSpread.value = cur.spread + kick * 0.12;
+      layer.u.uBurst.value = burst;
+    }
+    U.uRim.value.lerp(performance.now() < flashUntil ? danger : rimColor, Math.min(1, dt * 8));
 
-    // The core breathes and floats; the rings and satellites turn.
-    core.position.y = TARGET.y + Math.sin(performance.now() / 1400) * 0.08;
-    shell.rotation.y += dt * (0.15 + busy) * motion;
-    core.scale.setScalar(1 + kick * 0.04 + level * 0.05 + burst * 0.03);
-    heart.material.opacity = 0.45 + cur.heart * 0.35 + level * 0.4 + burst * 0.4;
-    heart.scale.setScalar(1.1 + level * 0.7 + burst * 0.6 + 0.05 * Math.sin(t * 3));
-    halo.material.opacity = 0.14 + level * 0.25 + burst * 0.2;
-    coreLight.intensity = 0.8 + cur.heart + level * 2 + burst * 2;
+    orb.position.y = Math.sin(t * 0.9) * 0.05;
+    shell.rotation.y += dt * (cur.spin + spinVelocity) * motion;
+    orb.scale.setScalar(1 + kick * 0.05 + level * 0.05);
+    core.rotation.y -= dt * (0.4 + cur.energy) * motion;
+    core.scale.setScalar(1 + level * 0.25 + burst * 0.2 + 0.03 * Math.sin(t * 3.0));
+    heart.material.opacity = (0.28 + cur.energy * 0.25 + level * 0.4 + burst * 0.4) * (stars.visible ? 1 : 0.35);
+    heart.scale.setScalar(1.7 + level * 0.8 + burst * 0.8);
+    glow.material.opacity = 0.2 + level * 0.3 + cur.pulse * 0.06 + burst * 0.15;
+    glow.scale.setScalar(4.4 + level + burst * 0.8);
+    halo.points.rotation.x = shell.rotation.x * 0.5;
+    disk.points.rotation.z = 0.32 + Math.sin(t * 0.2) * 0.05;
 
     for (const r of rings) {
-      const spin = dt * r.speed * (cur.ring + busy * 3) * motion;
-      if (r.axis === "x") r.spinner.rotation.x += spin;
-      else if (r.axis === "y") r.spinner.rotation.y += spin;
-      else r.spinner.rotation.z += spin;
-    }
-    for (const s of satellites) {
-      s.angle += dt * s.speed * (cur.orbit + busy * 2) * motion;
-      s.crystal.position.set(Math.cos(s.angle) * s.radius, Math.sin(s.angle * 2) * 0.12, Math.sin(s.angle) * s.radius);
-      s.crystal.rotation.x += dt * s.spin;
-      s.crystal.rotation.y += dt * s.spin * 0.7;
-      s.path.material.opacity = 0.05 + busy * 0.12 + level * 0.08;
+      r.angle += dt * r.speed * (cur.ring + busy * 2) * motion;
+      r.bead.position.set(Math.cos(r.angle) * r.radius, Math.sin(r.angle) * r.radius, 0);
+      r.pivot.rotation.z += dt * r.speed * 0.08 * motion;
+      r.ring.material.color.copy(U.uRim.value);
+      r.bead.material.color.copy(U.uRim.value);
+      r.beadGlow.material.color.copy(U.uRim.value);
+      r.ring.material.opacity = r.opacity * (1 + busy * 1.5 + level);
     }
 
-    for (const f of flyers) {
-      if (f.t >= 1) {
-        f.s.material.opacity = 0;
-        continue;
-      }
-      f.t = Math.min(1, f.t + dt * 1.5);
-      const a = f.t;
-      // Quadratic bezier: from -> mid -> orb.
-      tmp.copy(f.from).multiplyScalar((1 - a) * (1 - a)).add(f.mid.clone().multiplyScalar(2 * (1 - a) * a)).add(core.position.clone().multiplyScalar(a * a));
-      f.s.position.copy(tmp);
-      f.s.material.opacity = Math.sin(a * Math.PI) * 0.95;
-      f.s.scale.setScalar(0.5 - a * 0.25);
-      if (f.t >= 1) {
+    if (sparkT < 1) {
+      sparkT = Math.min(1, sparkT + dt * 1.6);
+      const a = sparkT;
+      spark.position.set(0, 0, 0)
+        .addScaledVector(sparkFrom, (1 - a) * (1 - a))
+        .addScaledVector(sparkMid, 2 * (1 - a) * a)
+        .addScaledVector(orb.position, a * a);
+      spark.material.opacity = Math.sin(a * Math.PI);
+      spark.scale.setScalar(0.5 - a * 0.25);
+      if (sparkT >= 1) {
+        spark.material.opacity = 0;
         ripple(null);
         kick = 1;
       }
     }
 
-    // The camera: drag spins it (and eases back), tilt shifts it.
-    drag.yaw *= Math.pow(0.35, dt);
-    drag.pitch *= Math.pow(0.35, dt);
-    const yaw = drag.yaw + gyro.yaw;
-    const pitch = 0.12 + drag.pitch + gyro.pitch;
-    camera.position.set(Math.sin(yaw) * Math.cos(pitch) * distance, TARGET.y + Math.sin(pitch) * distance, Math.cos(yaw) * Math.cos(pitch) * distance);
-    camera.lookAt(TARGET.x, TARGET.y - lookDown, TARGET.z);
+    // The view: tilt shifts it (smoothed), dragging spins it and it eases back.
+    tilt.x += (tilt.tx - tilt.x) * Math.min(1, dt * 4);
+    tilt.y += (tilt.ty - tilt.y) * Math.min(1, dt * 4);
+    drag.yaw *= Math.pow(0.4, dt);
+    drag.pitch *= Math.pow(0.4, dt);
+    const yaw = drag.yaw + tilt.x * 0.3 * motion;
+    const pitch = 0.05 + drag.pitch + tilt.y * 0.18 * motion;
+    camera.position.set(Math.sin(yaw) * Math.cos(pitch) * distance, Math.sin(pitch) * distance, Math.cos(yaw) * Math.cos(pitch) * distance);
+    camera.lookAt(0, -lookDown, 0);
+    stars.position.set(-tilt.x * 0.6, tilt.y * 0.4, 0);
 
     renderer.render(scene, camera);
-    adapt(dt);
-    requestAnimationFrame(frame);
+    adapt(ms);
   }
 
   recolor();
@@ -651,20 +607,22 @@
       kick = 0.6;
     },
     ripple,
-    // An answer: the orb bursts and a ring runs out across the floor.
     burst() {
       burst = 1;
       kick = Math.max(kick, 0.5);
-      pulse();
+      spinVelocity += 1.2;
     },
     tap() {
       kick = Math.max(kick, 0.3);
+      spinVelocity += 0.12;
     },
     busy() {
       busy = 1;
     },
     send,
-    pulse,
+    pulse() {
+      burst = Math.max(burst, 0.6);
+    },
     recolor,
   };
 })();

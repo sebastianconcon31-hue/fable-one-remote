@@ -13,25 +13,25 @@
   /* Black and white by default; the menu switches to White, Blue or Paper. */
   :root, :root[data-fable="mono"] {
     color-scheme: dark;
-    --ground: #030304; --glass: rgba(18, 18, 22, .58); --glass-strong: rgba(14, 14, 18, .86); --ink: #f4f4f1; --muted: #8e8e8a;
+    --ground: #030304; --glass: rgba(18, 18, 22, .78); --glass-strong: rgba(12, 12, 16, .86); --ink: #f4f4f1; --muted: #8e8e8a;
     --line: rgba(255, 255, 255, .1); --accent: #f4f4f1; --accent-ink: #030304; --danger: #ff5a52; --ok: #7ee2a8;
     --orb-core: #f2f2ef; --orb-rim: #ffffff; --orb-glow-color: #cfe0ff;
   }
   :root[data-fable="light"] {
     color-scheme: light;
-    --ground: #eeeeea; --glass: rgba(255, 255, 255, .6); --glass-strong: rgba(255, 255, 255, .9); --ink: #0b0b0b; --muted: #5d5d59;
+    --ground: #eeeeea; --glass: rgba(255, 255, 255, .82); --glass-strong: rgba(255, 255, 255, .9); --ink: #0b0b0b; --muted: #5d5d59;
     --line: rgba(0, 0, 0, .09); --accent: #0b0b0b; --accent-ink: #f4f4f1; --danger: #c62828; --ok: #1b8a4b;
     --orb-core: #111111; --orb-rim: #2a2a28; --orb-glow-color: #444444;
   }
   :root[data-fable="blue"] {
     color-scheme: dark;
-    --ground: #02050c; --glass: rgba(10, 18, 36, .6); --glass-strong: rgba(8, 14, 30, .88); --ink: #e8efff; --muted: #7f93b8;
+    --ground: #02050c; --glass: rgba(10, 18, 36, .8); --glass-strong: rgba(8, 14, 30, .88); --ink: #e8efff; --muted: #7f93b8;
     --line: rgba(120, 160, 255, .14); --accent: #4c8dff; --accent-ink: #02050c; --danger: #ff6b6b; --ok: #6fe0a6;
     --orb-core: #4c8dff; --orb-rim: #bcd4ff; --orb-glow-color: #4c8dff;
   }
   :root[data-fable="paper"] {
     color-scheme: light;
-    --ground: #f3eee5; --glass: rgba(255, 251, 244, .62); --glass-strong: rgba(255, 251, 244, .92); --ink: #1f1e1c; --muted: #6f6a61;
+    --ground: #f3eee5; --glass: rgba(255, 251, 244, .84); --glass-strong: rgba(255, 251, 244, .92); --ink: #1f1e1c; --muted: #6f6a61;
     --line: rgba(60, 40, 20, .1); --accent: #d97757; --accent-ink: #ffffff; --danger: #b3261e; --ok: #2f7d4f;
     --orb-core: #d97757; --orb-rim: #1f1e1c; --orb-glow-color: #d97757;
   }
@@ -42,10 +42,13 @@
   body { font: 16px/1.5 var(--sans); overflow: hidden; user-select: none; -webkit-user-select: none; }
   button, input, textarea { font: inherit; color: inherit; }
   [hidden] { display: none !important; }
-  .glass { background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%); }
+  /* Tinted glass without a live blur: blurring what's behind means redoing it
+     every frame over a moving 3D scene, which is what made phones lag. */
+  .glass { background: linear-gradient(180deg, color-mix(in srgb, var(--glass-strong) 92%, white 3%), var(--glass-strong)); border: 1px solid var(--line); }
 
   /* The scene fills the phone; everything else floats on it. */
-  #orb { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  /* Full screen, and the same size while the keyboard slides in and out. */
+  #orb { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100lvh; display: block; touch-action: none; }
   #orb-fallback {
     position: fixed; left: 50%; top: 36%; width: 52vw; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%;
     background: radial-gradient(circle at 36% 30%, var(--orb-rim), var(--orb-core) 42%, var(--ground) 76%);
@@ -75,7 +78,8 @@
   .card {
     position: relative; border-radius: 26px; padding: 14px 16px 16px; max-height: 34dvh; overflow: hidden; cursor: pointer;
     transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transform-style: preserve-3d; transition: transform .15s ease-out;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .08);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .07);
+    will-change: transform;
   }
   /* A light that runs round the card's edge while Fable One works. */
   .card::before {
@@ -108,7 +112,7 @@
 
   /* The chat box, docked for the thumb. */
   .dock { padding: 10px 12px 12px; }
-  .box { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: end; padding: 6px 6px 6px 18px; border-radius: 30px; box-shadow: 0 12px 40px rgba(0, 0, 0, .4); }
+  .box { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: end; padding: 6px 6px 6px 18px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
   .box:focus-within { border-color: color-mix(in srgb, var(--orb-glow-color) 40%, var(--line)); }
   #input { resize: none; border: 0; outline: 0; background: transparent; padding: 11px 0; max-height: 110px; min-height: 26px; line-height: 1.4; user-select: text; -webkit-user-select: text; }
   #input::placeholder { color: var(--muted); }
@@ -123,7 +127,7 @@
   /* Sheets: history, pairing, menu. */
   .scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, .5); z-index: 10; animation: fade .2s both; }
   @keyframes fade { from { opacity: 0; } }
-  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 11; border-radius: 28px 28px 0 0; padding: 10px 18px calc(20px + env(safe-area-inset-bottom)); background: var(--glass-strong); border-top: 1px solid var(--line); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); animation: up .32s cubic-bezier(.2, .8, .2, 1) both; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 11; border-radius: 28px 28px 0 0; padding: 10px 18px calc(20px + env(safe-area-inset-bottom)); background: var(--glass-strong); border-top: 1px solid var(--line); animation: up .32s cubic-bezier(.2, .8, .2, 1) both; }
   @keyframes up { from { transform: translateY(100%); } }
   .grip { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
   .sheet h2 { margin: 0 0 6px; font-size: 22px; letter-spacing: -.02em; }
