@@ -109,7 +109,9 @@
     bubble("fable", text, Date.now());
     remember("fable", text);
     F.orb.burst();
-    if (w.spoken && window.speechSynthesis) {
+    if (w.spoken && native) {
+      native.speak(text.replace(/https?:\/\/\S+/g, "the link"));
+    } else if (w.spoken && window.speechSynthesis) {
       F.orb.setState("speaking");
       const u = new SpeechSynthesisUtterance(text.replace(/https?:\/\/\S+/g, "the link"));
       u.onboundary = () => F.orb.setLevel(0.5 + Math.random() * 0.4);
@@ -182,9 +184,54 @@
   });
 
   // Talk: the phone's own speech recognition; the words go to the PC as text.
+  // Inside the Android app, Android's recognizer and voice do it (the app's
+  // web view has no speech of its own); in a browser, the browser's.
+  const native = window.FableNative || null;
+  let nativeListening = false;
+  window.FableNativeEvents = {
+    on(type, text) {
+      if (type === "start") {
+        $("mic").classList.add("live");
+        F.orb.setState("listening");
+      } else if (type === "level") {
+        F.orb.setLevel(parseFloat(text) || 0);
+      } else if (type === "partial") {
+        input.value = text;
+        grow();
+      } else if (type === "final" || type === "error") {
+        nativeListening = false;
+        $("mic").classList.remove("live");
+        if (type === "final" && text.trim()) {
+          input.value = "";
+          grow();
+          send(text, true);
+        } else {
+          F.orb.setState("idle");
+          if (text === "not-allowed") bubble("note", "Fable One needs the microphone to hear you. Allow it in the phone's Settings > Apps > Fable One > Permissions.");
+          else if (text === "network") bubble("note", "The phone's speech service needs the internet.");
+          else if (text === "no-recognizer") bubble("note", "This phone has no speech recognition service. Type instead.");
+        }
+      } else if (type === "speaking") {
+        F.orb.setState("speaking");
+      } else if (type === "spoke") {
+        F.orb.setState("idle");
+      }
+    },
+  };
+
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null;
   function toggleMic() {
+    if (native) {
+      if (nativeListening) {
+        native.stopListening();
+        return;
+      }
+      nativeListening = true;
+      native.stopSpeaking();
+      native.listen();
+      return;
+    }
     if (!Recognition) {
       bubble("note", "This browser can't do speech here - use the microphone on your keyboard instead.");
       return;
@@ -256,6 +303,7 @@
         if (state === "online") {
           probe.stop();
           F.store.set(KEYS.code, code);
+          F.store.del("fable.remote.unpaired");
           host = detail || host;
           result.textContent = `Paired${host ? ` with ${host}` : ""}.`;
           result.className = "result ok";
@@ -303,6 +351,7 @@
       return;
     }
     F.store.del(KEYS.code);
+    F.store.set("fable.remote.unpaired", "1");
     if (client) client.stop();
     client = null;
     host = "";
@@ -315,13 +364,26 @@
   // --- start --------------------------------------------------------------------------------------------------------
   render();
   grow();
-  const saved = F.store.get(KEYS.code);
+  // A pairing link: .../#pair=CODE. The part after # never leaves the phone
+  // (browsers don't send it to the website), and it is wiped from the address
+  // bar and history as soon as it's read.
+  const fromLink = /^#pair=([A-Za-z0-9-]{16,24})$/.exec(location.hash);
+  if (fromLink) {
+    F.store.set(KEYS.code, FableRelay.normalise(fromLink[1]));
+    F.store.del("fable.remote.unpaired");
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+
+  // The owner's Android app is built already paired (js/paired.js); the
+  // public website never is.
+  const builtIn = window.FABLE_PAIRED && !F.store.get("fable.remote.unpaired") ? FableRelay.normalise(window.FABLE_PAIRED) : "";
+  const saved = F.store.get(KEYS.code) || builtIn;
   if (saved) connect(saved);
   else {
     $("status-text").textContent = "Not paired";
     showPair();
   }
-  if ("serviceWorker" in navigator && location.protocol === "https:") {
+  if ("serviceWorker" in navigator && location.protocol === "https:" && !native) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
 })();
