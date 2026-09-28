@@ -691,8 +691,25 @@ function onFail(err) {
   loading.querySelector(".plate").textContent = "The cockpit model could not be loaded. Reload the page to try again.";
   console.error(err);
 }
+function fromBase64(text) {
+  const bin = atob(text.trim());
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
 (async () => {
   const loader = new GLTFLoader();
+  // the single-file viewer carries the model in the page itself
+  const embedded = document.getElementById("cockpit-model");
+  if (embedded) {
+    onProgress(1, 1);
+    await new Promise((r) => setTimeout(r, 30)); // let the loading bar paint first
+    try {
+      return loader.parse(fromBase64(embedded.textContent), "", onModel, onFail);
+    } catch (err) {
+      return onFail(err);
+    }
+  }
   if (!MODEL_URL.endsWith(".txt")) return loader.load(MODEL_URL, onModel, (e) => onProgress(e.loaded, e.total), onFail);
   // the model shipped base64-encoded in a text file
   try {
@@ -709,10 +726,7 @@ function onFail(err) {
       got += value.length;
       onProgress(Math.min(got, total), total);
     }
-    const bin = atob(new TextDecoder().decode(await new Blob(parts).arrayBuffer()).trim());
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    loader.parse(bytes.buffer, "", onModel, onFail);
+    loader.parse(fromBase64(new TextDecoder().decode(await new Blob(parts).arrayBuffer())), "", onModel, onFail);
   } catch (err) {
     onFail(err);
   }

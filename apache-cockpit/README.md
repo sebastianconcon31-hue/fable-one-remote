@@ -136,6 +136,8 @@ Each of the 11 displays has its own `Screen_*` material with 0–1 UVs: the four
 
 ## Preview it
 
+The quickest way is `apache_cockpit_viewer.html` (built by `node standalone.mjs`, below). It holds the model, three.js and the viewer in one file, so double-clicking it opens the working cockpit, even offline. To work on the viewer itself:
+
 Serve the folder over HTTP and open `viewer.html`:
 
 ```sh
@@ -179,6 +181,9 @@ cd apache-cockpit
 npm install playwright && npx playwright install chromium   # once
 node generate.mjs              # both .glb files, controls.json, and the 1:1 check
 node generate.mjs --textures   # also writes the painted textures to textures/
+
+npm install esbuild three@0.170.0   # once
+node standalone.mjs            # apache_cockpit_viewer.html: the viewer in one file that opens from disk
 ```
 
 | File | What it holds |
