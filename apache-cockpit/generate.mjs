@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-// Builds apache_cockpit.glb: an AH-64 Apache tandem cockpit for VR.
+// Builds the AH-64 Apache cockpit for VR:
 //
-//   node generate.mjs                  writes apache_cockpit.glb next to this file
-//   node generate.mjs --textures       also writes the painted textures to textures/
-//   node generate.mjs --out path.glb
+//   apache_cockpit.glb          every control is its own node, pivoted, with its motion in glTF extras
+//   apache_cockpit_static.glb   the same model with controls merged in (fewer draw calls, nothing moves)
+//   controls.json               every operable control: node, what it does, how it moves
+//
+//   node generate.mjs [--textures] [--out dir]
 //
 // Geometry is built here; the textures (panel lettering, gauges, display pages)
 // are painted by lib/paint.js in headless Chromium through Playwright, because
@@ -18,30 +20,31 @@ import { writeGLB } from "./lib/geo.mjs";
 import { Atlas } from "./lib/atlas.mjs";
 import { makeCtx } from "./lib/parts.mjs";
 import { buildCockpit } from "./lib/cockpit.mjs";
-import { buildExterior } from "./lib/exterior.mjs";
+import { buildExterior, SPEC, GROUND_Y, HUB, TAIL_HUB, MAIN_WHEEL, TAIL_WHEEL_Z } from "./lib/exterior.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 const flag = (f) => args.includes(f);
-const opt = (f, d) => (args.includes(f) ? args[args.indexOf(f) + 1] : d);
-const out = opt("--out", join(here, "apache_cockpit.glb"));
+const outDir = args.includes("--out") ? args[args.indexOf("--out") + 1] : here;
 
 function loadPlaywright() {
   const require = createRequire(import.meta.url);
   try {
     return require("playwright");
   } catch {
-    const root = execSync("npm root -g").toString().trim();
-    return require(join(root, "playwright"));
+    return require(join(execSync("npm root -g").toString().trim(), "playwright"));
   }
 }
 
-function build(pa, da) {
-  const ctx = makeCtx(pa, da);
+function build(pa, da, interactive) {
+  const ctx = makeCtx(pa, da, { interactive });
   const root = buildCockpit(ctx);
   buildExterior(ctx, root);
   return { ctx, root };
 }
+
+// The pages each display shows in the file, and which of their labels are selected.
+const BOXED = { FLT: ["B2"], TSD: ["B3"], WPN: ["L3"], ENG: ["T2"] };
 
 const png = (dataUrl) => Buffer.from(dataUrl.slice(dataUrl.indexOf(",") + 1), "base64");
 
@@ -58,37 +61,100 @@ async function paint(pa, da, screens) {
     images.panels_emissive = png(p.emissive);
     const d = await page.evaluate((spec) => window.paintAtlas(spec), { size: da.size, items: da.items, emissive: false });
     images.displays = png(d.color);
-    for (const s of screens) images[s.key] = png(await page.evaluate((spec) => window.paintScreen(spec), { page: s.page, size: 512 }));
+    for (const s of screens) images[s.key] = png(await page.evaluate((spec) => window.paintScreen(spec), { page: s.page, w: s.w, h: s.h, ui: { boxed: BOXED[s.page] || [] } }));
     return images;
   } finally {
     await browser.close();
   }
 }
 
+// Measure the finished aircraft against the published dimensions.
+function measure(root) {
+  const find = (n, name) => (n.name === name ? n : n.children.map((c) => find(c, name)).find(Boolean));
+  const pts = function* (n) {
+    for (const { geo } of n.geos.values()) for (let i = 0; i < geo.p.length; i += 3) yield [geo.p[i], geo.p[i + 1], geo.p[i + 2]];
+    for (const c of n.children) yield* pts(c);
+  };
+  const ext = find(root, "Exterior");
+  let zMax = -Infinity, zMin = Infinity;
+  const skip = new Set(["Main_Rotor", "Tail_Rotor", "Lights", "FCR_Radome"]);
+  (function walk(n) {
+    if (skip.has(n.name)) return;
+    for (const { geo } of n.geos.values()) for (let i = 2; i < geo.p.length; i += 3) (zMax = Math.max(zMax, geo.p[i])), (zMin = Math.min(zMin, geo.p[i]));
+    n.children.forEach(walk);
+  })(ext);
+  let rMain = 0, topHub = -Infinity;
+  for (const [x, y, z] of pts(find(root, "Main_Rotor"))) {
+    rMain = Math.max(rMain, Math.hypot(x - HUB[0], z - HUB[2]));
+    if (Math.hypot(x - HUB[0], z - HUB[2]) < 0.35) topHub = Math.max(topHub, y);
+  }
+  let rTail = 0;
+  for (const [, y, z] of pts(find(root, "Tail_Rotor"))) rTail = Math.max(rTail, Math.hypot(y - TAIL_HUB[1], z - TAIL_HUB[2]));
+  let span = 0;
+  for (const w of ["Wing_Left", "Wing_Right"]) for (const [x] of pts(find(root, w))) span = Math.max(span, Math.abs(x));
+  let fcrTop = -Infinity;
+  for (const [, y] of pts(find(root, "FCR_Radome"))) fcrTop = Math.max(fcrTop, y);
+  let lowest = Infinity;
+  for (const n of ["Landing_Gear", "Tail"]) for (const [, y] of pts(find(root, n))) lowest = Math.min(lowest, y);
+  const rows = [
+    ["Fuselage length", SPEC.fuselageLength, zMax - zMin],
+    ["Length, rotors turning", SPEC.lengthRotorsTurning, HUB[2] + rMain - Math.min(zMin, TAIL_HUB[2] - rTail)],
+    ["Main rotor diameter", SPEC.mainRotorDiameter, rMain * 2],
+    ["Tail rotor diameter", SPEC.tailRotorDiameter, rTail * 2],
+    ["Wingspan", SPEC.wingspan, span * 2],
+    ["Wheel track", SPEC.wheelTrack, MAIN_WHEEL[0] * 2],
+    ["Wheelbase", SPEC.wheelbase, MAIN_WHEEL[2] - TAIL_WHEEL_Z],
+    ["Height to top of rotor head", SPEC.heightToRotorHead, topHub - GROUND_Y],
+    ["Height to top of radome", SPEC.heightToFcr, fcrTop - GROUND_Y],
+  ];
+  return { rows, wheelsOnGround: Math.abs(lowest - GROUND_Y) < 0.005 };
+}
+
 const pa = new Atlas("panels");
 const da = new Atlas("displays");
-build(pa, da); // pass 1: learn what the atlases must hold
+build(pa, da, true); // pass 1: learn what the atlases must hold
 pa.pack();
 da.pack();
-const { ctx, root } = build(pa, da); // pass 2: the real thing
+const { ctx, root } = build(pa, da, true); // pass 2: the interactive model
 const images = await paint(pa, da, ctx.screens);
+pa.rewind();
+da.rewind();
+const stat = build(pa, da, false); // pass 3: the same, with controls merged
 
+mkdirSync(outDir, { recursive: true });
 const glb = writeGLB(root, images);
-writeFileSync(out, glb);
+writeFileSync(join(outDir, "apache_cockpit.glb"), glb);
+const glbStatic = writeGLB(stat.root, images);
+writeFileSync(join(outDir, "apache_cockpit_static.glb"), glbStatic);
+const manifest = {
+  about: "Every operable control in apache_cockpit.glb. Set a node's local rotation to rest.rotation x AxisAngle(axis, angle), or its local position to rest.translation + axis x travel, where the rest pose is in each node's glTF extras.",
+  units: "metres and radians; axes are node-local",
+  controls: ctx.controls,
+};
+writeFileSync(join(outDir, "controls.json"), JSON.stringify(manifest, null, 1));
 
 if (flag("--textures")) {
-  const dir = join(here, "textures");
+  const dir = join(outDir, "textures");
   mkdirSync(dir, { recursive: true });
   for (const [k, buf] of Object.entries(images)) writeFileSync(join(dir, k + ".png"), buf);
 }
 
-const s = root.stats();
-const mats = new Set();
-(function walk(n) {
-  for (const { mat } of n.geos.values()) mats.add(mat.name);
-  n.children.forEach(walk);
-})(root);
-console.log(`wrote ${out}`);
-console.log(`  ${(glb.length / 1048576).toFixed(2)} MB, ${s.tris.toLocaleString()} triangles, ${s.verts.toLocaleString()} vertices`);
-console.log(`  ${s.nodes} nodes, ${s.prims} primitives (draw calls), ${mats.size} materials`);
-console.log(`  panel atlas ${pa.size}px (${Math.round(pa.used() * 100)}% used), display atlas ${da.size}px (${Math.round(da.used() * 100)}% used), ${ctx.screens.length} screens`);
+const report = (name, r, bytes) => {
+  const s = r.stats();
+  const mats = new Set();
+  (function walk(n) {
+    for (const { mat } of n.geos.values()) mats.add(mat.name);
+    n.children.forEach(walk);
+  })(r);
+  console.log(`${name}: ${(bytes / 1048576).toFixed(2)} MB, ${s.tris.toLocaleString()} triangles, ${s.nodes} nodes, ${s.prims} draw calls, ${mats.size} materials`);
+};
+report("apache_cockpit.glb", root, glb.length);
+report("apache_cockpit_static.glb", stat.root, glbStatic.length);
+const kinds = {};
+for (const c of ctx.controls) kinds[c.control] = (kinds[c.control] || 0) + 1;
+console.log(`controls.json: ${ctx.controls.length} operable controls`, JSON.stringify(kinds));
+console.log(`atlases: panels ${pa.size}px (${Math.round(pa.used() * 100)}%), displays ${da.size}px (${Math.round(da.used() * 100)}%), ${ctx.screens.length} live screens`);
+const m = measure(root);
+console.log("1:1 check (published / model, metres):");
+for (const [k, want, got] of m.rows) console.log(`  ${k.padEnd(30)} ${want.toFixed(3).padStart(7)}  ${got.toFixed(3).padStart(7)}  ${Math.abs(got - want) < 0.02 ? "ok" : "OFF BY " + (got - want).toFixed(3)}`);
+console.log(`  wheels on the ground: ${m.wheelsOnGround ? "yes" : "NO"}`);

@@ -1,0 +1,6419 @@
+{
+ "about": "Every operable control in apache_cockpit.glb. Set a node's local rotation to rest.rotation x AxisAngle(axis, angle), or its local position to rest.translation + axis x travel, where the rest pose is in each node's glTF extras.",
+ "units": "metres and radians; axes are node-local",
+ "controls": [
+  {
+   "node": "Canopy_Door_CPG",
+   "control": "door",
+   "label": "Canopy Door CPG",
+   "fn": "doorCpg",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "CLOSED",
+    "OPEN"
+   ],
+   "angles": [
+    0,
+    1.15
+   ],
+   "state": 0
+  },
+  {
+   "node": "Canopy_Door_Pilot",
+   "control": "door",
+   "label": "Canopy Door Pilot",
+   "fn": "doorPilot",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "CLOSED",
+    "OPEN"
+   ],
+   "angles": [
+    0,
+    1.15
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_TEDAC_L1",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · L1",
+   "fn": "tedac:L1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_R1",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · R1",
+   "fn": "tedac:R1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_B1",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · B1",
+   "fn": "tedac:B1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_L2",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · L2",
+   "fn": "tedac:L2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_R2",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · R2",
+   "fn": "tedac:R2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_B2",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · B2",
+   "fn": "tedac:B2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_L3",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · L3",
+   "fn": "tedac:L3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_R3",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · R3",
+   "fn": "tedac:R3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_B3",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · B3",
+   "fn": "tedac:B3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_L4",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · L4",
+   "fn": "tedac:L4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_R4",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · R4",
+   "fn": "tedac:R4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_B4",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · B4",
+   "fn": "tedac:B4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_L5",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · L5",
+   "fn": "tedac:L5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_R5",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · R5",
+   "fn": "tedac:R5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_B5",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · B5",
+   "fn": "tedac:B5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_L6",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · L6",
+   "fn": "tedac:L6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_R6",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · R6",
+   "fn": "tedac:R6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_B6",
+   "station": "CPG",
+   "control": "key",
+   "label": "TEDAC · B6",
+   "fn": "tedac:B6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_Grip_Left_FOV",
+   "station": "CPG",
+   "control": "button",
+   "label": "TEDAC left grip · field of view",
+   "fn": "tedac.fov",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_Grip_Left_Sensor",
+   "station": "CPG",
+   "control": "button",
+   "label": "TEDAC left grip · sensor select",
+   "fn": "tedac.sensor",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_Grip_Left_Laser",
+   "station": "CPG",
+   "control": "trigger",
+   "label": "TEDAC left grip · laser trigger",
+   "fn": "tedac.laser",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "RELEASED",
+    "PULLED"
+   ],
+   "angles": [
+    0,
+    0.3
+   ],
+   "state": 0,
+   "momentary": [
+    1
+   ],
+   "spring": 0
+  },
+  {
+   "node": "CPG_TEDAC_Grip_Right_Slave",
+   "station": "CPG",
+   "control": "button",
+   "label": "TEDAC right grip · slave",
+   "fn": "tedac.slave",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_Grip_Right_Weapon_Select",
+   "station": "CPG",
+   "control": "button",
+   "label": "TEDAC right grip · weapon select",
+   "fn": "was",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_TEDAC_Grip_Right_Trigger",
+   "station": "CPG",
+   "control": "trigger",
+   "label": "TEDAC right grip · weapon trigger",
+   "fn": "trigger",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "RELEASED",
+    "PULLED"
+   ],
+   "angles": [
+    0,
+    0.3
+   ],
+   "state": 0,
+   "momentary": [
+    1
+   ],
+   "spring": 0
+  },
+  {
+   "node": "CPG_MPD_Left_T1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · T1",
+   "fn": "mpd:CPG_MPD_Left:T1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_B1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · B1",
+   "fn": "mpd:CPG_MPD_Left:B1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_L1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · L1",
+   "fn": "mpd:CPG_MPD_Left:L1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_R1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · R1",
+   "fn": "mpd:CPG_MPD_Left:R1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_T2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · T2",
+   "fn": "mpd:CPG_MPD_Left:T2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_B2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · B2",
+   "fn": "mpd:CPG_MPD_Left:B2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_L2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · L2",
+   "fn": "mpd:CPG_MPD_Left:L2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_R2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · R2",
+   "fn": "mpd:CPG_MPD_Left:R2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_T3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · T3",
+   "fn": "mpd:CPG_MPD_Left:T3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_B3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · B3",
+   "fn": "mpd:CPG_MPD_Left:B3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_L3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · L3",
+   "fn": "mpd:CPG_MPD_Left:L3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_R3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · R3",
+   "fn": "mpd:CPG_MPD_Left:R3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_T4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · T4",
+   "fn": "mpd:CPG_MPD_Left:T4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_B4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · B4",
+   "fn": "mpd:CPG_MPD_Left:B4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_L4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · L4",
+   "fn": "mpd:CPG_MPD_Left:L4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_R4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · R4",
+   "fn": "mpd:CPG_MPD_Left:R4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_T5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · T5",
+   "fn": "mpd:CPG_MPD_Left:T5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_B5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · B5",
+   "fn": "mpd:CPG_MPD_Left:B5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_L5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · L5",
+   "fn": "mpd:CPG_MPD_Left:L5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_R5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · R5",
+   "fn": "mpd:CPG_MPD_Left:R5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_T6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · T6",
+   "fn": "mpd:CPG_MPD_Left:T6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_B6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · B6",
+   "fn": "mpd:CPG_MPD_Left:B6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_L6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · L6",
+   "fn": "mpd:CPG_MPD_Left:L6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_R6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · R6",
+   "fn": "mpd:CPG_MPD_Left:R6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_FCR",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · FCR",
+   "fn": "mpd:CPG_MPD_Left:FCR",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_WPN",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · WPN",
+   "fn": "mpd:CPG_MPD_Left:WPN",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_TSD",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · TSD",
+   "fn": "mpd:CPG_MPD_Left:TSD",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_VID",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · VID",
+   "fn": "mpd:CPG_MPD_Left:VID",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_COM",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · COM",
+   "fn": "mpd:CPG_MPD_Left:COM",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_A_C",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · A/C",
+   "fn": "mpd:CPG_MPD_Left:A_C",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_MENU",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Left · M",
+   "fn": "mpd:CPG_MPD_Left:MENU",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Left_BRT",
+   "station": "CPG",
+   "control": "rocker",
+   "label": "CPG MPD Left · BRT",
+   "fn": "mpd:CPG_MPD_Left:BRT",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "CENTER",
+    "DOWN"
+   ],
+   "angles": [
+    -0.13962634015954636,
+    0,
+    0.13962634015954636
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "CPG_MPD_Left_VIDEO",
+   "station": "CPG",
+   "control": "rocker",
+   "label": "CPG MPD Left · VID",
+   "fn": "mpd:CPG_MPD_Left:VIDEO",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "CENTER",
+    "DOWN"
+   ],
+   "angles": [
+    -0.13962634015954636,
+    0,
+    0.13962634015954636
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "CPG_MPD_Left_MODE",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "CPG MPD Left · DAY/NT/MONO",
+   "fn": "mpd:CPG_MPD_Left:MODE",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "DAY",
+    "NT",
+    "MONO"
+   ],
+   "angles": [
+    0.7853981633974483,
+    0,
+    -0.7853981633974483
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_MPD_Right_T1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · T1",
+   "fn": "mpd:CPG_MPD_Right:T1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_B1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · B1",
+   "fn": "mpd:CPG_MPD_Right:B1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_L1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · L1",
+   "fn": "mpd:CPG_MPD_Right:L1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_R1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · R1",
+   "fn": "mpd:CPG_MPD_Right:R1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_T2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · T2",
+   "fn": "mpd:CPG_MPD_Right:T2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_B2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · B2",
+   "fn": "mpd:CPG_MPD_Right:B2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_L2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · L2",
+   "fn": "mpd:CPG_MPD_Right:L2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_R2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · R2",
+   "fn": "mpd:CPG_MPD_Right:R2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_T3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · T3",
+   "fn": "mpd:CPG_MPD_Right:T3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_B3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · B3",
+   "fn": "mpd:CPG_MPD_Right:B3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_L3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · L3",
+   "fn": "mpd:CPG_MPD_Right:L3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_R3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · R3",
+   "fn": "mpd:CPG_MPD_Right:R3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_T4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · T4",
+   "fn": "mpd:CPG_MPD_Right:T4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_B4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · B4",
+   "fn": "mpd:CPG_MPD_Right:B4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_L4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · L4",
+   "fn": "mpd:CPG_MPD_Right:L4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_R4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · R4",
+   "fn": "mpd:CPG_MPD_Right:R4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_T5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · T5",
+   "fn": "mpd:CPG_MPD_Right:T5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_B5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · B5",
+   "fn": "mpd:CPG_MPD_Right:B5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_L5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · L5",
+   "fn": "mpd:CPG_MPD_Right:L5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_R5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · R5",
+   "fn": "mpd:CPG_MPD_Right:R5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_T6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · T6",
+   "fn": "mpd:CPG_MPD_Right:T6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_B6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · B6",
+   "fn": "mpd:CPG_MPD_Right:B6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_L6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · L6",
+   "fn": "mpd:CPG_MPD_Right:L6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_R6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · R6",
+   "fn": "mpd:CPG_MPD_Right:R6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_FCR",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · FCR",
+   "fn": "mpd:CPG_MPD_Right:FCR",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_WPN",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · WPN",
+   "fn": "mpd:CPG_MPD_Right:WPN",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_TSD",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · TSD",
+   "fn": "mpd:CPG_MPD_Right:TSD",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_VID",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · VID",
+   "fn": "mpd:CPG_MPD_Right:VID",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_COM",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · COM",
+   "fn": "mpd:CPG_MPD_Right:COM",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_A_C",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · A/C",
+   "fn": "mpd:CPG_MPD_Right:A_C",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_MENU",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG MPD Right · M",
+   "fn": "mpd:CPG_MPD_Right:MENU",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_MPD_Right_BRT",
+   "station": "CPG",
+   "control": "rocker",
+   "label": "CPG MPD Right · BRT",
+   "fn": "mpd:CPG_MPD_Right:BRT",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "CENTER",
+    "DOWN"
+   ],
+   "angles": [
+    -0.13962634015954636,
+    0,
+    0.13962634015954636
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "CPG_MPD_Right_VIDEO",
+   "station": "CPG",
+   "control": "rocker",
+   "label": "CPG MPD Right · VID",
+   "fn": "mpd:CPG_MPD_Right:VIDEO",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "CENTER",
+    "DOWN"
+   ],
+   "angles": [
+    -0.13962634015954636,
+    0,
+    0.13962634015954636
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "CPG_MPD_Right_MODE",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "CPG MPD Right · DAY/NT/MONO",
+   "fn": "mpd:CPG_MPD_Right:MODE",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "DAY",
+    "NT",
+    "MONO"
+   ],
+   "angles": [
+    0.7853981633974483,
+    0,
+    -0.7853981633974483
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_KU_A",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · A",
+   "fn": "ku:CPG_KU:A",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_B",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · B",
+   "fn": "ku:CPG_KU:B",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_C",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · C",
+   "fn": "ku:CPG_KU:C",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_D",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · D",
+   "fn": "ku:CPG_KU:D",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_E",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · E",
+   "fn": "ku:CPG_KU:E",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_F",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · F",
+   "fn": "ku:CPG_KU:F",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_1",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 1",
+   "fn": "ku:CPG_KU:1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_2",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 2",
+   "fn": "ku:CPG_KU:2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_3",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 3",
+   "fn": "ku:CPG_KU:3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_G",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · G",
+   "fn": "ku:CPG_KU:G",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_H",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · H",
+   "fn": "ku:CPG_KU:H",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_I",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · I",
+   "fn": "ku:CPG_KU:I",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_J",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · J",
+   "fn": "ku:CPG_KU:J",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_K",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · K",
+   "fn": "ku:CPG_KU:K",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_L",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · L",
+   "fn": "ku:CPG_KU:L",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_4",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 4",
+   "fn": "ku:CPG_KU:4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_5",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 5",
+   "fn": "ku:CPG_KU:5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_6",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 6",
+   "fn": "ku:CPG_KU:6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_M",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · M",
+   "fn": "ku:CPG_KU:M",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_N",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · N",
+   "fn": "ku:CPG_KU:N",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_O",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · O",
+   "fn": "ku:CPG_KU:O",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_P",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · P",
+   "fn": "ku:CPG_KU:P",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_Q",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · Q",
+   "fn": "ku:CPG_KU:Q",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_R",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · R",
+   "fn": "ku:CPG_KU:R",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_7",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 7",
+   "fn": "ku:CPG_KU:7",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_8",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 8",
+   "fn": "ku:CPG_KU:8",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_9",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 9",
+   "fn": "ku:CPG_KU:9",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_S",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · S",
+   "fn": "ku:CPG_KU:S",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_T",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · T",
+   "fn": "ku:CPG_KU:T",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_U",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · U",
+   "fn": "ku:CPG_KU:U",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_V",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · V",
+   "fn": "ku:CPG_KU:V",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_W",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · W",
+   "fn": "ku:CPG_KU:W",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_X",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · X",
+   "fn": "ku:CPG_KU:X",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_DOT",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · .",
+   "fn": "ku:CPG_KU:.",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_0",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · 0",
+   "fn": "ku:CPG_KU:0",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_SLASH",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · /",
+   "fn": "ku:CPG_KU:/",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_Y",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · Y",
+   "fn": "ku:CPG_KU:Y",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_Z",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · Z",
+   "fn": "ku:CPG_KU:Z",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_SPC",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · SPC",
+   "fn": "ku:CPG_KU:SPC",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_BKS",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · BKS",
+   "fn": "ku:CPG_KU:BKS",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_CLR",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · CLR",
+   "fn": "ku:CPG_KU:CLR",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_ENT",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · ENT",
+   "fn": "ku:CPG_KU:ENT",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_PLUS",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · +",
+   "fn": "ku:CPG_KU:+",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_MINUS",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · -",
+   "fn": "ku:CPG_KU:-",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_KU_STAR",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG KU · *",
+   "fn": "ku:CPG_KU:*",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_WCA",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · WCA",
+   "fn": "eufd:CPG_EUFD:WCA",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_IDM",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · IDM",
+   "fn": "eufd:CPG_EUFD:IDM",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_RTS",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · RTS",
+   "fn": "eufd:CPG_EUFD:RTS",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_STBY",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · STBY",
+   "fn": "eufd:CPG_EUFD:STBY",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_PRESET",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · PRESET",
+   "fn": "eufd:CPG_EUFD:PRESET",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_ENTER",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · ENTER",
+   "fn": "eufd:CPG_EUFD:ENTER",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_SWAP",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · SWAP",
+   "fn": "eufd:CPG_EUFD:SWAP",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_UP",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · UP",
+   "fn": "eufd:CPG_EUFD:UP",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_DOWN",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · DOWN",
+   "fn": "eufd:CPG_EUFD:DOWN",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_SELECT",
+   "station": "CPG",
+   "control": "key",
+   "label": "CPG EUFD · SELECT",
+   "fn": "eufd:CPG_EUFD:SELECT",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_EUFD_BRT",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "CPG EUFD · BRT",
+   "fn": "eufd:CPG_EUFD:BRT",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.8
+  },
+  {
+   "node": "CPG_ARMAMENT_MASTER_ARM",
+   "station": "CPG",
+   "control": "button",
+   "label": "ARMAMENT · MASTER ARM",
+   "fn": "masterArm",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": true
+  },
+  {
+   "node": "CPG_ARMAMENT_GND_ORIDE",
+   "station": "CPG",
+   "control": "button",
+   "label": "ARMAMENT · GND ORIDE",
+   "fn": "gndOride",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": true
+  },
+  {
+   "node": "CPG_ARMAMENT_SIGHT",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "ARMAMENT · SIGHT",
+   "fn": "sight",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "TADS",
+    "FCR"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_ARMAMENT_LRFD",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "ARMAMENT · LRFD",
+   "fn": "lrfdMode",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "1ST",
+    "LST"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_ARMAMENT_SYMBOL_BRT_TEDAC",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "ARMAMENT · SYMBOL BRT TEDAC",
+   "fn": "symBrtTedac",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_ARMAMENT_SYMBOL_BRT_IHADSS",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "ARMAMENT · SYMBOL BRT IHADSS",
+   "fn": "symBrtIhadss",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_VIDEO_GAIN",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "VIDEO · GAIN",
+   "fn": "tedacGain",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.5
+  },
+  {
+   "node": "CPG_VIDEO_LEVEL",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "VIDEO · LEVEL",
+   "fn": "tedacLevel",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.5
+  },
+  {
+   "node": "CPG_VIDEO_POL",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "VIDEO · POL",
+   "fn": "flirPol",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "WHT",
+    "BLK"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_VIDEO_DVO",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "VIDEO · DVO",
+   "fn": "dvo",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_TADS_PWR",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "TADS · PWR",
+   "fn": "tadsPower",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "OFF",
+    "STBY",
+    "ON"
+   ],
+   "angles": [
+    2.356194490192345,
+    0,
+    -2.356194490192345
+   ],
+   "state": 2
+  },
+  {
+   "node": "CPG_TADS_FLIR",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "TADS · FLIR",
+   "fn": "flirPower",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_TADS_DTV",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "TADS · DTV",
+   "fn": "dtvPower",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_TADS_LSR",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "TADS · LSR",
+   "fn": "laserArm",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ARM",
+    "SAFE"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "CPG_NVS_MODE",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "NVS · MODE",
+   "fn": "cpgNvsMode",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "OFF",
+    "NORM",
+    "FIXED"
+   ],
+   "angles": [
+    2.356194490192345,
+    0,
+    -2.356194490192345
+   ],
+   "state": 1
+  },
+  {
+   "node": "CPG_NVS_ACM",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "NVS · ACM",
+   "fn": "acm",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_COMM_VHF",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "COMM · VHF",
+   "fn": "cpg.vol.VHF",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_COMM_UHF",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "COMM · UHF",
+   "fn": "cpg.vol.UHF",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_COMM_FM1",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "COMM · FM1",
+   "fn": "cpg.vol.FM1",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_COMM_FM2",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "COMM · FM2",
+   "fn": "cpg.vol.FM2",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_COMM_HF",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "COMM · HF",
+   "fn": "cpg.vol.HF",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_COMM_IFF",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "COMM · IFF",
+   "fn": "cpg.vol.IFF",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_TADS_FCR_TADS",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "TADS/FCR · TADS",
+   "fn": "tadsSw",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_TADS_FCR_FCR",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "TADS/FCR · FCR",
+   "fn": "fcrPower",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_TADS_FCR_RFI",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "TADS/FCR · RFI",
+   "fn": "rfi",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "CPG_INT_LT_PRIMARY",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "INT LT · PRIMARY",
+   "fn": "cpgIntPrimary",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_INT_LT_FLOOD",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "INT LT · FLOOD",
+   "fn": "cpgIntFlood",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.3
+  },
+  {
+   "node": "CPG_INT_LT_STBY_INST",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "INT LT · STBY INST",
+   "fn": "cpgIntStby",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_CMWS_PWR",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "CMWS · PWR",
+   "fn": "cmwsPower",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_CMWS_ARM",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "CMWS · ARM",
+   "fn": "cmwsArm",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ARM",
+    "SAFE"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "CPG_CMWS_ARM_GUARD",
+   "station": "CPG",
+   "control": "guard",
+   "label": "CMWS · ARM guard",
+   "fn": null,
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "OPEN",
+    "CLOSED"
+   ],
+   "angles": [
+    -1.7453292519943295,
+    0
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_CMWS_BYPASS",
+   "station": "CPG",
+   "control": "button",
+   "label": "CMWS · BYPASS",
+   "fn": "cmwsBypass",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": true
+  },
+  {
+   "node": "CPG_WPN_CONTROL_BURST",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "WPN CONTROL · BURST",
+   "fn": "gunBurst",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "10",
+    "20",
+    "50",
+    "100",
+    "ALL"
+   ],
+   "angles": [
+    2.356194490192345,
+    1.1780972450961724,
+    0,
+    -1.1780972450961724,
+    -2.356194490192345
+   ],
+   "state": 1
+  },
+  {
+   "node": "CPG_WPN_CONTROL_RKT",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "WPN CONTROL · RKT",
+   "fn": "rktMode",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "PD",
+    "RKT"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "CPG_DATA_TRANSFER_CARTRIDGE",
+   "station": "CPG",
+   "control": "handle",
+   "label": "DATA TRANSFER · cartridge",
+   "fn": "cpgDtc",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "IN",
+    "EJECTED"
+   ],
+   "travel": 0.02,
+   "state": 0
+  },
+  {
+   "node": "CPG_CANOPY_JETT_HANDLE",
+   "station": "CPG",
+   "control": "handle",
+   "label": "CANOPY JETT · HANDLE",
+   "fn": "canopyJett",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "IN",
+    "PULLED"
+   ],
+   "travel": 0.035,
+   "state": 0
+  },
+  {
+   "node": "CPG_ICS_MODE",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "ICS · MODE",
+   "fn": "cpgIcsMode",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "HOT",
+    "PTT",
+    "VOX"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "CPG_ICS_VOX",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "ICS · VOX",
+   "fn": "cpgIcsVox",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "CPG_Seat_Inertia_Reel",
+   "station": "CPG",
+   "control": "lever",
+   "label": "Seat · inertia reel lock",
+   "fn": "cpg.inertiaReel",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "LOCKED",
+    "UNLOCKED"
+   ],
+   "angles": [
+    0.35,
+    0
+   ],
+   "state": 1
+  },
+  {
+   "node": "CPG_Cyclic",
+   "station": "CPG",
+   "control": "stick",
+   "label": "CPG Cyclic",
+   "fn": "cyclic",
+   "motion": "stick",
+   "axes": {
+    "pitch": [
+     1,
+     0,
+     0
+    ],
+    "roll": [
+     0,
+     0,
+     1
+    ]
+   },
+   "limits": {
+    "pitch": 0.26,
+    "roll": 0.26
+   },
+   "note": "+X pushes it forward, +Z pushes it right"
+  },
+  {
+   "node": "CPG_Cyclic_Trim",
+   "station": "CPG",
+   "control": "button",
+   "label": "CPG cyclic · force trim release",
+   "fn": "trim",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_Cyclic_Weapon_Select",
+   "station": "CPG",
+   "control": "button",
+   "label": "CPG cyclic · weapon action switch",
+   "fn": "was",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_Cyclic_Chaff",
+   "station": "CPG",
+   "control": "button",
+   "label": "CPG cyclic · chaff",
+   "fn": "chaff",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_Cyclic_Trigger",
+   "station": "CPG",
+   "control": "trigger",
+   "label": "CPG cyclic · weapon trigger",
+   "fn": "trigger",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "RELEASED",
+    "PULLED"
+   ],
+   "angles": [
+    0,
+    -0.3
+   ],
+   "state": 0,
+   "momentary": [
+    1
+   ],
+   "spring": 0
+  },
+  {
+   "node": "CPG_Collective",
+   "station": "CPG",
+   "control": "collective",
+   "label": "CPG Collective",
+   "fn": "collective",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "min": 0,
+   "max": -0.3,
+   "value": 0,
+   "note": "value 0 is fully down, 1 fully up"
+  },
+  {
+   "node": "CPG_Collective_Searchlight",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "CPG collective · SEARCHLIGHT",
+   "fn": "searchlight",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "CPG_Collective_Radio_Select",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "CPG collective · RADIO SELECT",
+   "fn": "rts",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "MID",
+    "DN"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0,
+    0.4537856055185257
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "CPG_Collective_Missile_Advance",
+   "station": "CPG",
+   "control": "toggle",
+   "label": "CPG collective · MISSILE ADVANCE",
+   "fn": "msladv",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ADV",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1,
+   "momentary": [
+    0
+   ],
+   "spring": 1
+  },
+  {
+   "node": "CPG_Collective_Flare",
+   "station": "CPG",
+   "control": "button",
+   "label": "CPG collective · flare dispense",
+   "fn": "flare",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_Collective_Chop",
+   "station": "CPG",
+   "control": "button",
+   "label": "CPG collective · engine chop",
+   "fn": "chop",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "CPG_Collective_Friction",
+   "station": "CPG",
+   "control": "rotary",
+   "label": "CPG collective · friction",
+   "fn": null,
+   "motion": "rotate",
+   "axis": [
+    0,
+    1,
+    0
+   ],
+   "min": 0,
+   "max": -3.14,
+   "value": 0.3
+  },
+  {
+   "node": "CPG_Pedal_Left",
+   "station": "CPG",
+   "control": "pedal",
+   "label": "CPG Pedal left",
+   "fn": "pedals",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "min": -0.2,
+   "max": 0.2,
+   "value": 0.5,
+   "note": "value 0 is full left pedal, 1 full right; the pair move in opposition"
+  },
+  {
+   "node": "CPG_Pedal_Right",
+   "station": "CPG",
+   "control": "pedal",
+   "label": "CPG Pedal right",
+   "fn": "pedals",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "min": 0.2,
+   "max": -0.2,
+   "value": 0.5,
+   "note": "value 0 is full left pedal, 1 full right; the pair move in opposition"
+  },
+  {
+   "node": "Pilot_MPD_Left_T1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · T1",
+   "fn": "mpd:Pilot_MPD_Left:T1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_B1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · B1",
+   "fn": "mpd:Pilot_MPD_Left:B1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_L1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · L1",
+   "fn": "mpd:Pilot_MPD_Left:L1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_R1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · R1",
+   "fn": "mpd:Pilot_MPD_Left:R1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_T2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · T2",
+   "fn": "mpd:Pilot_MPD_Left:T2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_B2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · B2",
+   "fn": "mpd:Pilot_MPD_Left:B2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_L2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · L2",
+   "fn": "mpd:Pilot_MPD_Left:L2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_R2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · R2",
+   "fn": "mpd:Pilot_MPD_Left:R2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_T3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · T3",
+   "fn": "mpd:Pilot_MPD_Left:T3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_B3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · B3",
+   "fn": "mpd:Pilot_MPD_Left:B3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_L3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · L3",
+   "fn": "mpd:Pilot_MPD_Left:L3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_R3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · R3",
+   "fn": "mpd:Pilot_MPD_Left:R3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_T4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · T4",
+   "fn": "mpd:Pilot_MPD_Left:T4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_B4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · B4",
+   "fn": "mpd:Pilot_MPD_Left:B4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_L4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · L4",
+   "fn": "mpd:Pilot_MPD_Left:L4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_R4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · R4",
+   "fn": "mpd:Pilot_MPD_Left:R4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_T5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · T5",
+   "fn": "mpd:Pilot_MPD_Left:T5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_B5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · B5",
+   "fn": "mpd:Pilot_MPD_Left:B5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_L5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · L5",
+   "fn": "mpd:Pilot_MPD_Left:L5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_R5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · R5",
+   "fn": "mpd:Pilot_MPD_Left:R5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_T6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · T6",
+   "fn": "mpd:Pilot_MPD_Left:T6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_B6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · B6",
+   "fn": "mpd:Pilot_MPD_Left:B6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_L6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · L6",
+   "fn": "mpd:Pilot_MPD_Left:L6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_R6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · R6",
+   "fn": "mpd:Pilot_MPD_Left:R6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_FCR",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · FCR",
+   "fn": "mpd:Pilot_MPD_Left:FCR",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_WPN",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · WPN",
+   "fn": "mpd:Pilot_MPD_Left:WPN",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_TSD",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · TSD",
+   "fn": "mpd:Pilot_MPD_Left:TSD",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_VID",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · VID",
+   "fn": "mpd:Pilot_MPD_Left:VID",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_COM",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · COM",
+   "fn": "mpd:Pilot_MPD_Left:COM",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_A_C",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · A/C",
+   "fn": "mpd:Pilot_MPD_Left:A_C",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_MENU",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Left · M",
+   "fn": "mpd:Pilot_MPD_Left:MENU",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Left_BRT",
+   "station": "Pilot",
+   "control": "rocker",
+   "label": "Pilot MPD Left · BRT",
+   "fn": "mpd:Pilot_MPD_Left:BRT",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "CENTER",
+    "DOWN"
+   ],
+   "angles": [
+    -0.13962634015954636,
+    0,
+    0.13962634015954636
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "Pilot_MPD_Left_VIDEO",
+   "station": "Pilot",
+   "control": "rocker",
+   "label": "Pilot MPD Left · VID",
+   "fn": "mpd:Pilot_MPD_Left:VIDEO",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "CENTER",
+    "DOWN"
+   ],
+   "angles": [
+    -0.13962634015954636,
+    0,
+    0.13962634015954636
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "Pilot_MPD_Left_MODE",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Pilot MPD Left · DAY/NT/MONO",
+   "fn": "mpd:Pilot_MPD_Left:MODE",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "DAY",
+    "NT",
+    "MONO"
+   ],
+   "angles": [
+    0.7853981633974483,
+    0,
+    -0.7853981633974483
+   ],
+   "state": 0
+  },
+  {
+   "node": "Pilot_MPD_Right_T1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · T1",
+   "fn": "mpd:Pilot_MPD_Right:T1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_B1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · B1",
+   "fn": "mpd:Pilot_MPD_Right:B1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_L1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · L1",
+   "fn": "mpd:Pilot_MPD_Right:L1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_R1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · R1",
+   "fn": "mpd:Pilot_MPD_Right:R1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_T2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · T2",
+   "fn": "mpd:Pilot_MPD_Right:T2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_B2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · B2",
+   "fn": "mpd:Pilot_MPD_Right:B2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_L2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · L2",
+   "fn": "mpd:Pilot_MPD_Right:L2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_R2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · R2",
+   "fn": "mpd:Pilot_MPD_Right:R2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_T3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · T3",
+   "fn": "mpd:Pilot_MPD_Right:T3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_B3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · B3",
+   "fn": "mpd:Pilot_MPD_Right:B3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_L3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · L3",
+   "fn": "mpd:Pilot_MPD_Right:L3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_R3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · R3",
+   "fn": "mpd:Pilot_MPD_Right:R3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_T4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · T4",
+   "fn": "mpd:Pilot_MPD_Right:T4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_B4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · B4",
+   "fn": "mpd:Pilot_MPD_Right:B4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_L4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · L4",
+   "fn": "mpd:Pilot_MPD_Right:L4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_R4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · R4",
+   "fn": "mpd:Pilot_MPD_Right:R4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_T5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · T5",
+   "fn": "mpd:Pilot_MPD_Right:T5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_B5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · B5",
+   "fn": "mpd:Pilot_MPD_Right:B5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_L5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · L5",
+   "fn": "mpd:Pilot_MPD_Right:L5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_R5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · R5",
+   "fn": "mpd:Pilot_MPD_Right:R5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_T6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · T6",
+   "fn": "mpd:Pilot_MPD_Right:T6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_B6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · B6",
+   "fn": "mpd:Pilot_MPD_Right:B6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_L6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · L6",
+   "fn": "mpd:Pilot_MPD_Right:L6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_R6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · R6",
+   "fn": "mpd:Pilot_MPD_Right:R6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_FCR",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · FCR",
+   "fn": "mpd:Pilot_MPD_Right:FCR",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_WPN",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · WPN",
+   "fn": "mpd:Pilot_MPD_Right:WPN",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_TSD",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · TSD",
+   "fn": "mpd:Pilot_MPD_Right:TSD",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_VID",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · VID",
+   "fn": "mpd:Pilot_MPD_Right:VID",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_COM",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · COM",
+   "fn": "mpd:Pilot_MPD_Right:COM",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_A_C",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · A/C",
+   "fn": "mpd:Pilot_MPD_Right:A_C",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_MENU",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot MPD Right · M",
+   "fn": "mpd:Pilot_MPD_Right:MENU",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_MPD_Right_BRT",
+   "station": "Pilot",
+   "control": "rocker",
+   "label": "Pilot MPD Right · BRT",
+   "fn": "mpd:Pilot_MPD_Right:BRT",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "CENTER",
+    "DOWN"
+   ],
+   "angles": [
+    -0.13962634015954636,
+    0,
+    0.13962634015954636
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "Pilot_MPD_Right_VIDEO",
+   "station": "Pilot",
+   "control": "rocker",
+   "label": "Pilot MPD Right · VID",
+   "fn": "mpd:Pilot_MPD_Right:VIDEO",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "CENTER",
+    "DOWN"
+   ],
+   "angles": [
+    -0.13962634015954636,
+    0,
+    0.13962634015954636
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "Pilot_MPD_Right_MODE",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Pilot MPD Right · DAY/NT/MONO",
+   "fn": "mpd:Pilot_MPD_Right:MODE",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "DAY",
+    "NT",
+    "MONO"
+   ],
+   "angles": [
+    0.7853981633974483,
+    0,
+    -0.7853981633974483
+   ],
+   "state": 0
+  },
+  {
+   "node": "Pilot_EUFD_WCA",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · WCA",
+   "fn": "eufd:Pilot_EUFD:WCA",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_IDM",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · IDM",
+   "fn": "eufd:Pilot_EUFD:IDM",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_RTS",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · RTS",
+   "fn": "eufd:Pilot_EUFD:RTS",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_STBY",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · STBY",
+   "fn": "eufd:Pilot_EUFD:STBY",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_PRESET",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · PRESET",
+   "fn": "eufd:Pilot_EUFD:PRESET",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_ENTER",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · ENTER",
+   "fn": "eufd:Pilot_EUFD:ENTER",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_SWAP",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · SWAP",
+   "fn": "eufd:Pilot_EUFD:SWAP",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_UP",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · UP",
+   "fn": "eufd:Pilot_EUFD:UP",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_DOWN",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · DOWN",
+   "fn": "eufd:Pilot_EUFD:DOWN",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_SELECT",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot EUFD · SELECT",
+   "fn": "eufd:Pilot_EUFD:SELECT",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_EUFD_BRT",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Pilot EUFD · BRT",
+   "fn": "eufd:Pilot_EUFD:BRT",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.8
+  },
+  {
+   "node": "Pilot_Master_Warning",
+   "station": "Pilot",
+   "control": "button",
+   "label": "MASTER WARNING",
+   "fn": "mwarn",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": false
+  },
+  {
+   "node": "Pilot_Master_Caution",
+   "station": "Pilot",
+   "control": "button",
+   "label": "MASTER CAUTION",
+   "fn": "mcaut",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": false
+  },
+  {
+   "node": "Pilot_ARM_MASTER_ARM",
+   "station": "Pilot",
+   "control": "button",
+   "label": "ARM · MASTER ARM",
+   "fn": "masterArm",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": true
+  },
+  {
+   "node": "Pilot_ARM_GND_ORIDE",
+   "station": "Pilot",
+   "control": "button",
+   "label": "ARM · GND ORIDE",
+   "fn": "gndOride",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": true
+  },
+  {
+   "node": "Pilot_JETTISON_L_OUTBD",
+   "station": "Pilot",
+   "control": "button",
+   "label": "JETTISON · L OUTBD",
+   "fn": "jett.LO",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false
+  },
+  {
+   "node": "Pilot_JETTISON_R_OUTBD",
+   "station": "Pilot",
+   "control": "button",
+   "label": "JETTISON · R OUTBD",
+   "fn": "jett.RO",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false
+  },
+  {
+   "node": "Pilot_JETTISON_L_INBD",
+   "station": "Pilot",
+   "control": "button",
+   "label": "JETTISON · L INBD",
+   "fn": "jett.LI",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false
+  },
+  {
+   "node": "Pilot_JETTISON_R_INBD",
+   "station": "Pilot",
+   "control": "button",
+   "label": "JETTISON · R INBD",
+   "fn": "jett.RI",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false
+  },
+  {
+   "node": "Pilot_JETTISON_EMERG",
+   "station": "Pilot",
+   "control": "button",
+   "label": "JETTISON · EMERG",
+   "fn": "jett.ALL",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false
+  },
+  {
+   "node": "Pilot_NVS_MODE_MODE",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "NVS MODE · MODE",
+   "fn": "nvsMode",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "OFF",
+    "NORM",
+    "FIXED"
+   ],
+   "angles": [
+    2.356194490192345,
+    0,
+    -2.356194490192345
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_NVS_MODE_SENSOR",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "NVS MODE · SENSOR",
+   "fn": "nvsSensor",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "PNVS",
+    "TADS"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "Pilot_NVS_MODE_BRT",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "NVS MODE · BRT",
+   "fn": "ihadssBrt",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_Standby_ADI_KNOB",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Pilot Standby ADI · PULL TO CAGE",
+   "fn": "adiCage",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 6.283185307179586,
+   "max": -6.283185307179586,
+   "value": 0.5
+  },
+  {
+   "node": "Pilot_Standby_ASI_KNOB",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Pilot Standby ASI · TEST",
+   "fn": "asiTest",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 6.283185307179586,
+   "max": -6.283185307179586,
+   "value": 0.5
+  },
+  {
+   "node": "Pilot_Standby_ALT_KNOB",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Pilot Standby ALT · BARO SET",
+   "fn": "altBaro",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 6.283185307179586,
+   "max": -6.283185307179586,
+   "value": 0.5
+  },
+  {
+   "node": "Pilot_Clock_KNOB",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Pilot Clock · SET",
+   "fn": "clockSet",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 6.283185307179586,
+   "max": -6.283185307179586,
+   "value": 0.5
+  },
+  {
+   "node": "Pilot_Vent_Left",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Air vent, left",
+   "fn": null,
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 0,
+   "max": -1.57,
+   "value": 0
+  },
+  {
+   "node": "Pilot_Vent_Right",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Air vent, right",
+   "fn": null,
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 0,
+   "max": -1.57,
+   "value": 0
+  },
+  {
+   "node": "Pilot_KU_A",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · A",
+   "fn": "ku:Pilot_KU:A",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_B",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · B",
+   "fn": "ku:Pilot_KU:B",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_C",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · C",
+   "fn": "ku:Pilot_KU:C",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_D",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · D",
+   "fn": "ku:Pilot_KU:D",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_E",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · E",
+   "fn": "ku:Pilot_KU:E",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_F",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · F",
+   "fn": "ku:Pilot_KU:F",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_1",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 1",
+   "fn": "ku:Pilot_KU:1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_2",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 2",
+   "fn": "ku:Pilot_KU:2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_3",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 3",
+   "fn": "ku:Pilot_KU:3",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_G",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · G",
+   "fn": "ku:Pilot_KU:G",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_H",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · H",
+   "fn": "ku:Pilot_KU:H",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_I",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · I",
+   "fn": "ku:Pilot_KU:I",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_J",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · J",
+   "fn": "ku:Pilot_KU:J",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_K",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · K",
+   "fn": "ku:Pilot_KU:K",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_L",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · L",
+   "fn": "ku:Pilot_KU:L",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_4",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 4",
+   "fn": "ku:Pilot_KU:4",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_5",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 5",
+   "fn": "ku:Pilot_KU:5",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_6",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 6",
+   "fn": "ku:Pilot_KU:6",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_M",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · M",
+   "fn": "ku:Pilot_KU:M",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_N",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · N",
+   "fn": "ku:Pilot_KU:N",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_O",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · O",
+   "fn": "ku:Pilot_KU:O",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_P",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · P",
+   "fn": "ku:Pilot_KU:P",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_Q",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · Q",
+   "fn": "ku:Pilot_KU:Q",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_R",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · R",
+   "fn": "ku:Pilot_KU:R",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_7",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 7",
+   "fn": "ku:Pilot_KU:7",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_8",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 8",
+   "fn": "ku:Pilot_KU:8",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_9",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 9",
+   "fn": "ku:Pilot_KU:9",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_S",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · S",
+   "fn": "ku:Pilot_KU:S",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_T",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · T",
+   "fn": "ku:Pilot_KU:T",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_U",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · U",
+   "fn": "ku:Pilot_KU:U",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_V",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · V",
+   "fn": "ku:Pilot_KU:V",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_W",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · W",
+   "fn": "ku:Pilot_KU:W",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_X",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · X",
+   "fn": "ku:Pilot_KU:X",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_DOT",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · .",
+   "fn": "ku:Pilot_KU:.",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_0",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · 0",
+   "fn": "ku:Pilot_KU:0",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_SLASH",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · /",
+   "fn": "ku:Pilot_KU:/",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_Y",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · Y",
+   "fn": "ku:Pilot_KU:Y",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_Z",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · Z",
+   "fn": "ku:Pilot_KU:Z",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_SPC",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · SPC",
+   "fn": "ku:Pilot_KU:SPC",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_BKS",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · BKS",
+   "fn": "ku:Pilot_KU:BKS",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_CLR",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · CLR",
+   "fn": "ku:Pilot_KU:CLR",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_ENT",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · ENT",
+   "fn": "ku:Pilot_KU:ENT",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_PLUS",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · +",
+   "fn": "ku:Pilot_KU:+",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_MINUS",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · -",
+   "fn": "ku:Pilot_KU:-",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_KU_STAR",
+   "station": "Pilot",
+   "control": "key",
+   "label": "Pilot KU · *",
+   "fn": "ku:Pilot_KU:*",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_FIRE_ENG_1_FIRE",
+   "station": "Pilot",
+   "control": "button",
+   "label": "FIRE · ENG 1 FIRE",
+   "fn": "fire1",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": false
+  },
+  {
+   "node": "Pilot_FIRE_APU_FIRE",
+   "station": "Pilot",
+   "control": "button",
+   "label": "FIRE · APU FIRE",
+   "fn": "fireApu",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": false
+  },
+  {
+   "node": "Pilot_FIRE_ENG_2_FIRE",
+   "station": "Pilot",
+   "control": "button",
+   "label": "FIRE · ENG 2 FIRE",
+   "fn": "fire2",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": false
+  },
+  {
+   "node": "Pilot_FIRE_DISCH_PRI",
+   "station": "Pilot",
+   "control": "button",
+   "label": "FIRE · DISCH PRI",
+   "fn": "dischPri",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false
+  },
+  {
+   "node": "Pilot_FIRE_DISCH_RES",
+   "station": "Pilot",
+   "control": "button",
+   "label": "FIRE · DISCH RES",
+   "fn": "dischRes",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false
+  },
+  {
+   "node": "Pilot_Power_Lever_1",
+   "station": "Pilot",
+   "control": "lever",
+   "label": "POWER · ENG 1",
+   "fn": "pwr1",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "OFF",
+    "IDLE",
+    "FLY"
+   ],
+   "angles": [
+    -0.7328151017865067,
+    -0.09966865249116212,
+    0.7216548508647612
+   ],
+   "state": 2
+  },
+  {
+   "node": "Pilot_Power_Lever_2",
+   "station": "Pilot",
+   "control": "lever",
+   "label": "POWER · ENG 2",
+   "fn": "pwr2",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "OFF",
+    "IDLE",
+    "FLY"
+   ],
+   "angles": [
+    -0.7328151017865067,
+    -0.09966865249116212,
+    0.7216548508647612
+   ],
+   "state": 2
+  },
+  {
+   "node": "Pilot_Rotor_Brake",
+   "station": "Pilot",
+   "control": "lever",
+   "label": "POWER · ROTOR BRAKE",
+   "fn": "rtrBrk",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "OFF",
+    "BRK",
+    "LOCK"
+   ],
+   "angles": [
+    0.4636476090008061,
+    0,
+    -0.4636476090008061
+   ],
+   "state": 0
+  },
+  {
+   "node": "Pilot_FUEL_XFEED",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "FUEL · XFEED",
+   "fn": "xfeed",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "NORM",
+    "AFT",
+    "FWD"
+   ],
+   "angles": [
+    2.356194490192345,
+    0,
+    -2.356194490192345
+   ],
+   "state": 0
+  },
+  {
+   "node": "Pilot_FUEL_BOOST",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "FUEL · BOOST",
+   "fn": "boost",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_FUEL_TRANS",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "FUEL · TRANS",
+   "fn": "fuelTrans",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "FWD",
+    "OFF",
+    "AFT"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_ENG_START_ENG_1",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "ENG START · ENG 1",
+   "fn": "eng1Start",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "START",
+    "OFF",
+    "IGN OR"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0,
+    0.4537856055185257
+   ],
+   "state": 1,
+   "momentary": [
+    0
+   ],
+   "spring": 1
+  },
+  {
+   "node": "Pilot_ENG_START_ENG_2",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "ENG START · ENG 2",
+   "fn": "eng2Start",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "START",
+    "OFF",
+    "IGN OR"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0,
+    0.4537856055185257
+   ],
+   "state": 1,
+   "momentary": [
+    0
+   ],
+   "spring": 1
+  },
+  {
+   "node": "Pilot_ENG_START_APU",
+   "station": "Pilot",
+   "control": "button",
+   "label": "ENG START · APU",
+   "fn": "apu",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": false
+  },
+  {
+   "node": "Pilot_COMM_VHF",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "COMM · VHF",
+   "fn": "vol.VHF",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_COMM_UHF",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "COMM · UHF",
+   "fn": "vol.UHF",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_COMM_FM1",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "COMM · FM1",
+   "fn": "vol.FM1",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_COMM_FM2",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "COMM · FM2",
+   "fn": "vol.FM2",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_COMM_HF",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "COMM · HF",
+   "fn": "vol.HF",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_COMM_IFF",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "COMM · IFF",
+   "fn": "vol.IFF",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_ANTI_ICE_INLET",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "ANTI-ICE · INLET",
+   "fn": "aiInlet",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_ANTI_ICE_TADS",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "ANTI-ICE · TADS",
+   "fn": "aiTads",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_ANTI_ICE_WSHLD",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "ANTI-ICE · WSHLD",
+   "fn": "aiWshld",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_EXT_LT_NAV",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "EXT LT · NAV",
+   "fn": "navLt",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "OFF",
+    "BRT",
+    "DIM"
+   ],
+   "angles": [
+    2.356194490192345,
+    0,
+    -2.356194490192345
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_EXT_LT_A_COL",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "EXT LT · A-COL",
+   "fn": "acolLt",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "OFF",
+    "WHT",
+    "RED"
+   ],
+   "angles": [
+    2.356194490192345,
+    0,
+    -2.356194490192345
+   ],
+   "state": 2
+  },
+  {
+   "node": "Pilot_EXT_LT_FORM",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "EXT LT · FORM",
+   "fn": "formLt",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0
+  },
+  {
+   "node": "Pilot_INT_LT_PRIMARY",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "INT LT · PRIMARY",
+   "fn": "intPrimary",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_INT_LT_STBY",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "INT LT · STBY",
+   "fn": "intStby",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_INT_LT_FLOOD",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "INT LT · FLOOD",
+   "fn": "intFlood",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.3
+  },
+  {
+   "node": "Pilot_INT_LT_MODE",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "INT LT · MODE",
+   "fn": "intMode",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "DAY",
+    "NT"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "Pilot_DATA_TRANSFER_CARTRIDGE",
+   "station": "Pilot",
+   "control": "handle",
+   "label": "DATA TRANSFER · cartridge",
+   "fn": "dtc",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "IN",
+    "EJECTED"
+   ],
+   "travel": 0.02,
+   "state": 0
+  },
+  {
+   "node": "Pilot_TAIL_WHEEL_LOCK",
+   "station": "Pilot",
+   "control": "button",
+   "label": "TAIL WHEEL · LOCK",
+   "fn": "tailWheel",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": false,
+   "lit": true
+  },
+  {
+   "node": "Pilot_TAIL_WHEEL_PARK_BRAKE",
+   "station": "Pilot",
+   "control": "button",
+   "label": "TAIL WHEEL · PARK BRAKE",
+   "fn": "parkBrake",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    -1
+   ],
+   "travel": 0.0018,
+   "latching": true
+  },
+  {
+   "node": "Pilot_CANOPY_JETT_HANDLE",
+   "station": "Pilot",
+   "control": "handle",
+   "label": "CANOPY JETT · HANDLE",
+   "fn": "canopyJett",
+   "motion": "translate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "IN",
+    "PULLED"
+   ],
+   "travel": 0.035,
+   "state": 0
+  },
+  {
+   "node": "Pilot_IFF_MASTER",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "IFF · MASTER",
+   "fn": "iffMaster",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "positions": [
+    "OFF",
+    "STBY",
+    "NORM",
+    "EMER"
+   ],
+   "angles": [
+    2.356194490192345,
+    0.7853981633974483,
+    -0.7853981633974483,
+    -2.356194490192345
+   ],
+   "state": 2
+  },
+  {
+   "node": "Pilot_IFF_M4",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "IFF · M4",
+   "fn": "iffM4",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "A",
+    "B"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "Pilot_IFF_ANT",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "IFF · ANT",
+   "fn": "iffAnt",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "TOP",
+    "BOT"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 0
+  },
+  {
+   "node": "Pilot_ICS_MODE",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "ICS · MODE",
+   "fn": "icsMode",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "HOT",
+    "PTT",
+    "VOX"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_ICS_VOX",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "ICS · VOX",
+   "fn": "icsVox",
+   "motion": "rotate",
+   "axis": [
+    0,
+    0,
+    1
+   ],
+   "min": 2.356194490192345,
+   "max": -2.356194490192345,
+   "value": 0.7
+  },
+  {
+   "node": "Pilot_Seat_Inertia_Reel",
+   "station": "Pilot",
+   "control": "lever",
+   "label": "Seat · inertia reel lock",
+   "fn": "pilot.inertiaReel",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "LOCKED",
+    "UNLOCKED"
+   ],
+   "angles": [
+    0.35,
+    0
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_Cyclic",
+   "station": "Pilot",
+   "control": "stick",
+   "label": "Pilot Cyclic",
+   "fn": "cyclic",
+   "motion": "stick",
+   "axes": {
+    "pitch": [
+     1,
+     0,
+     0
+    ],
+    "roll": [
+     0,
+     0,
+     1
+    ]
+   },
+   "limits": {
+    "pitch": 0.26,
+    "roll": 0.26
+   },
+   "note": "+X pushes it forward, +Z pushes it right"
+  },
+  {
+   "node": "Pilot_Cyclic_Trim",
+   "station": "Pilot",
+   "control": "button",
+   "label": "Pilot cyclic · force trim release",
+   "fn": "trim",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_Cyclic_Weapon_Select",
+   "station": "Pilot",
+   "control": "button",
+   "label": "Pilot cyclic · weapon action switch",
+   "fn": "was",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_Cyclic_Chaff",
+   "station": "Pilot",
+   "control": "button",
+   "label": "Pilot cyclic · chaff",
+   "fn": "chaff",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_Cyclic_Trigger",
+   "station": "Pilot",
+   "control": "trigger",
+   "label": "Pilot cyclic · weapon trigger",
+   "fn": "trigger",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "RELEASED",
+    "PULLED"
+   ],
+   "angles": [
+    0,
+    -0.3
+   ],
+   "state": 0,
+   "momentary": [
+    1
+   ],
+   "spring": 0
+  },
+  {
+   "node": "Pilot_Collective",
+   "station": "Pilot",
+   "control": "collective",
+   "label": "Pilot Collective",
+   "fn": "collective",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "min": 0,
+   "max": -0.3,
+   "value": 0,
+   "note": "value 0 is fully down, 1 fully up"
+  },
+  {
+   "node": "Pilot_Collective_Searchlight",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "Pilot collective · SEARCHLIGHT",
+   "fn": "searchlight",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1
+  },
+  {
+   "node": "Pilot_Collective_Radio_Select",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "Pilot collective · RADIO SELECT",
+   "fn": "rts",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "UP",
+    "MID",
+    "DN"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0,
+    0.4537856055185257
+   ],
+   "state": 1,
+   "momentary": [
+    0,
+    2
+   ],
+   "spring": 1
+  },
+  {
+   "node": "Pilot_Collective_Missile_Advance",
+   "station": "Pilot",
+   "control": "toggle",
+   "label": "Pilot collective · MISSILE ADVANCE",
+   "fn": "msladv",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "positions": [
+    "ADV",
+    "OFF"
+   ],
+   "angles": [
+    -0.4537856055185257,
+    0.4537856055185257
+   ],
+   "state": 1,
+   "momentary": [
+    0
+   ],
+   "spring": 1
+  },
+  {
+   "node": "Pilot_Collective_Flare",
+   "station": "Pilot",
+   "control": "button",
+   "label": "Pilot collective · flare dispense",
+   "fn": "flare",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_Collective_Chop",
+   "station": "Pilot",
+   "control": "button",
+   "label": "Pilot collective · engine chop",
+   "fn": "chop",
+   "motion": "translate",
+   "axis": [
+    0,
+    -1,
+    0
+   ],
+   "travel": 0.002
+  },
+  {
+   "node": "Pilot_Collective_Friction",
+   "station": "Pilot",
+   "control": "rotary",
+   "label": "Pilot collective · friction",
+   "fn": null,
+   "motion": "rotate",
+   "axis": [
+    0,
+    1,
+    0
+   ],
+   "min": 0,
+   "max": -3.14,
+   "value": 0.3
+  },
+  {
+   "node": "Pilot_Pedal_Left",
+   "station": "Pilot",
+   "control": "pedal",
+   "label": "Pilot Pedal left",
+   "fn": "pedals",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "min": -0.2,
+   "max": 0.2,
+   "value": 0.5,
+   "note": "value 0 is full left pedal, 1 full right; the pair move in opposition"
+  },
+  {
+   "node": "Pilot_Pedal_Right",
+   "station": "Pilot",
+   "control": "pedal",
+   "label": "Pilot Pedal right",
+   "fn": "pedals",
+   "motion": "rotate",
+   "axis": [
+    1,
+    0,
+    0
+   ],
+   "min": 0.2,
+   "max": -0.2,
+   "value": 0.5,
+   "note": "value 0 is full left pedal, 1 full right; the pair move in opposition"
+  }
+ ]
+}

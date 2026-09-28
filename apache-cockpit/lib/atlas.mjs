@@ -5,7 +5,7 @@
 // two passes ask for the same things in the same order.
 
 export class Atlas {
-  constructor(name, { pad = 6, sizes = [1024, 2048, 4096] } = {}) {
+  constructor(name, { pad = 6, sizes = [512, 1024, 2048, 4096] } = {}) {
     this.name = name;
     this.pad = pad;
     this.sizes = sizes;
@@ -63,6 +63,12 @@ export class Atlas {
       }
     }
     throw new Error(`${this.name}: does not fit in ${this.sizes[this.sizes.length - 1]}px`);
+  }
+
+  // Hand out the same places again, for a second model built from the same requests.
+  rewind() {
+    this.cursor = 0;
+    this.items = [];
   }
 
   used() {

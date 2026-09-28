@@ -8,14 +8,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=Saira+Condensed:wght@500;600;700&display=swap">
 <style>
-  /* One look on purpose: a dark cockpit at dusk. Chrome is drawn like the
-     aircraft's own panels - dark grey plates, white condensed lettering,
-     lit legends in the keyboard unit's amber. */
+  /* One look on purpose: a dark cockpit. Chrome is drawn like the aircraft's
+     own panels - dark grey plates, white condensed lettering, lit legends in
+     the keyboard unit's amber. */
   :root {
     color-scheme: dark;
     --ground: #0d0f10;
     --plate: rgba(38, 42, 44, 0.9);
-    --plate-hi: rgba(52, 57, 60, 0.94);
     --edge: rgba(236, 235, 226, 0.12);
     --ink: #ecebe2;
     --muted: #a3a898;
@@ -30,7 +29,6 @@
   html, body { height: 100%; }
   body { margin: 0; background: var(--ground); color: var(--ink); font: 15px/1.45 var(--body); overflow: hidden; }
   #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
-  #view:active { cursor: grabbing; }
 
   .hud { position: fixed; left: 0; right: 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: flex-start; padding-inline: 16px; pointer-events: none; }
   .hud > * { pointer-events: auto; }
@@ -38,7 +36,6 @@
   .bottom { bottom: 0; align-items: flex-end; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
 
   .plate { background: var(--plate); border: 1px solid var(--edge); border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); position: relative; }
-  /* Quarter-turn fasteners in the corners, as on every panel in the aircraft. */
   .plate::before, .plate::after { content: ""; position: absolute; top: 6px; width: 5px; height: 5px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #8d8f8c, #3b3d3c); }
   .plate::before { left: 6px; }
   .plate::after { right: 6px; }
@@ -46,6 +43,7 @@
   .id { padding: 10px 18px 11px; max-width: 30rem; }
   h1 { margin: 0; font: 700 22px/1.05 var(--label); letter-spacing: 0.06em; text-transform: uppercase; text-wrap: balance; }
   .id p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+  .id p b { color: var(--lit); font-weight: 500; }
 
   .group { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; }
   .group .cap-label { flex-basis: 100%; margin: 0 0 1px 4px; font: 600 10.5px/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
@@ -58,12 +56,18 @@
   button:hover { color: #fff; }
   button:active { transform: translateY(1px); }
   button:focus-visible { outline: 2px solid var(--lit); outline-offset: 2px; }
-  button[aria-pressed="true"], button[aria-selected="true"] { color: var(--lit); text-shadow: 0 0 10px rgba(255, 194, 61, 0.55); background: linear-gradient(180deg, #2a2618, #1a1810); }
-  button[disabled] { opacity: 0.4; cursor: default; }
+  button[aria-pressed="true"], button[aria-selected="true"], button[aria-expanded="true"] { color: var(--lit); text-shadow: 0 0 10px rgba(255, 194, 61, 0.55); background: linear-gradient(180deg, #2a2618, #1a1810); }
 
-  .readout { padding: 9px 14px 10px; font: 12.5px/1.55 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; min-width: 15rem; }
-  .readout b { color: var(--ink); font-weight: 500; }
-  .readout .hint { display: block; font-family: var(--body); font-size: 12.5px; }
+  .dash { padding: 9px 14px 10px; min-width: 18rem; max-width: 34rem; flex: 1 1 22rem; }
+  .dash .readout { font: 500 12.5px/1.5 var(--mono); color: var(--lit); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+  .dash .status { font-size: 13.5px; color: var(--ink); min-height: 1.45em; overflow-wrap: anywhere; }
+
+  #help { position: fixed; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); width: min(26rem, calc(100vw - 32px)); max-height: calc(100vh - 220px); overflow-y: auto; padding: 14px 18px 12px; z-index: 2; }
+  #help h2 { margin: 0 0 6px; font: 700 15px/1.1 var(--label); letter-spacing: 0.12em; text-transform: uppercase; }
+  #help h3 { margin: 12px 0 4px; font: 600 12px/1.1 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  #help ol, #help ul { margin: 0; padding-left: 1.2em; font-size: 13.5px; }
+  #help li { margin: 2px 0; }
+  kbd { font: 500 11.5px var(--mono); background: #17191a; border: 1px solid #3a3e40; border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; color: var(--ink); }
 
   #loading { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; }
   #loading .plate { padding: 14px 22px; font: 600 15px var(--label); letter-spacing: 0.14em; text-transform: uppercase; }
@@ -71,21 +75,23 @@
   #loading .bar i { display: block; height: 100%; width: 0; background: var(--lit); }
   #loading.err .plate { color: var(--warn); }
 
-  @media (max-width: 560px) {
+  @media (max-width: 620px) {
     .id { max-width: none; flex: 1 1 100%; }
-    .readout { min-width: 0; flex: 1 1 100%; }
+    .dash { min-width: 0; flex: 1 1 100%; }
     button { padding: 9px 11px 8px; min-width: 0; }
+    #help { bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
   }
   @media (prefers-reduced-motion: reduce) { button { transition: none; } }
 </style>
+<script>window.COCKPIT_MODEL_URL = "apache_cockpit.glb";</script>
 </head>
 <body>
-<canvas id="view" aria-label="3D view of the AH-64 Apache cockpit. Drag to look around."></canvas>
+<canvas id="view" aria-label="3D view of the AH-64 Apache cockpit. Click controls to operate them; drag empty space to look around."></canvas>
 
 <header class="hud top">
   <div class="id plate">
     <h1>AH-64 Cockpit</h1>
-    <p>Tandem crew stations at 1:1 scale: the gunner in front, the pilot behind and above.</p>
+    <p>Every switch works: <b id="count">loading</b>. Start the engines, fly it, fire it.</p>
   </div>
   <div class="group plate" role="tablist" aria-label="Viewpoint">
     <span class="cap-label">Seat</span>
@@ -99,369 +105,61 @@
   <div class="group plate">
     <span class="cap-label">Scene</span>
     <button id="night" aria-pressed="false">Night</button>
-    <button id="rotor" aria-pressed="true">Rotor</button>
-    <button id="doors" aria-pressed="false">Doors</button>
+    <button id="sound" aria-pressed="false">Sound</button>
+    <button id="reset">Reset</button>
+    <button id="help-toggle" aria-expanded="false" aria-controls="help">How to fly</button>
     <button id="vr" hidden>Enter VR</button>
   </div>
-  <div class="readout plate" aria-live="polite">
-    <span id="where">Eye point <b>0.00, 1.60, −1.36 m</b></span>
-    <span class="hint" id="hint">Drag to look around. Scroll or pinch to zoom.</span>
+  <div class="dash plate" aria-live="polite">
+    <div class="readout" id="readout">0 KT · 0 FT AGL · HDG 000 · NR 101%</div>
+    <div class="status" id="status">Click switches, knobs and buttons. Drag sticks and levers. Drag empty space to look.</div>
   </div>
 </footer>
 
+<section id="help" class="plate" hidden aria-label="How to fly">
+  <h2>How to fly</h2>
+  <p style="margin:0;color:var(--muted);font-size:13px">You start on the pad with both engines running and the rotor turning.</p>
+  <h3>Take off</h3>
+  <ol>
+    <li>Hold <kbd>R</kbd> to raise the collective until you lift off (about 55%).</li>
+    <li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> tilt the cyclic, <kbd>Q</kbd> <kbd>E</kbd> press the pedals.</li>
+    <li><kbd>F</kbd> lowers the collective to land.</li>
+  </ol>
+  <h3>Shut down and start up</h3>
+  <ol>
+    <li>Pull both power levers (left console) back to OFF. Click a lever to move it; right-click moves it back.</li>
+    <li>Set the rotor brake to BRK once the rotor slows.</li>
+    <li>Press APU. When it's lit, lever to IDLE, flip ENG 1 START up, then ENG 2.</li>
+    <li>Brake OFF, levers to FLY.</li>
+  </ol>
+  <h3>Weapons</h3>
+  <ul>
+    <li>Press ARM/SAFE to arm and GND ORIDE to fire on the ground.</li>
+    <li><kbd>G</kbd> or the WPN page picks gun, rockets or missiles. <kbd>Space</kbd> fires.</li>
+    <li>In the gunner's seat, <kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> slew the sight. The left grip's trigger fires the laser.</li>
+  </ul>
+  <h3>Displays</h3>
+  <ul>
+    <li>The keys under each display change pages. The keys round the edge pick options.</li>
+    <li>Type on the keyboard units. The up-front display's RTS key changes radio.</li>
+  </ul>
+  <h3>Keys</h3>
+  <ul>
+    <li><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> change seats. The arrow keys and dragging empty space look around; scroll to zoom.</li>
+    <li>Scroll over a knob to turn it.</li>
+    <li>In VR, point and pull the trigger, or grab sticks and levers with the grip. The right thumbstick flies the cyclic, the left the collective and pedals.</li>
+  </ul>
+</section>
+
 <div id="loading"><div class="plate">Loading cockpit <span id="pct">0%</span><div class="bar"><i id="bar"></i></div></div></div>
 
+<script src="lib/paint.js"></script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
 } }
 </script>
-<script type="module">
-import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-
-const canvas = document.getElementById("view");
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.xr.enabled = true;
-renderer.xr.setReferenceSpaceType("local");
-
-const scene = new THREE.Scene();
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-
-// The helicopter sits on a pad; its model origin is the front cockpit floor.
-const GROUND_Y = -0.95;
-
-// --- sky, ground, a little scenery for scale -------------------------------------------------
-const skyU = { top: { value: new THREE.Color() }, horizon: { value: new THREE.Color() }, below: { value: new THREE.Color() } };
-const sky = new THREE.Mesh(
-  new THREE.SphereGeometry(1800, 32, 16),
-  new THREE.ShaderMaterial({
-    uniforms: skyU, side: THREE.BackSide, depthWrite: false,
-    vertexShader: "varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
-    fragmentShader: "uniform vec3 top, horizon, below; varying vec3 vP; void main(){ float h = vP.y; vec3 c = h > 0.0 ? mix(horizon, top, pow(clamp(h * 1.6, 0.0, 1.0), 0.6)) : mix(horizon, below, clamp(-h * 6.0, 0.0, 1.0)); gl_FragColor = vec4(c, 1.0); }",
-  })
-);
-scene.add(sky);
-
-function canvasTexture(size, draw, repeat) {
-  const c = document.createElement("canvas");
-  c.width = c.height = size;
-  draw(c.getContext("2d"), size);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  if (repeat) t.repeat.set(repeat, repeat);
-  t.anisotropy = 8;
-  return t;
-}
-let seed = 7;
-const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-const grass = canvasTexture(512, (g, s) => {
-  g.fillStyle = "#56603f"; g.fillRect(0, 0, s, s);
-  for (let i = 0; i < 9000; i++) {
-    const v = rnd();
-    g.fillStyle = v < 0.5 ? `rgba(${70 + v * 60},${86 + v * 50},${46},0.35)` : `rgba(${110 + v * 30},${100 + v * 20},${62},0.25)`;
-    g.fillRect(rnd() * s, rnd() * s, 1 + rnd() * 5, 1 + rnd() * 5);
-  }
-}, 220);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(3600, 3600), new THREE.MeshStandardMaterial({ map: grass, roughness: 1 }));
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = GROUND_Y;
-ground.receiveShadow = true;
-scene.add(ground);
-const padTex = canvasTexture(1024, (g, s) => {
-  g.fillStyle = "#77746a"; g.fillRect(0, 0, s, s);
-  for (let i = 0; i < 14000; i++) { const v = 90 + rnd() * 70; g.fillStyle = `rgba(${v},${v - 4},${v - 12},0.35)`; g.fillRect(rnd() * s, rnd() * s, 2, 2); }
-  g.strokeStyle = "#e3c23a"; g.lineWidth = 14; g.strokeRect(40, 40, s - 80, s - 80);
-  g.fillStyle = "#ecebe2"; g.font = "bold 360px Arial"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("H", s / 2, s / 2 + 20);
-});
-const pad = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.MeshStandardMaterial({ map: padTex, roughness: 0.95 }));
-pad.rotation.x = -Math.PI / 2;
-pad.position.set(0, GROUND_Y + 0.01, -2);
-pad.receiveShadow = true;
-scene.add(pad);
-{
-  const trunk = new THREE.CylinderGeometry(0.25, 0.35, 3, 6);
-  trunk.translate(0, 1.5, 0);
-  const crown = new THREE.ConeGeometry(2.6, 8, 7);
-  crown.translate(0, 6.5, 0);
-  const n = 260;
-  const t1 = new THREE.InstancedMesh(trunk, new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 1 }), n);
-  const t2 = new THREE.InstancedMesh(crown, new THREE.MeshStandardMaterial({ color: 0x2f4127, roughness: 1 }), n);
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
-  for (let i = 0; i < n; i++) {
-    const a = rnd() * Math.PI * 2, r = 45 + Math.pow(rnd(), 0.7) * 420, k = 0.7 + rnd() * 0.9;
-    p.set(Math.cos(a) * r, GROUND_Y, Math.sin(a) * r);
-    q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6);
-    s.set(k, k * (0.8 + rnd() * 0.5), k);
-    m.compose(p, q, s);
-    t1.setMatrixAt(i, m);
-    t2.setMatrixAt(i, m);
-  }
-  scene.add(t1, t2);
-  const hill = new THREE.MeshStandardMaterial({ color: 0x4d5a45, roughness: 1, flatShading: true });
-  for (let i = 0; i < 18; i++) {
-    const a = (i / 18) * Math.PI * 2 + rnd() * 0.3, r = 900 + rnd() * 400;
-    const h = new THREE.Mesh(new THREE.ConeGeometry(160 + rnd() * 220, 60 + rnd() * 110, 9), hill);
-    h.position.set(Math.cos(a) * r, GROUND_Y + 20, Math.sin(a) * r);
-    scene.add(h);
-  }
-}
-
-// --- light ---------------------------------------------------------------------------------------------
-const hemi = new THREE.HemisphereLight(0xdfe8f5, 0x5a5040, 1.1);
-scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff0da, 3.2);
-sun.position.set(-7, 11, 5);
-sun.target.position.set(0, 0.8, -0.6);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -3.5, right: 3.5, top: 3.5, bottom: -3.5, near: 2, far: 30 });
-sun.shadow.bias = -0.0004;
-sun.shadow.normalBias = 0.015;
-scene.add(sun, sun.target);
-// Night: a dim flood in each cockpit, as the crew's NVG-green floodlights.
-const floods = [new THREE.PointLight(0xb9ffb0, 0, 1.6, 2), new THREE.PointLight(0xb9ffb0, 0, 1.6, 2)];
-floods[0].position.set(0, 1.25, 0.45);
-floods[1].position.set(0, 1.62, -0.95);
-scene.add(...floods);
-
-function setNight(on) {
-  if (on) {
-    skyU.top.value.set(0x05070d); skyU.horizon.value.set(0x1a2233); skyU.below.value.set(0x0b0d0c);
-    hemi.intensity = 0.06; sun.intensity = 0.0; floods.forEach((f) => (f.intensity = 0.16));
-    scene.environmentIntensity = 0.03; renderer.toneMappingExposure = 1.15;
-    ground.material.color.set(0x303a30);
-  } else {
-    skyU.top.value.set(0x4f7fbf); skyU.horizon.value.set(0xd8e2ea); skyU.below.value.set(0x6b705c);
-    hemi.intensity = 1.1; sun.intensity = 3.2; floods.forEach((f) => (f.intensity = 0));
-    scene.environmentIntensity = 0.55; renderer.toneMappingExposure = 1.0;
-    ground.material.color.set(0xffffff);
-  }
-}
-setNight(false);
-
-// --- camera: a rig that sits at a seat's eye point, or orbits outside ------------------------------------------
-const camera = new THREE.PerspectiveCamera(70, 1, 0.02, 4000);
-const rig = new THREE.Group();
-rig.add(camera);
-scene.add(rig);
-const orbit = new OrbitControls(camera, canvas);
-orbit.enabled = false;
-orbit.enableDamping = true;
-orbit.minDistance = 1.5;
-orbit.maxDistance = 18;
-orbit.maxPolarAngle = Math.PI * 0.53;
-
-const look = { yaw: 0, pitch: -0.12, fov: 70 };
-let seat = "pilot";
-let model = null, rotor = null, doors = [], eyes = {};
-const tmp = new THREE.Vector3();
-
-function place() {
-  if (seat === "walk") {
-    rig.position.set(0, 0, 0);
-    camera.fov = 45;
-    camera.updateProjectionMatrix();
-    orbit.enabled = true;
-    return;
-  }
-  orbit.enabled = false;
-  const eye = eyes[seat];
-  if (eye) eye.getWorldPosition(rig.position);
-  camera.position.set(0, 0, 0);
-  camera.rotation.set(look.pitch, Math.PI + look.yaw, 0, "YXZ");
-  camera.fov = look.fov;
-  camera.updateProjectionMatrix();
-}
-
-const where = document.getElementById("where");
-const hint = document.getElementById("hint");
-function describe() {
-  if (seat === "walk") {
-    where.innerHTML = "Walkaround <b>outside the aircraft</b>";
-    hint.textContent = "Drag to orbit. Scroll or pinch to zoom.";
-    return;
-  }
-  const p = eyes[seat] ? eyes[seat].getWorldPosition(tmp) : null;
-  const f = (v) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
-  where.innerHTML = p ? `${seat === "pilot" ? "Pilot" : "Gunner"} eye point <b>${f(p.x)}, ${f(p.y)}, ${f(p.z)} m</b>` : "";
-  hint.textContent = "Drag to look around. Scroll or pinch to zoom.";
-}
-
-function setSeat(s) {
-  seat = s;
-  for (const b of document.querySelectorAll("[data-seat]")) b.setAttribute("aria-selected", String(b.dataset.seat === s));
-  if (s === "walk") {
-    camera.position.set(3.2, 2.1, 4.2);
-    orbit.target.set(0, 0.9, -0.6);
-    orbit.update();
-  } else {
-    look.yaw = 0;
-    look.pitch = s === "pilot" ? -0.14 : -0.2;
-    look.fov = 70;
-  }
-  place();
-  describe();
-}
-for (const b of document.querySelectorAll("[data-seat]")) b.addEventListener("click", () => setSeat(b.dataset.seat));
-
-// Drag to look, from the seat.
-const pointers = new Map();
-let pinch0 = 0;
-canvas.addEventListener("pointerdown", (e) => {
-  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
-});
-canvas.addEventListener("pointermove", (e) => {
-  const p = pointers.get(e.pointerId);
-  if (!p || seat === "walk") { if (p) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); return; }
-  if (pointers.size === 2) {
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    const [a, b] = [...pointers.values()];
-    const d = Math.hypot(a.x - b.x, a.y - b.y);
-    if (pinch0) look.fov = THREE.MathUtils.clamp(look.fov * (pinch0 / d), 30, 95);
-    pinch0 = d;
-  } else {
-    const k = (look.fov / 70) * 0.0042;
-    look.yaw += (e.clientX - p.x) * k;
-    look.pitch = THREE.MathUtils.clamp(look.pitch + (e.clientY - p.y) * k, -1.35, 1.2);
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  }
-  place();
-});
-const lift = (e) => { pointers.delete(e.pointerId); pinch0 = 0; };
-canvas.addEventListener("pointerup", lift);
-canvas.addEventListener("pointercancel", lift);
-canvas.addEventListener("wheel", (e) => {
-  if (seat === "walk") return;
-  e.preventDefault();
-  look.fov = THREE.MathUtils.clamp(look.fov * (1 + e.deltaY * 0.001), 30, 95);
-  place();
-}, { passive: false });
-window.addEventListener("keydown", (e) => {
-  if (seat === "walk") return;
-  const step = 0.06;
-  if (e.key === "ArrowLeft") look.yaw += step;
-  else if (e.key === "ArrowRight") look.yaw -= step;
-  else if (e.key === "ArrowUp") look.pitch = Math.min(1.2, look.pitch + step);
-  else if (e.key === "ArrowDown") look.pitch = Math.max(-1.35, look.pitch - step);
-  else return;
-  place();
-});
-
-// --- toggles -----------------------------------------------------------------------------------------------------------
-const toggle = (id, fn) => {
-  const b = document.getElementById(id);
-  b.addEventListener("click", () => {
-    const on = b.getAttribute("aria-pressed") !== "true";
-    b.setAttribute("aria-pressed", String(on));
-    fn(on);
-  });
-};
-let spinning = true, doorTarget = 0, doorOpen = 0;
-toggle("night", setNight);
-toggle("rotor", (on) => (spinning = on));
-toggle("doors", (on) => (doorTarget = on ? 1 : 0));
-
-// VR, where the browser offers it: you start at the chosen seat's eye point.
-const vrBtn = document.getElementById("vr");
-if (navigator.xr && navigator.xr.isSessionSupported) {
-  navigator.xr.isSessionSupported("immersive-vr").then((ok) => {
-    if (!ok) return;
-    vrBtn.hidden = false;
-    vrBtn.addEventListener("click", async () => {
-      if (renderer.xr.isPresenting) { renderer.xr.getSession().end(); return; }
-      if (seat === "walk") setSeat("pilot");
-      camera.position.set(0, 0, 0);
-      camera.rotation.set(0, Math.PI, 0);
-      try {
-        const session = await navigator.xr.requestSession("immersive-vr", { optionalFeatures: ["local-floor"] });
-        await renderer.xr.setSession(session);
-        vrBtn.textContent = "Exit VR";
-        session.addEventListener("end", () => { vrBtn.textContent = "Enter VR"; place(); });
-      } catch (err) {
-        hint.textContent = "This browser could not start VR: " + err.message;
-      }
-    });
-  }).catch(() => {});
-}
-
-// --- the model -----------------------------------------------------------------------------------------------------------
-const loading = document.getElementById("loading");
-function onModel(gltf) {
-  model = gltf.scene;
-  model.traverse((o) => {
-    if (!o.isMesh) return;
-    const m = o.material;
-    o.castShadow = !m.transparent;
-    o.receiveShadow = !m.transparent;
-    if (m.transparent) { m.depthWrite = false; o.renderOrder = 2; }
-  });
-  scene.add(model);
-  eyes = { pilot: model.getObjectByName("Pilot_Eye"), cpg: model.getObjectByName("CPG_Eye") };
-  rotor = model.getObjectByName("Main_Rotor");
-  doors = ["Canopy_Door_CPG", "Canopy_Door_Pilot"].map((n) => model.getObjectByName(n)).filter(Boolean).map((d) => ({ d, q: d.quaternion.clone() }));
-  loading.hidden = true;
-  const start = (location.hash || "").slice(1);
-  setSeat(start === "cpg" || start === "walk" ? start : "pilot");
-}
-function onProgress(loaded, total) {
-  if (!total) return;
-  const pct = Math.round((loaded / total) * 100);
-  document.getElementById("pct").textContent = pct + "%";
-  document.getElementById("bar").style.width = pct + "%";
-}
-function onFail(err) {
-  loading.hidden = false;
-  loading.classList.add("err");
-  loading.querySelector(".plate").textContent = "The cockpit model could not be loaded. Reload the page to try again.";
-  console.error(err);
-}
-new GLTFLoader().load("apache_cockpit.glb", onModel, (e) => onProgress(e.loaded, e.total), onFail);
-
-function resize() {
-  const w = window.innerWidth, h = window.innerHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-}
-window.addEventListener("resize", resize);
-resize();
-
-const clock = new THREE.Clock();
-const axisX = new THREE.Vector3(1, 0, 0);
-const dq = new THREE.Quaternion();
-renderer.setAnimationLoop(() => {
-  const dt = Math.min(clock.getDelta(), 0.1);
-  if (rotor && spinning) rotor.rotation.y += dt * 4.5;
-  doorOpen += (doorTarget - doorOpen) * Math.min(1, dt * 3);
-  for (const { d, q } of doors) d.quaternion.copy(q).multiply(dq.setFromAxisAngle(axisX, doorOpen * 1.15));
-  if (orbit.enabled) orbit.update();
-  renderer.render(scene, camera);
-});
-
-// For scripted screenshots: window.cockpitView("pilot", yaw, pitch, fov)
-window.cockpitView = (s, yaw = 0, pitch = -0.14, fov = 70) => {
-  setSeat(s);
-  if (s !== "walk") Object.assign(look, { yaw, pitch, fov });
-  place();
-  return !!model;
-};
-window.cockpitOrbit = (x, y, z, tx = 0, ty = 0.9, tz = -0.6) => {
-  setSeat("walk");
-  camera.position.set(x, y, z);
-  orbit.target.set(tx, ty, tz);
-  orbit.update();
-};
-</script>
+<script type="module" src="viewer/main.js"></script>
 </body>
 </html>

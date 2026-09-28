@@ -173,6 +173,7 @@ export class Node {
     this.children = [];
     this.geos = new Map();
     this.extras = undefined;
+    this.restFrame = null; // for moving parts: the pose at zero, exported in extras.rest
   }
   child(name, frame = this.frame, extras) {
     const n = new Node(name, frame);
@@ -330,7 +331,7 @@ export function box(g, F, [w, h, d], o = {}) {
     const c = v3.mul(nn, depth / 2);
     const vs = [[-1, 1], [1, 1], [1, -1], [-1, -1]].map(([a, b]) => {
       const lp = v3.add(c, v3.add(v3.mul(uu, (a * fw) / 2), v3.mul(vv, (b * fh) / 2)));
-      const rect = name === "pz" ? o.uv : o.uvs?.[name];
+      const rect = name === "pz" ? o.uv || o.uvAll : o.uvs?.[name] || o.uvAll;
       return { p: F.point(lp), n, t: rect ? uvIn(rect, (a * fw) / 2, (b * fh) / 2, fw, fh) : [((a * fw) / 2) * (o.uvScale ?? 1), (-(b * fh) / 2) * (o.uvScale ?? 1)] };
     });
     g.push(vs, [[0, 3, 2], [0, 2, 1]]);
@@ -362,7 +363,7 @@ export function lathe(g, F, profile, seg = 24, o = {}) {
   const ring = (r, y, nr, ny, j) => {
     const a = phi0 + (phiLen * j) / seg;
     const c = Math.cos(a), s = Math.sin(a);
-    return { p: F.point([r * c, y, -r * s]), n: F.dir([nr * c, ny, -nr * s]), t: [j / seg, y] };
+    return { p: F.point([r * c, y, -r * s]), n: F.dir([nr * c, ny, -nr * s]), t: o.uvConst || [j / seg, y] };
   };
   const vertN = (i) => {
     const a = segN[Math.max(0, i - 1)], b = segN[Math.min(segN.length - 1, i)];
@@ -440,7 +441,7 @@ export function rbox(g, F, [w, h, d], r, seg = 3, o = {}) {
     for (const [p, sxx, szz] of phis) {
       const n = [Math.sin(t) * Math.cos(p), Math.cos(t), Math.sin(t) * Math.sin(p)];
       const lp = [n[0] * r + sxx * hx, n[1] * r + syy * hy, n[2] * r + szz * hz];
-      vs.push({ p: F.point(lp), n: F.dir(n), t: [lp[0] * (o.uvScale ?? 1), -lp[1] * (o.uvScale ?? 1)] });
+      vs.push({ p: F.point(lp), n: F.dir(n), t: o.uvConst || [lp[0] * (o.uvScale ?? 1), -lp[1] * (o.uvScale ?? 1)] });
     }
   }
   const cols = phis.length;
@@ -456,7 +457,7 @@ export function rbox(g, F, [w, h, d], r, seg = 3, o = {}) {
   // The flat top and bottom.
   for (const sy of [1, -1]) {
     const n = F.dir([0, sy, 0]);
-    const c = [[hx, hz], [-hx, hz], [-hx, -hz], [hx, -hz]].map(([x, z]) => ({ p: F.point([x, sy * (h / 2), z]), n, t: [x, z] }));
+    const c = [[hx, hz], [-hx, hz], [-hx, -hz], [hx, -hz]].map(([x, z]) => ({ p: F.point([x, sy * (h / 2), z]), n, t: o.uvConst || [x, z] }));
     g.push(c, [[0, 1, 2], [0, 2, 3]]);
   }
 }
@@ -789,7 +790,12 @@ export function writeGLB(root, images = {}, meta = {}) {
     if (t.some((v) => v !== 0)) out.translation = t;
     const q = rel.quat();
     if (Math.abs(q[3]) < 0.999999) out.rotation = q;
-    if (node.extras) out.extras = node.extras;
+    if (node.extras) out.extras = { ...node.extras };
+    if (node.restFrame) {
+      const r = node.restFrame.relativeTo(parentFrame);
+      out.extras = out.extras || {};
+      out.extras.rest = { translation: r.o.map((v) => Math.round(v * 1e6) / 1e6), rotation: r.quat().map((v) => Math.round(v * 1e7) / 1e7) };
+    }
     const prims = [];
     for (const { mat, geo } of node.geos.values()) {
       if (!geo.i.length) continue;
