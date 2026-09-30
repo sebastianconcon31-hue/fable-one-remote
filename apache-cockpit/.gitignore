@@ -1,3 +1,4 @@
 textures/
-apache_cockpit_viewer.html
+apache_ah64d_viewer.html
 node_modules/
+__pycache__/

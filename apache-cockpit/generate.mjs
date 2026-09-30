@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Builds the AH-64 Apache cockpit for VR:
+// Builds the AH-64 Apache cockpit for VR - the inside of the aircraft. The
+// outside (and the canopy) is built in Blender by exterior/build.py, and
+// merge.mjs joins the two into apache_ah64d.glb.
 //
 //   apache_cockpit.glb          every control is its own node, pivoted, with its motion in glTF extras
 //   apache_cockpit_static.glb   the same model with controls merged in (fewer draw calls, nothing moves)
@@ -20,7 +22,6 @@ import { writeGLB } from "./lib/geo.mjs";
 import { Atlas } from "./lib/atlas.mjs";
 import { makeCtx } from "./lib/parts.mjs";
 import { buildCockpit } from "./lib/cockpit.mjs";
-import { buildExterior, SPEC, GROUND_Y, HUB, TAIL_HUB, MAIN_WHEEL, TAIL_WHEEL_Z } from "./lib/exterior.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -38,8 +39,7 @@ function loadPlaywright() {
 
 function build(pa, da, interactive) {
   const ctx = makeCtx(pa, da, { interactive });
-  const root = buildCockpit(ctx);
-  buildExterior(ctx, root);
+  const root = buildCockpit(ctx, { canopy: "doors" });
   return { ctx, root };
 }
 
@@ -66,48 +66,6 @@ async function paint(pa, da, screens) {
   } finally {
     await browser.close();
   }
-}
-
-// Measure the finished aircraft against the published dimensions.
-function measure(root) {
-  const find = (n, name) => (n.name === name ? n : n.children.map((c) => find(c, name)).find(Boolean));
-  const pts = function* (n) {
-    for (const { geo } of n.geos.values()) for (let i = 0; i < geo.p.length; i += 3) yield [geo.p[i], geo.p[i + 1], geo.p[i + 2]];
-    for (const c of n.children) yield* pts(c);
-  };
-  const ext = find(root, "Exterior");
-  let zMax = -Infinity, zMin = Infinity;
-  const skip = new Set(["Main_Rotor", "Tail_Rotor", "Lights", "FCR_Radome"]);
-  (function walk(n) {
-    if (skip.has(n.name)) return;
-    for (const { geo } of n.geos.values()) for (let i = 2; i < geo.p.length; i += 3) (zMax = Math.max(zMax, geo.p[i])), (zMin = Math.min(zMin, geo.p[i]));
-    n.children.forEach(walk);
-  })(ext);
-  let rMain = 0, topHub = -Infinity;
-  for (const [x, y, z] of pts(find(root, "Main_Rotor"))) {
-    rMain = Math.max(rMain, Math.hypot(x - HUB[0], z - HUB[2]));
-    if (Math.hypot(x - HUB[0], z - HUB[2]) < 0.35) topHub = Math.max(topHub, y);
-  }
-  let rTail = 0;
-  for (const [, y, z] of pts(find(root, "Tail_Rotor"))) rTail = Math.max(rTail, Math.hypot(y - TAIL_HUB[1], z - TAIL_HUB[2]));
-  let span = 0;
-  for (const w of ["Wing_Left", "Wing_Right"]) for (const [x] of pts(find(root, w))) span = Math.max(span, Math.abs(x));
-  let fcrTop = -Infinity;
-  for (const [, y] of pts(find(root, "FCR_Radome"))) fcrTop = Math.max(fcrTop, y);
-  let lowest = Infinity;
-  for (const n of ["Landing_Gear", "Tail"]) for (const [, y] of pts(find(root, n))) lowest = Math.min(lowest, y);
-  const rows = [
-    ["Fuselage length", SPEC.fuselageLength, zMax - zMin],
-    ["Length, rotors turning", SPEC.lengthRotorsTurning, HUB[2] + rMain - Math.min(zMin, TAIL_HUB[2] - rTail)],
-    ["Main rotor diameter", SPEC.mainRotorDiameter, rMain * 2],
-    ["Tail rotor diameter", SPEC.tailRotorDiameter, rTail * 2],
-    ["Wingspan", SPEC.wingspan, span * 2],
-    ["Wheel track", SPEC.wheelTrack, MAIN_WHEEL[0] * 2],
-    ["Wheelbase", SPEC.wheelbase, MAIN_WHEEL[2] - TAIL_WHEEL_Z],
-    ["Height to top of rotor head", SPEC.heightToRotorHead, topHub - GROUND_Y],
-    ["Height to top of radome", SPEC.heightToFcr, fcrTop - GROUND_Y],
-  ];
-  return { rows, wheelsOnGround: Math.abs(lowest - GROUND_Y) < 0.005 };
 }
 
 const pa = new Atlas("panels");
@@ -154,7 +112,3 @@ const kinds = {};
 for (const c of ctx.controls) kinds[c.control] = (kinds[c.control] || 0) + 1;
 console.log(`controls.json: ${ctx.controls.length} operable controls`, JSON.stringify(kinds));
 console.log(`atlases: panels ${pa.size}px (${Math.round(pa.used() * 100)}%), displays ${da.size}px (${Math.round(da.used() * 100)}%), ${ctx.screens.length} live screens`);
-const m = measure(root);
-console.log("1:1 check (published / model, metres):");
-for (const [k, want, got] of m.rows) console.log(`  ${k.padEnd(30)} ${want.toFixed(3).padStart(7)}  ${got.toFixed(3).padStart(7)}  ${Math.abs(got - want) < 0.02 ? "ok" : "OFF BY " + (got - want).toFixed(3)}`);
-console.log(`  wheels on the ground: ${m.wheelsOnGround ? "yes" : "NO"}`);

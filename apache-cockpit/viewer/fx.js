@@ -90,7 +90,7 @@ export class Effects {
 
   rocket(station) {
     const x = station === "LI" ? 1.2 : -1.2;
-    const start = new THREE.Vector3(x, 0.07, -1.65).applyMatrix4(this.aircraft.matrixWorld);
+    const start = new THREE.Vector3(x, 0.1, -1.72).applyMatrix4(this.aircraft.matrixWorld);
     const dir = this.forward();
     const m = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.4, 8), new THREE.MeshStandardMaterial({ color: 0x5a5f50 }));
     m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);

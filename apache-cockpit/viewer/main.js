@@ -1,4 +1,4 @@
-// The working AH-64 cockpit: loads apache_cockpit.glb and makes it fly.
+// The working AH-64: loads apache_ah64d_web.glb (the whole aircraft) and makes it fly.
 // Click or tap any switch, knob, button or key; drag sticks and levers;
 // in VR, point and pull the trigger, or grab with the grip button.
 import * as THREE from "three";
@@ -11,7 +11,7 @@ import { Displays } from "./displays.js";
 import { Effects } from "./fx.js";
 import { Sound } from "./audio.js";
 
-const MODEL_URL = window.COCKPIT_MODEL_URL || "apache_cockpit.glb";
+const MODEL_URL = window.COCKPIT_MODEL_URL || "apache_ah64d_web.glb";
 const GROUND_Y = -0.95;
 const rad = Math.PI / 180;
 const $ = (id) => document.getElementById(id);

@@ -1,4 +1,4 @@
-// Builds apache_cockpit_viewer.html: the whole viewer in one file (the model,
+// Builds apache_ah64d_viewer.html: the whole viewer in one file (the model,
 // three.js and the viewer code), which opens straight from disk with no server.
 //
 //   npm install esbuild three@0.170.0
@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import { readFileSync, writeFileSync } from "node:fs";
 
 const here = new URL(".", import.meta.url).pathname;
-const out = process.argv[2] || here + "apache_cockpit_viewer.html";
+const out = process.argv[2] || here + "apache_ah64d_viewer.html";
 const extra = (process.env.NODE_PATH || "").split(":").filter(Boolean);
 const require = createRequire(import.meta.url);
 const esbuild = require(require.resolve("esbuild", { paths: [here, ...extra] }));
@@ -24,7 +24,7 @@ const bundle = await esbuild.build({
 });
 const js = bundle.outputFiles[0].text;
 const paint = readFileSync(here + "lib/paint.js", "utf8");
-const model = readFileSync(here + "apache_cockpit.glb").toString("base64");
+const model = readFileSync(here + "apache_ah64d_web.glb").toString("base64");
 // nothing inside an inline script may close it early
 const inline = (s) => s.replace(/<\/script/gi, "<\\/script");
 

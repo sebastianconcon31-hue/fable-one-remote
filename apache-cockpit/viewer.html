@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AH-64 Cockpit</title>
+<title>AH-64D Apache</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=Saira+Condensed:wght@500;600;700&display=swap">
@@ -83,15 +83,15 @@
   }
   @media (prefers-reduced-motion: reduce) { button { transition: none; } }
 </style>
-<script>window.COCKPIT_MODEL_URL = "apache_cockpit.glb";</script>
+<script>window.COCKPIT_MODEL_URL = "apache_ah64d_web.glb";</script>
 </head>
 <body>
-<canvas id="view" aria-label="3D view of the AH-64 Apache cockpit. Click controls to operate them; drag empty space to look around."></canvas>
+<canvas id="view" aria-label="3D view of the AH-64D Apache, inside and out. Click controls to operate them; drag empty space to look around."></canvas>
 
 <header class="hud top">
   <div class="id plate">
-    <h1>AH-64 Cockpit</h1>
-    <p>Every switch works: <b id="count">loading</b>. Start the engines, fly it, fire it.</p>
+    <h1>AH-64D Apache</h1>
+    <p>1:1 scale, and every switch works: <b id="count">loading</b>. Start the engines, fly it, fire it.</p>
   </div>
   <div class="group plate" role="tablist" aria-label="Viewpoint">
     <span class="cap-label">Seat</span>

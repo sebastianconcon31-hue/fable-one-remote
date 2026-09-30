@@ -52,7 +52,9 @@ function profileSolid(g, pts, halfW) {
   extrude(g, F, pts, halfW * 2);
 }
 
-export function buildCockpit(ctx) {
+// opts.canopy: "full" builds the canopy's glass and frames; "doors" leaves them to the exterior model
+// (exterior/), keeping just the two crew doors' pivots - the operable nodes the door glass hangs from.
+export function buildCockpit(ctx, opts = {}) {
   const M = ctx.M;
   const root = new Node("AH64_Cockpit");
   root.extras = {
@@ -62,7 +64,7 @@ export function buildCockpit(ctx) {
   };
   const shell = root.child("Cockpit_Shell");
   structure(ctx, shell);
-  canopy(ctx, root);
+  canopy(ctx, root, (opts.canopy || "full") === "full");
   const cpg = root.child("CPG_Station");
   cpgStation(ctx, cpg);
   const plt = root.child("Pilot_Station");
@@ -142,7 +144,7 @@ function structure(ctx, node) {
 }
 
 // ---- canopy: flat transparencies in a frame; both crew doors are on the right ------------------------------------------------------
-function canopy(ctx, root) {
+function canopy(ctx, root, full = true) {
   const M = ctx.M;
   const node = root.child("Canopy");
   const ctr = [0, 1.05, -0.4];
@@ -163,8 +165,10 @@ function canopy(ctx, root) {
     rearRight: [Rt("Q"), Rt("C"), Rt("D"), Rt("E"), Rt("R2"), Rt("R1")],
   };
   const N = Object.fromEntries(Object.entries(panes).map(([k, p]) => [k, out(p)]));
-  const glass = node.child("Canopy_Glass");
-  for (const k of ["windscreen", "frontRoof", "pilotScreen", "rearRoof", "frontLeft", "rearLeft"]) face(glass.g(M.glass), panes[k], N[k]);
+  if (full) {
+    const glass = node.child("Canopy_Glass");
+    for (const k of ["windscreen", "frontRoof", "pilotScreen", "rearRoof", "frontLeft", "rearLeft"]) face(glass.g(M.glass), panes[k], N[k]);
+  }
   // frame members: [from, to, panes it borders]
   const W = 0.05, T = 0.034;
   const members = [
@@ -189,8 +193,8 @@ function canopy(ctx, root) {
     [Lf("Q"), Lf("R1"), ["rearLeft"]],
     [Lf("R1"), Lf("R2"), ["rearLeft"]],
   ];
-  const frames = node.child("Canopy_Frame");
-  for (const [a, b, ps] of members) {
+  const frames = node.child(full ? "Canopy_Frame" : "Canopy_Handles");
+  for (const [a, b, ps] of full ? members : []) {
     const n = v3.norm(ps.reduce((acc, p) => v3.add(acc, N[p]), [0, 0, 0]));
     beam(frames.g(M.frame), a, b, W, T, n, { extend: 0.035 });
   }
@@ -198,6 +202,7 @@ function canopy(ctx, root) {
   const door = (name, fn, pane, hingeA, hingeB, sillA, sillB) => {
     const F = Frame.along(v3.mid(hingeA, hingeB), v3.sub(hingeB, hingeA), N[pane]);
     const d = operable(ctx, node, name, F, F, { control: "door", label: name.replace(/_/g, " "), fn, motion: "rotate", axis: [1, 0, 0], positions: ["CLOSED", "OPEN"], angles: [0, 1.15], state: 0 });
+    if (!full) return d;
     face(d.g(M.glass), panes[pane], N[pane]);
     for (let i = 0; i < sillA.length - 1; i++) beam(d.g(M.frame), sillA[i], sillA[i + 1], W * 0.9, T, N[pane], { extend: 0.03 });
     // latch handle inside
@@ -215,8 +220,10 @@ function canopy(ctx, root) {
     tube(frames.g(M.frame), bezier([p0, v3.add(p0, inn), v3.add(p1, inn), p1], 10), 0.007, 8, { caps: true });
   }
   // wire strike cutter above the canopy
-  const wc = [[0, 1.5, -0.12], [0, 1.6, 0.06], [0, 1.53, 0.08], [0, 1.47, -0.08]];
-  face(frames.g(M.darkMetal), wc, [1, 0, 0], { back: true });
+  if (full) {
+    const wc = [[0, 1.5, -0.12], [0, 1.6, 0.06], [0, 1.53, 0.08], [0, 1.47, -0.08]];
+    face(frames.g(M.darkMetal), wc, [1, 0, 0], { back: true });
+  }
   return node;
 }
 
