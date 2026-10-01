@@ -22,7 +22,8 @@ mounting, and only counts once the contact grows well past what it is at
 rest.
 
     gun_limits()                      in the open Blender scene: {node: table}
-    python modelkit/clearance.py MODEL.glb   prints the table for a delivered model"""
+    python modelkit/clearance.py MODEL.glb [--json OUT]   the tables for a delivered model (to print, or to put
+                                                          into it with modelkit/set_extras.mjs)"""
 import sys
 import os
 import math
@@ -39,6 +40,7 @@ from geom import B
 STEP = 5.0  # degrees of traverse between the table's entries
 TOL = 6  # the gun's triangles newly touching a mesh before a pose counts as touching it
 NEAR = 0.15  # m: how far from where it touches at rest a gun's sliding contact may spread
+MARGIN = math.radians(0.5)  # each limit stops this far short of where the gun starts to touch
 
 
 def _descendants(o):
@@ -135,7 +137,7 @@ def table_for(gun, step=STEP, log=None):
 
     def touching(c, base):
         far = Counter(k for i, k in c if i not in near.get(k, ()))
-        if any(n > TOL for n in far.values()):
+        if any(n > (TOL if k in rest_count else 0) for k, n in far.items()):  # anything it isn't mounted by: no touch
             return True
         now = Counter(k for _, k in c)
         return any(now[k] > n + max(TOL, 2 * n) for k, n in rest_count.items() if k in now)
@@ -166,7 +168,7 @@ def table_for(gun, step=STEP, log=None):
                         ok_e = mid
                     else:
                         bad = mid
-                return ok_e
+                return ok_e - sgn * min(MARGIN, abs(ok_e - start))  # stop short of the first touch
             e = nxt
         return end
 
@@ -211,4 +213,8 @@ def gun_limits(step=STEP, log=print):
 if __name__ == "__main__":
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=sys.argv[1])
-    gun_limits()
+    tables = gun_limits()
+    if "--json" in sys.argv:  # for modelkit/set_extras.mjs, to put new tables into a delivered model
+        import json
+        json.dump({k: {"limits_by_traverse": v, "traverse_step": STEP} for k, v in tables.items()},
+                  open(sys.argv[sys.argv.index("--json") + 1], "w"))
