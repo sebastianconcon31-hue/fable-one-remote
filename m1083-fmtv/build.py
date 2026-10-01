@@ -14,7 +14,7 @@ from fmtv import *
 import parts
 import markings
 import vehicle
-from vehicle import principled, lights_materials, points, span, node_pos
+from vehicle import ramp_angles, principled, lights_materials, points, span, node_pos
 
 ROOT = "M1083A1P2_FMTV"
 NOTES = {
@@ -71,6 +71,8 @@ def measure():
         ("Cargo bed, inside length", SPEC["bedLength"], float(BED_FRONT_Z - 0.05 - (BED_REAR_Z + 0.04))),
         ("Cargo bed, inside width", SPEC["bedWidth"], 2 * (BED_HALF_W - 0.045)),
     ]
+    a, d = ramp_angles(ROOT, w1[2], w3[2], TYRE_R, skip={"Wheels"})
+    rows += [("Approach angle", SPEC["approachAngle"], a), ("Departure angle", SPEC["departureAngle"], d)]
     return rows, float(allp[:, 1].min())
 
 

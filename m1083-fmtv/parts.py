@@ -14,7 +14,9 @@ import os
 import sys
 import numpy as np
 
-from geom import Mesh, Frame, lathe, tube, path_tube, rbox, prism, empty, set_parent, Yframe, Xframe, Zframe, norm, fillet_path
+import bpy  # noqa: F401 (makes mathutils importable)
+from mathutils import Matrix, Vector
+from geom import B, Mesh, Frame, lathe, tube, path_tube, rbox, prism, empty, set_parent, Yframe, Xframe, Zframe, norm, fillet_path
 from running_gear import loft, slab, bolt, tyre
 from vehicle import drive
 from fmtv import *
@@ -84,7 +86,7 @@ def doors(M, parent):
     y0, y1 = CAB_FLOOR_Y + 0.05, CAB_ROOF_Y - 0.1
     for side, sx in (("Left", 1), ("Right", -1)):
         x = sx * (CAB_HALF_W + 0.012)
-        d = empty(f"Door_{side}", (x, (y0 + y1) / 2, z0), parent)
+        d = empty(f"Door_{side}", (x + sx * 0.025, (y0 + y1) / 2, z0), parent)  # on the outer skin: the front edge swings out, not forward
         drive(d, "a cab door: swings about local Y on its front hinges; + opens it outward (to 80 degrees)", control="hinge",
               axis=[0, -1 if sx > 0 else 1, 0], limits=[0, 1.4], group="Doors")
         m = Mesh()
@@ -122,10 +124,12 @@ def cab_trim(M, parent):
         rbox(m, Zframe(head), (0.09, 0.42, 0.06), 0.022, 2, mat=1)
         mg.face(mg.verts([head + np.array([sx * dx, dy, -0.0305]) for dx, dy in ((-0.035, -0.18), (0.035, -0.18), (0.035, 0.18), (-0.035, 0.18))]))
         path_tube(m, [np.array([sx * (CAB_HALF_W - 0.01), 1.6, CAB_BACK_Z + 0.05]), np.array([sx * (CAB_HALF_W + 0.04), 1.62, CAB_BACK_Z + 0.05]), np.array([sx * (CAB_HALF_W + 0.04), 2.4, CAB_BACK_Z + 0.05]), np.array([sx * (CAB_HALF_W - 0.01), 2.42, CAB_BACK_Z + 0.05])], 0.014, 8, mat=1)
+        # the steps up to the door, behind the front wheel, clear of the tyre as it steers
+        zs = CAB_BACK_Z + 0.125
         for k, y in enumerate((0.75, 1.05)):
-            box(m, (sx * (0.98 + 0.04 * k), y, CAB_BACK_Z + 0.65), (0.24, 0.035, 0.34), 0.008, 1, mat=1)
-        for dz in (-0.16, 0.16):
-            tube(m, (sx * 0.97, 0.72, CAB_BACK_Z + 0.65 + dz), (sx * 1.03, CAB_FLOOR_Y, CAB_BACK_Z + 0.65 + dz), 0.014, 8, mat=1)
+            box(m, (sx * (0.98 + 0.04 * k), y, zs), (0.24, 0.035, 0.22), 0.008, 1, mat=1)
+        for dz in (-0.09, 0.09):
+            tube(m, (sx * 0.97, 0.72, zs + dz), (sx * 1.03, CAB_FLOOR_Y, zs + dz), 0.014, 8, mat=1)
     return [m.to_object("Mirrors_And_Trim", [M["paint"], M["chassis"]], parent, sharp_angle=45),
             mg.to_object("Mirror_Glass", [M["mirror"]], parent, smooth=False, per_face=lambda p: (p[0], p[1], p[2] + 1.0))]
 
@@ -136,16 +140,16 @@ def front(M, parent):
     objs = []
     m = Mesh()
     zf = FRONT_Z
-    rbox(m, Zframe((0, 0.86, zf - 0.13)), (2.3, 0.34, 0.26), 0.03, 2)
+    rbox(m, Zframe((0, FRONT_BUMPER_Y, zf - 0.13)), (2.3, 0.34, 0.26), 0.03, 2)
     for sx in (1, -1):
-        lathe(m, Frame((sx * 0.55, 0.7, zf - 0.08), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.035, -0.035), (0.07, -0.035), (0.07, 0.035), (0.035, 0.035), (0.035, -0.035)], 16, mat=1)
+        lathe(m, Frame((sx * 0.55, FRONT_BUMPER_Y - 0.11, zf - 0.08), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.035, -0.035), (0.07, -0.035), (0.07, 0.035), (0.035, 0.035), (0.035, -0.035)], 16, mat=1)
     # front fenders: flat plates over the wheels off the cab's sides, their mud flaps
     for sx in (1, -1):
         f = Mesh()
         x0, x1 = sx * 0.62, sx * (HALF_W - 0.01)
         zc, L = AXLES_Z[0] + 0.05, 1.5
         box(f, ((x0 + x1) / 2, 1.3, zc), (abs(x1 - x0), 0.03, L), 0.008, 1)
-        box(f, (x1 - sx * 0.01, 1.2, zc), (0.025, 0.2, L), 0.006, 1)
+        box(f, (x1 - sx * 0.01, 1.25, zc), (0.025, 0.1, L), 0.006, 1)  # a short lip, above the tyres' shoulders as they steer
         objs.append(f.to_object(f"Fender_{side_name(sx)}", [M["paint"]], node, sharp_angle=45))
         mf = Mesh()
         box(mf, (sx * 0.98, 0.82, zc - L / 2 - 0.02), (0.42, 0.62, 0.012), 0.004, 1)
@@ -172,11 +176,11 @@ def chassis(M, parent):
     for k, za in enumerate(AXLES_Z):
         tube(m, (WHEEL_X - 0.18, TYRE_R, za), (-WHEEL_X + 0.18, TYRE_R, za), 0.07, 16)
         lathe(m, Zframe((0.05, TYRE_R, za - 0.17)), [(0.0, 0.0), (0.11, 0.02), (0.18, 0.1), (0.2, 0.18), (0.18, 0.28), (0.11, 0.34), (0.0, 0.35)], 22)
-        for sx in (1, -1):
+        for sx in (1, -1):  # leaf springs under the frame rails, inboard of the front tyres as they steer
             for j in range(5):
-                box(m, (sx * 0.62, 0.74 + j * 0.016, za), (0.09, 0.014, 1.0 - j * 0.14), 0.004, 1)
-            tube(m, (sx * 0.72, TYRE_R + 0.05, za + 0.15), (sx * 0.5, 1.0, za + 0.2), 0.032, 10)
-    tube(m, (WHEEL_X - 0.22, TYRE_R + 0.12, AXLES_Z[0] - 0.15), (-WHEEL_X + 0.22, TYRE_R + 0.12, AXLES_Z[0] - 0.15), 0.022, 8)
+                box(m, (sx * 0.39, 0.74 + j * 0.016, za), (0.09, 0.014, 1.0 - j * 0.14), 0.004, 1)
+            tube(m, (sx * 0.56, TYRE_R + 0.05, za + 0.15), (sx * 0.46, 1.0, za + 0.2), 0.032, 10)
+    tube(m, (WHEEL_X - 0.37, TYRE_R + 0.12, AXLES_Z[0] - 0.15), (-WHEEL_X + 0.37, TYRE_R + 0.12, AXLES_Z[0] - 0.15), 0.022, 8)  # tie rod
     rbox(m, Zframe((0, 0.82, 0.6)), (0.45, 0.38, 0.45), 0.04, 2)
     for za in AXLES_Z:
         tube(m, (0.0, 0.82, 0.6), (0.05, TYRE_R + 0.05, za + (0.2 if za < 0.6 else -0.2)), 0.04, 12)
@@ -192,7 +196,8 @@ def wheels(M, parent):
             holder = node
             if i == 0:
                 holder = empty(f"Steer_1_{side}", c, node)
-                drive(holder, "steer about local Y; + turns left", control="steer", axis=[0, 1, 0], limits=[-0.6, 0.6])
+                drive(holder, f"steer about local Y; + turns left. Full lock is the inner wheel's for the published 65.6 ft turning circle ({math.degrees(STEER_LOCK):.0f} degrees)",
+                      control="steer", axis=[0, 1, 0], limits=[-round(STEER_LOCK, 4), round(STEER_LOCK, 4)])
             w = empty(f"Wheel_{i + 1}_{side}", c, holder)
             drive(w, "spin about local X; + rolls the truck forward", control="wheel", axis=[1, 0, 0], radius=round(TYRE_R, 4))
             m = Mesh()
@@ -216,14 +221,14 @@ def mid_body(M, parent):
     objs.append(m.to_object("Intake_And_Exhaust", [M["paint"], M["chassis"], M["exhaust"]], node, sharp_angle=45))
     t = Mesh()
     rings = []
-    for z in np.linspace(0.3, -0.85, 2):
+    for z in np.linspace(0.42, -0.73, 2):  # ahead of the rear pair's tyres
         loop = fillet_path([(HALF_W - 0.06, 1.18), (HALF_W - 0.06, 0.72), (0.62, 0.72), (0.62, 1.18)], [0.18, 0.18, 0.04, 0.04], arc_n=6, seg_n=3, closed=True)
         rings.append([(x, y, z) for x, y in loop])
     ids = t.grid(rings, closed=True)
     t.cap(ids[0], flip=True)
     t.cap(ids[-1])
-    lathe(t, Yframe((0.95, 1.18, 0.0)), [(0.0, 0.0), (0.06, 0.0), (0.06, 0.05), (0.07, 0.05), (0.07, 0.08), (0.0, 0.085)], 16, mat=1)
-    for z in (0.15, -0.7):
+    lathe(t, Yframe((0.95, 1.18, 0.12)), [(0.0, 0.0), (0.06, 0.0), (0.06, 0.05), (0.07, 0.05), (0.07, 0.08), (0.0, 0.085)], 16, mat=1)
+    for z in (0.27, -0.58):
         box(t, (0.9, 1.2, z), (0.6, 0.025, 0.05), 0.006, 1, mat=1)
     objs.append(t.to_object("Fuel_Tank", [M["paint"], M["chassis"]], node, sharp_angle=50))
     b = Mesh()
@@ -231,12 +236,15 @@ def mid_body(M, parent):
     for dz in (-0.25, 0.25):
         box(b, (-1.163, 1.1, -0.25 + dz), (0.012, 0.06, 0.05), 0.004, 1, mat=1)
     objs.append(b.to_object("Battery_Box", [M["paint"], M["chassis"]], node, sharp_angle=45))
-    # spare tyre on its carrier between the cab and the body, upright, on the left
-    sc = (0.25, BED_FLOOR_Y + 0.02 + TYRE_R, zb + 0.02)
+    # spare tyre on its carrier between the cab and the body, upright and facing back, so it fits the gap between them
+    sc = (0.0, BED_FLOOR_Y + 0.02 + TYRE_R, zb)
     sp = empty("Spare_Tire", sc, node)
     s = Mesh()
     tyre(s, sc, 1, TYRE_R, TYRE_W, 0.254, blocks=30, block=(0.4, 0.034, 0.1), chevron=20, studs=10)
-    objs.append(s.to_object("Spare_Tire_Mesh", [M["rubber"], M["chassis"]], sp, sharp_angle=60))
+    o = s.to_object("Spare_Tire_Mesh", [M["rubber"], M["chassis"]], sp, sharp_angle=60)
+    c = Vector(B(sc))
+    o.data.transform(Matrix.Translation(c) @ Matrix.Rotation(math.pi / 2, 4, "Z") @ Matrix.Translation(-c))  # turned about the vertical
+    objs.append(o)
     return objs
 
 
@@ -262,7 +270,7 @@ def cargo_body(M, parent):
             lathe(m, Zframe((x + sx * 0.02, BED_FLOOR_Y + 0.02, z - 0.22)), [(0.0, -0.05), (0.016, -0.05), (0.016, 0.05), (0.0, 0.05)], 8, mat=1)
         box(m, (x - sx * 0.05, BED_FLOOR_Y + 0.38, zc), (0.025, 0.3, L - 0.4), 0.006, 1, mat=2)
         for z in np.arange(BED_FRONT_Z - 0.4, BED_REAR_Z, -0.8):
-            lathe(m, Yframe((sx * (BED_HALF_IN - 0.08), BED_FLOOR_Y, z)), [(0.022, 0.0), (0.04, 0.0), (0.04, 0.012), (0.022, 0.012), (0.022, 0.0)], 12, mat=1)
+            lathe(m, Yframe((sx * (BED_HALF_IN - 0.08), BED_FLOOR_Y - 0.01, z)), [(0.022, 0.0), (0.04, 0.0), (0.04, 0.009), (0.022, 0.009), (0.022, 0.0)], 12, mat=1)  # folded flat into the floor
     # front bulkhead
     rbox(m, Zframe((0, BED_FLOOR_Y + 0.45, BED_FRONT_Z - 0.03)), (2 * BED_HALF_W, 0.9, 0.04), 0.01, 1)
     for x in np.linspace(-1.0, 1.0, 6):
@@ -283,10 +291,10 @@ def cargo_body(M, parent):
     objs.append(o)
     # rear: bumper, pintle, mud flaps
     r = Mesh()
-    rbox(r, Zframe((0, 0.95, REAR_Z + 0.07)), (2.1, 0.22, 0.14), 0.025, 2)
-    lathe(r, Frame((0, 0.92, REAR_Z + 0.07), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.04, -0.035), (0.07, -0.035), (0.07, 0.035), (0.04, 0.035), (0.04, -0.035)], 18, mat=1)
+    rbox(r, Zframe((0, REAR_BUMPER_Y, REAR_Z + 0.07)), (2.1, 0.22, 0.14), 0.025, 2)
+    lathe(r, Frame((0, REAR_BUMPER_Y - 0.03, REAR_Z + 0.07), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.04, -0.035), (0.07, -0.035), (0.07, 0.035), (0.04, 0.035), (0.04, -0.035)], 18, mat=1)
     for sx in (1, -1):
-        box(r, (sx * 0.5, 1.12, (REAR_Z + BED_REAR_Z) / 2 + 0.05), (0.1, 0.3, 0.2), 0.01, 1)
+        box(r, (sx * 0.5, REAR_BUMPER_Y + 0.12, (REAR_Z + BED_REAR_Z) / 2 + 0.05), (0.1, 0.12, 0.2), 0.01, 1)
     objs.append(r.to_object("Rear_End", [M["paint"], M["chassis"]], node, sharp_angle=45))
     mf = Mesh()
     for sx in (1, -1):
@@ -307,12 +315,12 @@ def cargo(M, parent):
         for x in (0.56, -0.56):
             kind = kinds[slot]
             slot += 1
-            c = (x, BED_FLOOR_Y, z)
+            c = (x, BED_FLOOR_Y + 0.003, z)  # a few millimetres proud of the floor
             n = empty(f"Cargo_Pallet_{slot}", c, node)
             drive(n, "a pallet load; show, hide or lift it off on its own", control="cargo")
             m = Mesh()
             truck.pallet(m, c, 0)
-            y0 = BED_FLOOR_Y + 0.12
+            y0 = c[1] + 0.12
             if kind == "drums":
                 for dx in (-0.25, 0.25):
                     for dz in (-0.3, 0.3):
@@ -352,8 +360,8 @@ def lights(M, parent):
     for side, sx in (("Left", 1), ("Right", -1)):
         specs += [(f"Light_Head_{side}", M["light_white"], (sx * 0.9, 1.17, zf), (0, 0, 1), 0.085),
                   (f"Light_Turn_Front_{side}", M["light_amber"], (sx * 0.66, 1.17, zf), (0, 0, 1), 0.04),
-                  (f"Light_Tail_{side}", M["light_red"], (sx * 0.9, 0.98, REAR_Z + 0.014), (0, 0, -1), 0.055),
-                  (f"Light_Turn_Rear_{side}", M["light_amber"], (sx * 0.74, 0.98, REAR_Z + 0.014), (0, 0, -1), 0.04)]
+                  (f"Light_Tail_{side}", M["light_red"], (sx * 0.9, REAR_BUMPER_Y, REAR_Z + 0.014), (0, 0, -1), 0.055),
+                  (f"Light_Turn_Rear_{side}", M["light_amber"], (sx * 0.74, REAR_BUMPER_Y, REAR_Z + 0.014), (0, 0, -1), 0.04)]
     for x in (-0.3, 0.0, 0.3):
         specs.append((f"Light_Clearance_{'L' if x > 0 else 'R' if x < 0 else 'C'}", M["light_amber"], (x, CAB_ROOF_Y - 0.07, CAB_FRONT_Z - 0.07), (0, 0.3, 0.95), 0.022))
     for name, mat, c, d, r in specs:

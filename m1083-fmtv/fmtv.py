@@ -7,6 +7,8 @@ SPEC holds the published figures; build.py measures the finished truck
 against every one of them. Positions marked "est." are estimated from the
 truck's proportions."""
 
+import math
+
 IN = 0.0254
 
 SPEC = {
@@ -18,6 +20,9 @@ SPEC = {
     "tyreWidth": 0.395,
     "bedLength": 170 * IN,  # inside the cargo body
     "bedWidth": 91 * IN,
+    "approachAngle": 40.0,  # degrees
+    "departureAngle": 49.0,
+    "turningCircle": 65.6 * 12 * IN,  # curb to curb
 }
 
 TANDEM = 54 * IN  # est.: the rear pair's axle spacing
@@ -28,6 +33,12 @@ WHEEL_X = 0.99  # est.: track 1.98 m, the tyres inside the published width
 HALF_W = SPEC["width"] / 2
 
 FRONT_Z = AXLES_Z[0] + 1.24  # the bumper's face (est.)
+# the bumpers' heights give the published approach and departure angles over these overhangs
+FRONT_BUMPER_Y = 1.02
+REAR_BUMPER_Y = 1.15
+# steering: the inner front wheel's full lock for the published turning circle (Ackermann, about the rear pair's centre)
+_R = SPEC["turningCircle"] / 2
+STEER_LOCK = math.atan(SPEC["wheelbase"] / (_R * math.cos(math.asin(SPEC["wheelbase"] / _R)) - 2 * 0.99))
 REAR_Z = FRONT_Z - SPEC["length"]
 
 # cab, over the engine (est.)

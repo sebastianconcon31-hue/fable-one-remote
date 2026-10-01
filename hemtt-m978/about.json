@@ -43,15 +43,15 @@
   ],
   [
    "`Steer_{1,2}_{Left,Right}`",
-   "steer about local Y; + turns left; the second axle turns about two thirds as far as the first"
+   "steer about local Y; + turns left. Full lock is the inner wheels' for the published 100 ft turning circle: 27° on the first axle, 21° on the second"
   ],
   [
    "`Door_Left`, `Door_Right`",
-   "the cab doors swing about `axis` on their front hinges (group `Cab doors`)"
+   "the cab doors swing about `axis` on hinges on their outer skins (group `Cab doors`)"
   ],
   [
    "`Pump_Door_{Left,Right}`, `Pump_Side_Door_{Left,Right}`",
-   "the pump module's rear doors swing out on their outer hinges; its side doors lift on their tops (group `Pump doors`)"
+   "the pump module's rear doors swing out on hinges at its back corners and fold round flat against its sides (group `Pump rear doors`); its side doors lift on their tops (group `Pump side doors`)"
   ],
   [
    "`Hose_Reel_1`, `Hose_Reel_2`",
@@ -89,7 +89,7 @@
   ]
  ],
  "accuracy": [
-  "**Published dimensions:** length, width, height over the spare tyre, wheelbase, track, the tyres and the tank's capacity all match.",
+  "**Published dimensions:** length, width, height over the spare tyre, wheelbase, track, the tyres, the tank's capacity, the 41° approach angle and the 100 ft turning circle (as the steering locks) all match.",
   "**Estimated:** the tank's shape and length (sized to hold 2,500 gal), the pump module's layout and the fittings.",
   "**Markings:** plausible but made up; the registration isn't a real truck's."
  ]

@@ -21,7 +21,7 @@ import truck
 import tanker
 import markings
 import vehicle
-from vehicle import principled, lights_materials, drive, points, centre, span
+from vehicle import principled, lights_materials, drive, points, centre, span, ramp_angles
 
 # the M977's parts, with the M978's longer rear end
 truck.SPEC = SPEC
@@ -115,6 +115,7 @@ def measure():
         ("Track", SPEC["track"], w1l[0] - w1r[0]),
         ("Tyre diameter (16.00R20)", SPEC["tyreDiameter"], span(points("Wheel_1_Left"), 1)),
         ("Tank, m3 (2,500 US gal)", SPEC["tankCapacity"], tank_volume()),
+        ("Approach angle", SPEC["approachAngle"], ramp_angles(ROOT, w1l[2], w4l[2], TYRE_R, skip={"Wheels"})[0]),
     ]
     return rows, float(allp[:, 1].min())
 
@@ -131,9 +132,9 @@ VIEWS = {
 BEAUTY = {
     "hero": ((7.4, 2.4, 10.6), (0, 1.35, 0.2), 32),
     "side": ((15.5, 1.7, -0.5), (0, 1.45, -0.5), 30),
-    "rear": ((-4.4, 2.6, -11.0), (0, 1.6, -4.6), 30, ["Pump doors"]),
+    "rear": ((-4.4, 2.6, -11.0), (0, 1.6, -4.6), 30, ["Pump rear doors", "Pump side doors"]),
     "tank": ((5.5, 4.4, 2.5), (0, 2.2, -1.2), 30),
-    "pump": ((-3.6, 2.2, -8.6), (-0.4, 1.8, -4.8), 30, ["Pump doors"]),
+    "pump": ((-3.6, 2.2, -8.6), (-0.4, 1.8, -4.8), 30, ["Pump rear doors", "Pump side doors"]),
 }
 
 PALETTE = dict(

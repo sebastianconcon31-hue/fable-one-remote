@@ -6,6 +6,8 @@ SPEC holds the published figures; build.py measures the finished vehicle
 against every one of them. Positions marked "est." are estimated from the
 vehicle's proportions."""
 
+import math
+
 IN = 0.0254
 
 SPEC = {
@@ -15,13 +17,21 @@ SPEC = {
     "groundClearance": 0.53,
     "tyreDiameter": 44.5 * IN,  # Michelin 12.00R20 XML
     "tyreWidth": 12.2 * IN,
+    "turningCircle": 52 * 12 * IN,  # diameter
 }
 
-# wheels (est.: the LAV III's axle spacing)
-AXLES_Z = [2.1, 1.0, -0.9, -2.1]
+# wheels (est.: the LAV III's axle spacing, each pair far enough apart that its 44.5 in tyres clear each other)
+AXLES_Z = [2.1, 0.86, -0.86, -2.1]
 TYRE_R = SPEC["tyreDiameter"] / 2
 TYRE_W = SPEC["tyreWidth"]
 WHEEL_X = 1.145  # wheel centres either side (est.)
+AXLE_Y = SPEC["groundClearance"] + 0.16  # the differentials' centres: their undersides are the published ground clearance
+
+# steering: the first two axles' full locks (their inner wheels') for the published turning circle, turning about one
+# centre on the line through the rear pair (Ackermann)
+_R, _rear = SPEC["turningCircle"] / 2, (AXLES_Z[2] + AXLES_Z[3]) / 2
+_across = _R * math.cos(math.asin((AXLES_Z[0] - _rear) / _R)) - 2 * WHEEL_X
+STEER_LOCK = [math.atan((AXLES_Z[0] - _rear) / _across), math.atan((AXLES_Z[1] - _rear) / _across)]
 
 # hull (est.)
 FRONT_Z = AXLES_Z[0] + 1.3

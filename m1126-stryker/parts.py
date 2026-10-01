@@ -36,7 +36,8 @@ def bot_y(z):
     return BELLY_Y + (z - BELLY_FRONT_Z) / (FRONT_Z - BELLY_FRONT_Z) * (NOSE_BOT_Y - BELLY_Y)
 
 
-HALF = [(0.72, BELLY_Y), (0.95, 1.18), (HALF_W, SHELF_Y), (HALF_W, 1.66), (1.06, ROOF_Y)]
+# the lower hull narrows to its belly, inboard of the front tyres' sweep at full lock
+HALF = [(0.56, BELLY_Y), (0.78, 1.18), (HALF_W, SHELF_Y), (HALF_W, 1.66), (1.06, ROOF_Y)]
 
 
 def section(z):
@@ -139,7 +140,7 @@ def lid(M, parent, name, hinge, c, r, axis, limits, what, rect=None, group="Hatc
         slab(m, Frame(np.asarray(c) + np.array([0, 0.02, 0]), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(-rect[0] / 2, -rect[1] / 2), (rect[0] / 2, -rect[1] / 2), (rect[0] / 2, rect[1] / 2), (-rect[0] / 2, rect[1] / 2)], 0.04, 0.01)
     else:
         lathe(m, Yframe(c), [(0.0, 0.0), (r, 0.0), (r + 0.008, 0.02), (r - 0.02, 0.05), (0.0, 0.055)], 32)
-    box(m, tuple(hinge), (0.2, 0.05, 0.07), 0.012, 1)
+    box(m, tuple(hinge), (0.07, 0.05, 0.2) if abs(axis[2]) > 0.5 else (0.2, 0.05, 0.07), 0.012, 1)  # the hinge, along its axis
     path_tube(m, [np.asarray(c) + np.array([-0.08, 0.04, 0.0]), np.asarray(c) + np.array([-0.08, 0.09, 0.0]), np.asarray(c) + np.array([0.08, 0.09, 0.0]), np.asarray(c) + np.array([0.08, 0.04, 0.0])], 0.01, 8)
     o = m.to_object(name + "_Lid", [M["paint"]], None, sharp_angle=40)
     set_parent(o, n)
@@ -179,7 +180,7 @@ def roof(M, parent):
         r = Mesh()
         slab(r, Frame(c + np.array([0, 0.012, 0]), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(-0.36, -0.52), (0.36, -0.52), (0.36, 0.52), (-0.36, 0.52)], 0.024, 0.006)
         objs.append(r.to_object(f"Troop_Hatch_{side}_Frame", [M["paint"]], parent, sharp_angle=40))
-        objs += lid(M, parent, f"Troop_Hatch_{side}", c + np.array([sx * 0.32, 0.05, 0]), c + np.array([0, 0.024, 0]), 0, [0, 0, -sx], [0, 1.8],
+        objs += lid(M, parent, f"Troop_Hatch_{side}", c + np.array([sx * 0.37, 0.07, 0]), c + np.array([0, 0.024, 0]), 0, [0, 0, -sx], [0, 1.8],
                     "a troop hatch: hinged along its outer edge, turns about local Z; + opens it upward and out", rect=(0.6, 0.96))
     objs += rws(M, parent)
     return objs
@@ -285,7 +286,10 @@ def wheels(M, parent):
             holder = node
             if i < 2:
                 holder = empty(f"Steer_{i + 1}_{side}", c, node)
-                drive(holder, "steer about local Y; + turns left. The second axle turns about two thirds as far as the first.", control="steer", axis=[0, 1, 0], limits=[-0.55 if i == 0 else -0.36, 0.55 if i == 0 else 0.36])
+                lock = STEER_LOCK[i]
+                drive(holder, f"steer about local Y; + turns left. Full lock ({math.degrees(STEER_LOCK[0]):.0f} degrees on the first axle, "
+                              f"{math.degrees(STEER_LOCK[1]):.0f} on the second) is the inner wheels' for the published 52 ft turning circle.",
+                      control="steer", axis=[0, 1, 0], limits=[-round(lock, 4), round(lock, 4)])
             w = empty(f"Wheel_{i + 1}_{side}", c, holder)
             drive(w, "spin about local X; + rolls the vehicle forward", control="wheel", axis=[1, 0, 0], radius=round(TYRE_R, 4))
             m = Mesh()
@@ -295,9 +299,9 @@ def wheels(M, parent):
     a = Mesh()
     for za in AXLES_Z:
         for sx in (1, -1):
-            tube(a, (sx * 0.55, TYRE_R + 0.02, za), (sx * (WHEEL_X - 0.12), TYRE_R, za), 0.05, 12)
-            tube(a, (sx * 0.6, TYRE_R + 0.18, za + 0.2), (sx * (WHEEL_X - 0.15), TYRE_R + 0.1, za + 0.05), 0.03, 8)
-            tube(a, (sx * 0.85, TYRE_R + 0.1, za - 0.1), (sx * 0.88, 1.15, za - 0.18), 0.04, 10)
-        lathe(a, Zframe((0, TYRE_R + 0.02, za - 0.15)), [(0.0, 0.0), (0.12, 0.02), (0.16, 0.08), (0.16, 0.22), (0.12, 0.28), (0.0, 0.3)], 18)
+            tube(a, (sx * 0.16, AXLE_Y, za), (sx * (WHEEL_X - 0.12), TYRE_R, za), 0.05, 12)  # half shaft, down to the hub
+            tube(a, (sx * 0.5, TYRE_R + 0.18, za + 0.2), (sx * (WHEEL_X - 0.3), TYRE_R + 0.1, za + 0.05), 0.03, 8)  # upper arm
+            tube(a, (sx * 0.64, TYRE_R + 0.1, za - 0.1), (sx * 0.7, 1.15, za - 0.18), 0.04, 10)  # strut, up into the hull
+        lathe(a, Zframe((0, AXLE_Y, za - 0.15)), [(0.0, 0.0), (0.12, 0.02), (0.16, 0.08), (0.16, 0.22), (0.12, 0.28), (0.0, 0.3)], 18)
     objs.append(a.to_object("Axles_And_Suspension", [M["chassis"]], node, sharp_angle=50))
     return objs

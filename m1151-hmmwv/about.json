@@ -34,7 +34,7 @@
   "markings.py",
   "hmmwv.py"
  ],
- "scale_intro": "Built to AM General's published M1151A1 figures; `build.py` measures the finished geometry against them on every build:",
+ "scale_intro": "Built to AM General's published M1151A1 figures; `build.py` measures the finished geometry against them on every build, the off-road angles and the ground clearance included:",
  "origin": "on the ground, on the centreline, midway between the axles",
  "moving": [
   [
@@ -43,11 +43,11 @@
   ],
   [
    "`Gun`",
-   "the M2 on its pintle: elevates about (−1, 0, 0); + raises it, −15° to +50°"
+   "the M2 on its pintle: elevates about (−1, 0, 0); + raises it, −15° to +50° on its mount; the shield and the roof stop it at about +25° (its `limits_by_traverse`)"
   ],
   [
    "`Door_{Front,Rear}_{Left,Right}`",
-   "swing about `axis` on their front hinges; + opens them outward (group `Doors`)"
+   "swing about `axis` on hinges on their outer skins, at their front edges; + opens them outward (group `Doors`)"
   ],
   [
    "`Cargo_Lid`",
@@ -59,7 +59,7 @@
   ],
   [
    "`Steer_1_{Left,Right}`",
-   "steer about local Y; + turns left. The front wheels sit inside these nodes."
+   "steer about local Y; + turns left. Full lock is the inner wheel's for the published 25 ft turning radius (33°). The front wheels and their portal hubs sit inside these nodes."
   ],
   [
    "`Light_*`",
@@ -85,7 +85,7 @@
   ]
  ],
  "accuracy": [
-  "**Published dimensions:** length, width over the mirrors, height to the cab roof, wheelbase, track and the tyres all match.",
+  "**Published dimensions:** length, width over the mirrors, height to the cab roof, wheelbase, track and the tyres all match, and so do the off-road figures: the 48.8° approach and 37° departure angles, the 17.2 in ground clearance under the differentials and the 25 ft turning radius (as the steering lock).",
   "**Estimated:** the body's sections, the doors and windows, the turret's shields and the underbody.",
   "**Markings:** plausible but made up."
  ]

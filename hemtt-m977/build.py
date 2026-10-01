@@ -26,6 +26,7 @@ from m977 import SPEC, AXLES_Z, TYRE_R
 import truck
 import markings
 import paint
+import vehicle
 
 
 def arg(name, default=None):
@@ -135,11 +136,12 @@ def notes():
     O["Crane_Boom_Extension"]["group"] = "Crane reach"
     O["Crane_Boom_Extension"]["axis"] = [0.0, 0.0, 1.0]
     O["Crane_Boom_Extension"]["limits"] = [0.0, 2.3]
-    O["Crane_Hook"]["drive"] = "hoist: lower along local -Y on the cable, up to 3 m"
+    O["Crane_Hook"]["drive"] = "hoist: lower it on the cable, up to 3 m, straight down (`gravity`), whatever the boom does"
     O["Crane_Hook"]["control"] = "slide"
     O["Crane_Hook"]["group"] = "Crane reach"
     O["Crane_Hook"]["axis"] = [0.0, -1.0, 0.0]
     O["Crane_Hook"]["limits"] = [0.0, 3.0]
+    O["Crane_Hook"]["gravity"] = True  # hangs plumb on its cable, whatever the boom does
     O["Crane_Hook"]["capacity_kg"] = 2041
     for i in range(1, 9):
         O[f"Cargo_Pallet_{i}"]["cargo"] = "a pallet load; show, hide or lift it off on its own"
@@ -199,6 +201,7 @@ def measure():
         ("Track", SPEC["track"], w1l[0] - w1r[0]),
         ("Tyre diameter (16.00R20)", SPEC["tyreDiameter"], tyre[:, 1].max() - tyre[:, 1].min()),
         ("Cargo body length (18 ft)", SPEC["cargoBodyLength"], bed[:, 2].max() - bed[:, 2].min()),
+        ("Approach angle", SPEC["approachAngle"], vehicle.ramp_angles("HEMTT_M977A4", w1l[2], w4l[2], TYRE_R, skip={"Wheels"})[0]),
     ]
     return rows, body[:, 1].min()
 
@@ -249,6 +252,16 @@ VIEWS = {
     "cab": ((3.6, 2.4, 7.6), (0, 1.8, 3.4), 30),
     "wheels": ((3.4, 0.7, 4.6), (1.0, 0.65, 1.0), 28),
     "crane": ((-4.2, 3.4, -8.4), (-0.6, 2.0, -3.6), 30),
+}
+
+# the delivered model's renders (modelkit/beauty.py): camera, target, lens, groups opened, nodes posed
+BEAUTY = {
+    "hero": ((7.4, 2.3, 10.6), (0, 1.35, 0.2), 32),
+    "side": ((15.0, 1.6, -0.4), (0, 1.45, -0.4), 30),
+    "rear": ((-6.8, 3.6, -12.0), (0, 1.4, -1.2), 30),
+    "cab": ((3.6, 2.4, 7.6), (0, 1.8, 3.4), 30, ["Cab doors"]),
+    "wheels": ((3.4, 0.7, 4.6), (1.0, 0.65, 1.0), 28),
+    "crane": ((-9.5, 4.2, 1.5), (-2.4, 2.6, -4.3), 30, [], {"Crane": -1.35, "Crane_Boom": 0.5, "Crane_Boom_Extension": 1.0}),
 }
 
 
@@ -357,7 +370,8 @@ def main():
     rows, low = measure()
     print("1:1 check (published / model, metres):")
     for k, want, got in rows:
-        print(f"  {k:38s} {want:7.3f}  {got:7.3f}  {'ok' if abs(got - want) < 0.02 else 'OFF BY %.3f' % (got - want)}")
+        tol = 0.5 if vehicle.is_angle(k) else 0.02
+        print(f"  {k:38s} {want:7.3f}  {got:7.3f}  {'ok' if abs(got - want) < tol else 'OFF BY %.3f' % (got - want)}")
     print(f"  lowest point above the ground: {low:.4f} m")
     import clearance
     clearance.gun_limits()  # the crane's boom: how high it must lift to slew over the load
@@ -365,7 +379,7 @@ def main():
     glb = arg("--glb")
     if glb:
         with open(os.path.join(os.path.dirname(os.path.abspath(glb)), "measurements.json"), "w") as f:
-            json.dump({"units": "metres", "published_vs_model": [{"dimension": k, "published": round(float(w), 4), "model": round(float(g), 4)} for k, w, g in rows],
+            json.dump({"units": "metres; angles in degrees", "published_vs_model": [{"dimension": k, "published": round(float(w), 4), "model": round(float(g), 4), "unit": "deg" if vehicle.is_angle(k) else "m"} for k, w, g in rows],
                        "tyres_on_ground": bool(abs(low) < 0.005), "triangles": int(tris), "meshes": int(n)}, f, indent=1)
         tex = arg("--texdir", os.path.join(os.path.dirname(os.path.abspath(glb)), "textures"))
         if "--raw" not in sys.argv:  # --raw: export with plain materials, unbaked (for testing)

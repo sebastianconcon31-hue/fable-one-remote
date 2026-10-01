@@ -208,6 +208,7 @@ function onModel(gltf) {
     if (!kind || !parts[kind]) return;
     const p = { o, axis: new THREE.Vector3().fromArray(u.axis || [1, 0, 0]).normalize(), limits: u.limits || [0, 1], group: u.group || "Hatches", radius: u.radius || 0.5, ratio: u.ratio ?? 1 };
     if (u.limits_by_traverse) Object.assign(p, { table: u.limits_by_traverse, step: u.traverse_step || 5 });
+    if (u.gravity) p.gravity = true; // a hook on its cable: hangs straight down whatever its parent does
     if (kind === "track") Object.assign(p, { lp: loop(u.path), pitch: u.pitch, links: [] });
     parts[kind].push(p);
   });
@@ -249,6 +250,21 @@ if (embedded) {
 
 // ---- animation ---------------------------------------------------------------------------------------------------------------
 const qa = new THREE.Quaternion();
+// a hook hangs plumb under where it hangs at rest, let down by `drop` along the world's down
+const qp = new THREE.Quaternion(), qr = new THREE.Quaternion(), down = new THREE.Vector3();
+function hang(p) {
+  const o = p.o, r = rest.get(o);
+  if (!r.parentQ) r.parentQ = o.parent.getWorldQuaternion(new THREE.Quaternion()); // the parent's turn at rest (read before anything moves)
+  o.parent.updateWorldMatrix(true, false);
+  o.parent.getWorldQuaternion(qp);
+  qr.copy(qp).invert();
+  down.set(0, -(p.drop || 0), 0).applyQuaternion(qr);
+  o.position.copy(r.p);
+  o.parent.localToWorld(o.position); // where its rest point is now, in the world
+  o.position.add(down.applyQuaternion(qp));
+  o.parent.worldToLocal(o.position);
+  o.quaternion.copy(qr).multiply(r.parentQ).multiply(r.q); // upright as at rest
+}
 // a gun's elevation limits at the turret's traverse: its extras hold [lowest, highest] every `step` degrees
 function byTraverse(p, a) {
   const n = p.table.length;
@@ -296,9 +312,11 @@ function tick() {
         if (p.group !== name) continue;
         const v = p.limits[0] + (p.limits[1] - p.limits[0]) * s.v;
         if (parts.hinge.includes(p)) turn(p.o, v, p.axis);
-        else p.o.position.copy(rest.get(p.o).p).addScaledVector(p.axis, v);
+        else if (!p.gravity) p.o.position.copy(rest.get(p.o).p).addScaledVector(p.axis, v);
+        else p.drop = v;
       }
     }
+    for (const p of parts.slide.filter((q) => q.gravity)) hang(p);
     if (state.night && mats.Light_Amber && nodes.Light_Beacon) mats.Light_Amber.emissiveIntensity = 3 + 4 * Math.max(0, Math.sin(performance.now() / 120));
     if (state.lifting) {
       const L = state.lifting;

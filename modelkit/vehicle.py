@@ -257,6 +257,14 @@ def report(rows, low):
     print(f"  lowest point above the ground: {low:.4f} m")
 
 
+def ramp_angles(root, front_z, rear_z, r, skip=()):
+    """Approach and departure angles over everything under root but its wheels (skip names their node) and its rubber
+    mud flaps, which bend out of the way, from tyres of radius r on axles at front_z and rear_z."""
+    flaps = {o.name for o in bpy.data.objects if "Mud_Flap" in o.name}
+    zy = points(root, skip=set(skip) | flaps)[:, [2, 1]]
+    return tangent_angle(zy, front_z, r, +1)[0], tangent_angle(zy, rear_z, r, -1)[0]
+
+
 def tangent_angle(points, axle_z, r, sign):
     """Approach (sign +1: ahead of the front axle) or departure (sign -1: behind the rear axle) angle, in degrees: the
     steepest ramp, tangent to the tyre of radius r, that clears every point beyond the axle. points: (z, y) pairs.

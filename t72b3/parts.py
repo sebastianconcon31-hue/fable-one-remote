@@ -122,7 +122,7 @@ def glacis(M, parent):
     objs.append(ring.to_object("Driver_Hatch_Ring", [M["paint"]], parent, sharp_angle=40))
     objs.append(g.to_object("Driver_Periscope_Glass", [M["optic"]], parent, smooth=False, per_face=lambda p: (p[0], p[1], p[2] - 1.0)))
     objs += hinged_lid(M, parent, "Driver_Hatch", (-0.28, DECK_Y + 0.04, hz), (0, DECK_Y + 0.025, hz), 0.27,
-                       "the driver's hatch: lifts and swings right about local Y; + opens it", axis=(0, 1, 0), limits=(0, -1.5))
+                       "the driver's hatch: lifts and swings back about the post on its right, local Y; + opens it", axis=(0, 1, 0), limits=(0, 1.5))
     return objs
 
 
@@ -350,7 +350,7 @@ def turret_roof(M, parent):
     a = Mesh()
     tube(a, ab + np.array([0, 0.12, 0]), ab + np.array([0.05, 2.0, -0.4]), 0.005, 6, r1=0.0025)
     objs.append(a.to_object("Antenna", [M["chassis"]], parent))
-    # gunner's hatch (left), the commander's cupola (right) with its Kord on the hatch ring
+    # gunner's hatch (left), the commander's cupola (right) with its Kord on the cupola's edge
     gh = at(0.48, y, -0.18)
     ring = Mesh()
     lathe(ring, Yframe(gh), [(0.28, 0.0), (0.34, 0.0), (0.34, 0.04), (0.28, 0.05)], 32)
@@ -366,12 +366,12 @@ def turret_roof(M, parent):
         a_ = (-60 + k * 40) * deg
         p = cc + np.array([math.sin(a_) * 0.36, 0.13, math.cos(a_) * 0.36])
         rbox(c, Frame.along(p, (math.sin(a_), 0, math.cos(a_))), (0.1, 0.07, 0.06), 0.01, 1)
-    # the Kord on its mount at the cupola's back, pointing forward
-    mc = cc + np.array([0.0, 0.3, -0.3])
-    tube(c, cc + np.array([0, 0.12, -0.32]), mc, 0.03, 10, mat=1)
+    # the Kord on its mount at the cupola's right edge, pointing forward, clear of the hatch as it opens
+    mc = cc + np.array([-0.38, 0.3, -0.15])
+    tube(c, cc + np.array([-0.38, 0.12, -0.17]), mc, 0.03, 10, mat=1)
     rbox(c, Zframe(mc + np.array([0, 0.05, 0.05])), (0.1, 0.12, 0.62), 0.01, 1, mat=1)
     lathe(c, Zframe(mc + np.array([0, 0.06, 0.36])), [(0.0, 0.0), (0.024, 0.0), (0.024, 0.9), (0.032, 0.92), (0.032, 1.0), (0.0, 1.0)], 12, mat=1)
-    box(c, tuple(mc + np.array([0.1, -0.02, 0.0])), (0.1, 0.16, 0.28), 0.008, 1)
+    box(c, tuple(mc + np.array([-0.1, -0.02, 0.0])), (0.1, 0.16, 0.28), 0.008, 1)  # its ammunition box, outboard
     objs.append(c.to_object("Commander_Cupola_Mesh", [M["paint"], M["chassis"]], cu, sharp_angle=40))
     objs += hinged_lid(M, cu, "Commander_Hatch", cc + np.array([0, 0.16, -0.31]), cc + np.array([0, 0.13, 0]), 0.31,
                        "the commander's hatch: hinged at its back, turns about local X; + opens it upward")
