@@ -1,0 +1,38 @@
+{
+ "units": "metres",
+ "published_vs_model": [
+  {
+   "dimension": "Length",
+   "published": 6.55,
+   "model": 6.55
+  },
+  {
+   "dimension": "Width (over the add-on armour)",
+   "published": 3.6,
+   "model": 3.599
+  },
+  {
+   "dimension": "Height (to the top of the CIV)",
+   "published": 2.98,
+   "model": 2.98
+  },
+  {
+   "dimension": "Ground clearance",
+   "published": 0.46,
+   "model": 0.46
+  },
+  {
+   "dimension": "Track width (T157)",
+   "published": 0.5334,
+   "model": 0.5334
+  },
+  {
+   "dimension": "Track on the ground (wheel 1 to 6)",
+   "published": 3.91,
+   "model": 3.91
+  }
+ ],
+ "on_the_ground": true,
+ "triangles": 185048,
+ "meshes": 225
+}
