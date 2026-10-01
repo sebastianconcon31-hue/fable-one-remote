@@ -246,18 +246,21 @@ def sensors(M, parent):
 def gun(M, parent):
     tr = empty("M230_Turret", GUN_TURRET, parent)
     t = Mesh()
-    lathe(t, Yframe((0, -0.5, 0.35)), [(0.0, 0.0), (0.2, 0.0), (0.24, 0.02), (0.25, 0.06), (0.24, 0.08), (0.0, 0.08)], 32, mat=0)
+    # the turret drive: a ring, so the gun's breech can swing up inside it at full depression
+    lathe(t, Yframe((0, -0.5, 0.35)), [(0.15, 0.0), (0.2, 0.0), (0.24, 0.02), (0.25, 0.06), (0.24, 0.08), (0.15, 0.08), (0.15, 0.0)], 32, mat=0)
     # yoke arms down to the elevation trunnions
+    py = GUN_PIVOT[1]
+    yc, h = (-0.5 + py - 0.05) / 2, (-0.5 - (py - 0.05)) / 2  # from the turret's underside to just below the trunnions
     for sx in (1, -1):
-        prism(t, Frame((sx * 0.155, -0.56, 0.4), (0, 0, 1), (0, 1, 0), (sx, 0, 0)), [(-0.12, 0.05), (0.1, 0.05), (0.06, -0.06), (-0.06, -0.06)], 0.04, mat=0)
+        prism(t, Frame((sx * 0.155, yc, 0.4), (0, 0, 1), (0, 1, 0), (sx, 0, 0)), [(-0.12, h), (0.1, h), (0.06, -h), (-0.06, -h)], 0.04, mat=0)
     objs = [t.to_object("M230_Turret_Mesh", [M["mech"]], tr)]
     gn = empty("M230_Gun", GUN_PIVOT, tr)
     g = Mesh()
     # receiver, feeder and recoil housings
-    rbox(g, Zframe((0, -0.6, 0.45)), (0.24, 0.2, 0.62), 0.03, 2, mat=0)
-    rbox(g, Zframe((0.14, -0.58, 0.42)), (0.08, 0.16, 0.34), 0.02, 2, mat=0)
-    tube(g, (0, -0.6, 0.4), (0.14, -0.6, 0.4), 0.05, 16, mat=0)
-    tube(g, (0, -0.6, 0.4), (-0.14, -0.6, 0.4), 0.05, 16, mat=0)
+    rbox(g, Zframe((0, py, 0.45)), (0.24, 0.2, 0.62), 0.03, 2, mat=0)
+    rbox(g, Zframe((0.14, py + 0.02, 0.42)), (0.08, 0.16, 0.34), 0.02, 2, mat=0)
+    tube(g, (0, py, 0.4), (0.14, py, 0.4), 0.05, 16, mat=0)
+    tube(g, (0, py, 0.4), (-0.14, py, 0.4), 0.05, 16, mat=0)
     # barrel with its cooling jacket and the muzzle brake
     mx, my, mz = GUN_MUZZLE
     tube(g, (0, my, 0.75), (0, my, 1.0), 0.055, 20, mat=0)
@@ -268,11 +271,16 @@ def gun(M, parent):
         c = np.array([0, my, mz - 0.07]) + np.array([math.cos(a), math.sin(a), 0]) * 0.052
         rbox(g, Frame(c, (math.cos(a), math.sin(a), 0), (-math.sin(a), math.cos(a), 0), (0, 0, 1)), (0.004, 0.018, 0.08), 0.001, 1, mat=2)
     objs.append(g.to_object("M230_Gun_Mesh", [M["mech"], M["gun"], M["exhaust"]], gn, sharp_angle=45))
-    # flexible ammunition chute from the fuselage to the feeder
+    # ammunition: a chute along the belly from the magazine to the turret's centre, where it turns on a rotary joint,
+    # and the feed chute that turns with the turret from there down to the gun's feeder
     c = Mesh()
-    pts = [np.array([0.3, -0.42, 0.0]), np.array([0.32, -0.5, 0.2]), np.array([0.2, -0.56, 0.36]), np.array([0.17, -0.58, 0.42])]
+    pts = [np.array([0.3, -0.41, 0.0]), np.array([0.2, -0.405, 0.15]), np.array([0.05, -0.4, 0.3]), np.array([0.0, -0.4, 0.35])]
     path_tube(c, pts, 0.045, 10, mat=0)
     objs.append(c.to_object("Ammo_Chute", [M["mech"]], parent))
+    f = Mesh()
+    pts = [np.array([0.0, -0.4, 0.35]), np.array([0.12, -0.4, 0.36]), np.array([0.2, -0.5, 0.39]), np.array([0.19, py + 0.06, 0.41]), np.array([0.17, py + 0.02, 0.42])]
+    path_tube(f, pts, 0.04, 10, mat=0)
+    objs.append(f.to_object("Ammo_Feed", [M["mech"]], tr))
     return objs
 
 

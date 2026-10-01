@@ -43,7 +43,7 @@
   ],
   [
    "`Gun`",
-   "the 125 mm 2A46M-5 and its coaxial PKT: elevate about (−1, 0, 0); + raises them, −6° to +14°"
+   "the 125 mm 2A46M-5 and its coaxial PKT: elevate about (−1, 0, 0); + raises them, −6° to +14°; over the engine deck and fuel drums its `limits_by_traverse` lift it to −2.4°"
   ],
   [
    "`Commander_Cupola`",
@@ -51,7 +51,7 @@
   ],
   [
    "`Driver_Hatch`, `Commander_Hatch`, `Gunner_Hatch`",
-   "open about their hinges (group `Hatches`)"
+   "open about their hinges (group `Hatches`): the driver's lifts and swings back on the post at its right; the others hinge at their backs and stand open clear of the Kord"
   ],
   [
    "`Road_Wheel_{Left,Right}_{1-6}`, `Idler_*`, `Sprocket_*`, `Return_Roller_*`",

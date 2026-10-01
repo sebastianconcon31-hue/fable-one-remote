@@ -34,12 +34,12 @@
   "markings.py",
   "fmtv.py"
  ],
- "scale_intro": "Built to the published M1083A1P2 figures; `build.py` measures the finished geometry against them on every build:",
+ "scale_intro": "Built to the published M1083A1P2 figures; `build.py` measures the finished geometry against them on every build, the approach and departure angles included:",
  "origin": "on the ground, on the centreline, midway between the front axle and the centre of the rear pair",
  "moving": [
   [
    "`Door_Left`, `Door_Right`",
-   "swing about `axis` on their front hinges; + opens them outward (group `Doors`)"
+   "swing about `axis` on hinges on their outer skins, at their front edges; + opens them outward (group `Doors`)"
   ],
   [
    "`Tailgate`",
@@ -51,7 +51,7 @@
   ],
   [
    "`Steer_1_{Left,Right}`",
-   "steer about local Y; + turns left. The front wheels sit inside these nodes."
+   "steer about local Y; + turns left. Full lock is the inner wheel's for the published 65.6 ft turning circle (30°). The front wheels sit inside these nodes."
   ],
   [
    "`Cargo_Pallet_1` … `_6`",
@@ -59,7 +59,7 @@
   ],
   [
    "`Spare_Tire`",
-   "on its carrier between the cab and the body"
+   "on its carrier between the cab and the body, facing back"
   ],
   [
    "`Light_*`",
@@ -95,7 +95,7 @@
   ]
  ],
  "accuracy": [
-  "**Published dimensions:** length, width, operational height, wheelbase, the tyres, and the cargo bed's inside length and width all match.",
+  "**Published dimensions:** length, width, operational height, wheelbase, the tyres, the cargo bed's inside length and width, the 40° approach and 49° departure angles and the 65.6 ft turning circle (as the steering lock) all match.",
   "**Estimated:** the rear pair's spacing, the track, the cab's shape and the layout behind it.",
   "**Markings:** plausible but made up."
  ]

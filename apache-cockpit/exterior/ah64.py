@@ -49,8 +49,8 @@ TADS_AZ = (0.0, 0.0, 2.2)
 TADS_EL = (0.0, -0.04, 2.23)
 PNVS = (0.0, 0.42, 2.14)
 GUN_TURRET = (0.0, -0.46, 0.35)
-GUN_PIVOT = (0.0, -0.6, 0.4)
-GUN_MUZZLE = (0.0, -0.61, 2.02)
+GUN_PIVOT = (0.0, -0.71, 0.4)  # low enough under the belly for the receiver to clear it at 60 degrees down
+GUN_MUZZLE = (0.0, -0.72, 2.02)
 
 # Canopy corners, left side, shared with the cockpit model (lib/cockpit.mjs CAN).
 CAN = {

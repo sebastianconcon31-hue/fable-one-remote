@@ -310,7 +310,8 @@ def main():
     if glb:
         tex = arg("--texdir", os.path.join(os.path.dirname(os.path.abspath(glb)), "exterior_textures"))
         size = int(arg("--textures", 4096))
-        paint_and_bake(scene, M, tex, size)
+        if "--raw" not in sys.argv:  # --raw: export with plain materials, unbaked (for testing)
+            paint_and_bake(scene, M, tex, size)
         export(glb)
     if "--lookdev" in sys.argv and not arg("--glb"):
         maps = arg("--maps") or os.path.join(HERE, "..", "exterior_textures", "paint_maps")

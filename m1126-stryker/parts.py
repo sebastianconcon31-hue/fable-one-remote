@@ -202,13 +202,13 @@ def rws(M, parent):
     lathe(m, Yframe((x, y, z)), [(0.0, 0.0), (0.24, 0.0), (0.24, 0.08), (0.2, 0.1), (0.16, 0.1), (0.14, 0.2), (0.0, 0.2)], 28)
     for sx in (1, -1):
         prism(m, Frame((x + sx * 0.3, y + 0.32, z), (0, 0, 1), (0, 1, 0), (sx, 0, 0)), [(-0.16, -0.14), (0.16, -0.14), (0.1, 0.14), (-0.1, 0.14)], 0.04)
-    box(m, (x, y + 0.2, z), (0.64, 0.04, 0.3), 0.01, 1)
+    box(m, (x, y + 0.12, z), (0.64, 0.04, 0.3), 0.01, 1)  # the yoke's bridge, low enough for the cradle to swing over it
     objs = [m.to_object("RWS_Mount", [M["paint"]], n, sharp_angle=40)]
     piv = (x, y + 0.4, z)
     c = empty("RWS_Cradle", piv, n)
     drive(c, "the cradle with the M2 and its sights: elevates about local X; + raises it (-20 to +60 degrees)", control="elevate", axis=[-1, 0, 0], limits=[-20 * deg, 60 * deg])
     k = Mesh()
-    m2(k, Frame((x + 0.02, y + 0.42, z + 0.05), (1, 0, 0), (0, 1, 0), (0, 0, 1)), 1, 1)
+    m2(k, Frame((x + 0.02, y + 0.42, z + 0.2), (1, 0, 0), (0, 1, 0), (0, 0, 1)), 1, 1)  # forward in the cradle, so its receiver clears the turntable at +60
     box(k, (x + 0.2, y + 0.4, z - 0.02), (0.14, 0.24, 0.36), 0.015, 1, mat=0)  # ammunition can
     rbox(k, Zframe((x - 0.2, y + 0.43, z + 0.02)), (0.2, 0.22, 0.3), 0.025, 2, mat=0)  # sensor box
     tube(k, (x - 0.28, y + 0.4, z), (x + 0.28, y + 0.4, z), 0.03, 10, mat=1)

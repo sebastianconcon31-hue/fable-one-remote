@@ -37,7 +37,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from geom import B
 
 STEP = 5.0  # degrees of traverse between the table's entries
-TOL = 6  # new overlapping triangle pairs allowed before a pose counts as touching
+TOL = 6  # the gun's triangles newly touching a mesh before a pose counts as touching it
+NEAR = 0.15  # m: how far from where it touches at rest a gun's sliding contact may spread
 
 
 def _descendants(o):
@@ -83,9 +84,10 @@ class _Target:
         return _Target([o for o in self.objs if o.name not in names])
 
     def hits(self, gun_tree):
+        """Which of the gun's triangles touch which of these meshes: a set of (gun triangle, mesh)."""
         if self.tree is None:
-            return Counter()
-        return Counter(self.own[j] for _, j in gun_tree.overlap(self.tree))
+            return set()
+        return {(i, self.own[j]) for i, j in gun_tree.overlap(self.tree)}
 
 
 def _world_axis(o):
@@ -114,16 +116,29 @@ def table_for(gun, step=STEP, log=None):
         v = (v - pt) @ _rot(at, a).T + pt
         return BVHTree.FromPolygons([Vector(p) for p in v], gt)
 
-    # whatever the gun already touches at rest is its mounting - the gun port in the turret's face, the armour round
-    # the mantlet, a crane boom's rest - and it moves against it by design: those meshes may take up to three times
-    # the contact they have at rest before a pose counts as touching; anything else, TOL pairs
+    # whatever part of the gun already touches something at rest is how it's mounted - the barrel through the gun
+    # port, the trunnions in their yoke, a crane boom on its rest - and it slides against it by design. So a pose
+    # touches when (a) more than TOL of the gun's triangles touch something that aren't within NEAR of where it
+    # touched that at rest (the breech swinging up into the turret drive, the boom's far end), or (b) the contact with
+    # what it's mounted in grows well past what it is at rest (the boom sliding off its rest through the side rail)
     t0 = tree(0.0, 0.0)
     base_h, base_t = hull.hits(t0), turret.hits(t0)
+    cent = np.array([gv[t].mean(axis=0) for t in gt])
+    near = {}
+    for i, k in base_h | base_t:
+        near.setdefault(k, set()).add(i)
+    for k, idx in near.items():
+        d = np.min(np.linalg.norm(cent[:, None, :] - cent[None, sorted(idx), :], axis=2), axis=1)
+        near[k] = set(np.nonzero(d < NEAR)[0].tolist())
+    rest_count = Counter(k for _, k in base_h | base_t)
     cache_t = {}
 
     def touching(c, base):
-        return any(n > base.get(k, 0) + max(TOL, 2 * base.get(k, 0)) for k, n in c.items()) or \
-            sum(n for k, n in c.items() if k not in base) > TOL
+        far = Counter(k for i, k in c if i not in near.get(k, ()))
+        if any(n > TOL for n in far.values()):
+            return True
+        now = Counter(k for _, k in c)
+        return any(now[k] > n + max(TOL, 2 * n) for k, n in rest_count.items() if k in now)
 
     def clear(a, e):
         if e not in cache_t:  # against the turret it depends on the elevation only
@@ -159,8 +174,8 @@ def table_for(gun, step=STEP, log=None):
         e0 = 0.0
         if not clear(a, 0.0):
             e0 = None
-            for k in range(1, int(math.degrees(hi_lim)) + 1):
-                if clear(a, round(math.radians(k), 6)):
+            for k in range(1, int(math.degrees(hi_lim)) + 1):  # the lowest elevation clear for two degrees above it too
+                if all(clear(a, round(math.radians(min(k + j, math.degrees(hi_lim))), 6)) for j in range(3)):
                     e0 = math.radians(k)
                     break
             if e0 is None:

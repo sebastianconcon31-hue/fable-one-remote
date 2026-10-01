@@ -44,11 +44,11 @@
   ],
   [
    "`Gun`",
-   "the 120 mm M256: elevates about its `axis`, (−1, 0, 0); + raises it, −9° to +20°"
+   "the 120 mm M256: elevates about its `axis`, (−1, 0, 0); + raises it, −9° to +20°; over the engine deck its `limits_by_traverse` lift it to −3.8°"
   ],
   [
    "`Driver_Hatch`, `Commander_Hatch`, `Loader_Hatch`",
-   "open about their hinges (group `Hatches`)"
+   "open about their hinges (group `Hatches`): the driver's swings round to the right on the post at its front right corner, in the glacis' plane; the commander's and loader's hinge at their backs and stand up clear of the vision blocks"
   ],
   [
    "`CROWS`, `CITV`",
@@ -98,8 +98,8 @@
  ],
  "perf_note": "The track links are 158 nodes sharing one mesh; an engine that instances can draw them in one call.",
  "accuracy": [
-  "**Published dimensions:** length with the gun forward, hull length, width over the skirts, height to the turret roof, ground clearance, track width and road wheel diameter all match.",
-  "**Estimated:** the track's ground contact and centres, the idler and sprocket positions, the turret's exact plan and the roof fittings' layout.",
+  "**Published dimensions:** length with the gun forward, hull length, width over the skirts, height to the turret roof, ground clearance, track width, road wheel diameter and the 180 in of track on the ground all match.",
+  "**Estimated:** the track's centres, the idler and sprocket positions, the turret's exact plan and the roof fittings' layout.",
   "**Markings:** plausible but made up; the unit and number aren't a real tank's."
  ]
 }

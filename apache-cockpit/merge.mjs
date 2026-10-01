@@ -44,6 +44,12 @@ const NOTES = {
   Light_Anticollision_Top: { light: "anti-collision strobe, red" },
   Light_Anticollision_Bottom: { light: "anti-collision strobe, red" },
 };
+// the gun's limits round its traverse, measured against the airframe by exterior/gun_limits.py (it reads this file's output)
+try {
+  const t = JSON.parse(readFileSync(join(here, "exterior", "m230_limits.json"), "utf8"));
+  Object.assign(NOTES.M230_Gun, { limits_by_traverse: t.limits_by_traverse, traverse_step: t.traverse_step });
+  NOTES.M230_Gun.drive += "; `limits_by_traverse` holds how far it can point at each step of the turret's traverse, clear of the airframe";
+} catch {}
 for (const s of ["Left", "Right"]) {
   NOTES[`Store_${s}_Inboard`] = { store: "M261 19-shot 2.75 in rocket pod", note: "released by the jettison buttons" };
   NOTES[`Store_${s}_Outboard`] = { store: "M299 Hellfire launcher", note: "released by the jettison buttons" };
@@ -108,6 +114,15 @@ async function build(cockpitPath, label) {
       c.setMatrix(m);
     }
     shell.dispose();
+  }
+  // the swashplate's rotating half turns with the rotor (its pitch links would otherwise sweep through it)
+  for (const [child, parent] of [["Swashplate", "Main_Rotor"]]) {
+    const c = byName(doc, child)[0], p = byName(doc, parent)[0];
+    if (!c || !p) continue;
+    const m = mat4mul(mat4inv(p.getWorldMatrix()), c.getWorldMatrix());
+    c.getParentNode()?.removeChild(c);
+    p.addChild(c);
+    c.setMatrix(m);
   }
   for (const [name, extras] of Object.entries(NOTES)) for (const n of byName(doc, name)) n.setExtras({ ...n.getExtras(), ...extras });
   await doc.transform(prune({ keepLeaves: true, keepAttributes: true }), unpartition());

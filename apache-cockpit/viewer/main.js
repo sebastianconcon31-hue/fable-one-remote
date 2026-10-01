@@ -768,7 +768,11 @@ function tick(dt, now) {
   if (nodes.PNVS_Turret) nodes.PNVS_Turret.rotation.y = seat === "pilot" ? look.yaw : 0;
   const gunOn = sim.weapon === "GUN";
   if (nodes.M230_Turret) nodes.M230_Turret.rotation.y += ((gunOn ? -THREE.MathUtils.clamp(t.az, -86, 86) * rad : 0) - nodes.M230_Turret.rotation.y) * Math.min(1, dt * 4);
-  if (nodes.M230_Gun) nodes.M230_Gun.rotation.x += ((gunOn ? -THREE.MathUtils.clamp(t.el, -60, 11) * rad : -0.15) - nodes.M230_Gun.rotation.x) * Math.min(1, dt * 4);
+  if (nodes.M230_Gun) {
+    const want = gunOn ? -THREE.MathUtils.clamp(t.el, -60, 11) * rad : -0.15;
+    const [lo, hi] = gunLimits(nodes.M230_Gun, nodes.M230_Turret ? nodes.M230_Turret.rotation.y : 0);
+    nodes.M230_Gun.rotation.x += (THREE.MathUtils.clamp(want, lo, hi) - nodes.M230_Gun.rotation.x) * Math.min(1, dt * 4);
+  }
   // lights
   const nav = { OFF: 0, BRT: 1.6, DIM: 0.5 }[sim.state("navLt") || "BRT"];
   for (const n of ["Light_Nav_Red", "Light_Nav_Green", "Light_Nav_White"]) if (mats[n]) mats[n].emissiveIntensity = nav;
@@ -841,3 +845,13 @@ renderer.setAnimationLoop(() => {
   if (model) tick(dt, now);
   renderer.render(scene, camera);
 });
+
+// how far the gun can point at its turret's traverse: its extras hold [up, down] every `traverse_step` degrees,
+// measured against the airframe (merge.mjs)
+function gunLimits(gun, az) {
+  const u = gun.userData, tbl = u.limits_by_traverse;
+  if (!tbl) return u.limits || [-Infinity, Infinity];
+  const n = tbl.length, f = ((((az * 180) / Math.PI) % 360) + 360) % 360 / (u.traverse_step || 5);
+  const i = Math.floor(f) % n, j = (i + 1) % n, k = f - Math.floor(f);
+  return [0, 1].map((s) => tbl[i][s] * (1 - k) + tbl[j][s] * k);
+}
