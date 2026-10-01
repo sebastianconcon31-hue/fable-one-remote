@@ -1,0 +1,28 @@
+{
+ "game": {
+  "file": "t72b3.glb",
+  "mb": 20.4,
+  "triangles": 236650,
+  "drawCalls": 283,
+  "nodes": 286,
+  "materials": 8,
+  "textures": {
+   "1024": 3,
+   "4096": 9
+  },
+  "gpuTextureMB": 784
+ },
+ "web": {
+  "file": "t72b3_web.glb",
+  "mb": 5.9,
+  "triangles": 236650,
+  "drawCalls": 283,
+  "nodes": 286,
+  "materials": 8,
+  "textures": {
+   "1024": 11
+  },
+  "gpuTextureMB": 59
+ },
+ "viewerMB": 8.4
+}
