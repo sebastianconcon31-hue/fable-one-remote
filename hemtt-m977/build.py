@@ -79,6 +79,8 @@ def materials():
 def build(M):
     root = empty("HEMTT_M977A4", (0, 0, 0))
     root["vehicle"] = "HEMTT M977A4 cargo truck with material-handling crane"
+    root["blurb"] = "Ten tons of pallets, the crane to lift them, at 1:1."
+    root["weapon"] = "Crane"
     root["units"] = "metres"
     root["axes"] = "glTF: +Y up, +Z toward the front, +X to the driver's left"
     root["origin"] = "on the ground, on the centreline, midway between the front and rear axle pairs"
@@ -106,26 +108,42 @@ def notes():
         for s in ("Left", "Right"):
             w = O[f"Wheel_{i}_{s}"]
             w["drive"] = "spin about local X; + rolls the truck forward"
+            w["control"] = "wheel"
             w["axis"] = [1.0, 0.0, 0.0]
             w["radius"] = TYRE_R
-    for i, lim in ((1, 0.62), (2, 0.42)):
+    lock1, lock2 = truck.steer_limits()
+    for i, lim in ((1, lock1), (2, lock2)):
         for s in ("Left", "Right"):
             st = O[f"Steer_{i}_{s}"]
-            st["drive"] = "steer about local Y; + turns left. The second axle turns about two thirds as far as the first."
+            st["drive"] = (f"steer about local Y; + turns left. Full lock ({math.degrees(lock1):.0f} degrees on the first axle, "
+                           f"{math.degrees(lock2):.0f} on the second) is the inner wheels' for the published 100 ft turning circle.")
+            st["control"] = "steer"
             st["axis"] = [0.0, 1.0, 0.0]
-            st["limits"] = [-lim, lim]
+            st["limits"] = [-round(lim, 4), round(lim, 4)]
+    for s in ("Left", "Right"):
+        O[f"Door_{s}"]["control"] = "hinge"
+        O[f"Door_{s}"]["group"] = "Cab doors"
     O["Crane"]["drive"] = "slew about local Y (all the way round)"
+    O["Crane"]["control"] = "traverse"
     O["Crane"]["axis"] = [0.0, 1.0, 0.0]
-    O["Crane_Boom"]["drive"] = "luff about local X; - raises the boom (to about 75 degrees)"
-    O["Crane_Boom"]["axis"] = [1.0, 0.0, 0.0]
-    O["Crane_Boom"]["limits"] = [-1.3, 0.0]
+    O["Crane_Boom"]["drive"] = "luff about local `axis`; + raises the boom (to about 75 degrees)"
+    O["Crane_Boom"]["control"] = "elevate"
+    O["Crane_Boom"]["axis"] = [-1.0, 0.0, 0.0]
+    O["Crane_Boom"]["limits"] = [0.0, 1.3]
     O["Crane_Boom_Extension"]["drive"] = "telescope along the boom, local +Z, up to 2.3 m"
+    O["Crane_Boom_Extension"]["control"] = "slide"
+    O["Crane_Boom_Extension"]["group"] = "Crane reach"
     O["Crane_Boom_Extension"]["axis"] = [0.0, 0.0, 1.0]
     O["Crane_Boom_Extension"]["limits"] = [0.0, 2.3]
-    O["Crane_Hook"]["drive"] = "hoist: lower along local -Y on the cable"
+    O["Crane_Hook"]["drive"] = "hoist: lower along local -Y on the cable, up to 3 m"
+    O["Crane_Hook"]["control"] = "slide"
+    O["Crane_Hook"]["group"] = "Crane reach"
+    O["Crane_Hook"]["axis"] = [0.0, -1.0, 0.0]
+    O["Crane_Hook"]["limits"] = [0.0, 3.0]
     O["Crane_Hook"]["capacity_kg"] = 2041
     for i in range(1, 9):
         O[f"Cargo_Pallet_{i}"]["cargo"] = "a pallet load; show, hide or lift it off on its own"
+        O[f"Cargo_Pallet_{i}"]["control"] = "cargo"
     for o in O:
         if o.name.startswith("Light_") and o.type == "EMPTY":
             o["light"] = o.name[6:].replace("_", " ").lower()
@@ -341,6 +359,8 @@ def main():
     for k, want, got in rows:
         print(f"  {k:38s} {want:7.3f}  {got:7.3f}  {'ok' if abs(got - want) < 0.02 else 'OFF BY %.3f' % (got - want)}")
     print(f"  lowest point above the ground: {low:.4f} m")
+    import clearance
+    clearance.gun_limits()  # the crane's boom: how high it must lift to slew over the load
     paint.RESUME = "--resume" in sys.argv
     glb = arg("--glb")
     if glb:
@@ -348,7 +368,8 @@ def main():
             json.dump({"units": "metres", "published_vs_model": [{"dimension": k, "published": round(float(w), 4), "model": round(float(g), 4)} for k, w, g in rows],
                        "tyres_on_ground": bool(abs(low) < 0.005), "triangles": int(tris), "meshes": int(n)}, f, indent=1)
         tex = arg("--texdir", os.path.join(os.path.dirname(os.path.abspath(glb)), "textures"))
-        bake_all(scene, M, tex, int(arg("--textures", 4096)))
+        if "--raw" not in sys.argv:  # --raw: export with plain materials, unbaked (for testing)
+            bake_all(scene, M, tex, int(arg("--textures", 4096)))
         export(glb)
     if "--lookdev" in sys.argv and not glb:
         maps = arg("--maps") or os.path.join(HERE, "textures", "paint_maps")

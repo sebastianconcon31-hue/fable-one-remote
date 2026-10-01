@@ -244,11 +244,34 @@ def export(root, path):
     print(f"exported {path}: {os.path.getsize(path) / 1048576:.1f} MB", flush=True)
 
 
+def is_angle(dimension):
+    """Rows of the 1:1 check named as angles are in degrees; the rest are metres."""
+    return "angle" in dimension.lower()
+
+
 def report(rows, low):
-    print("1:1 check (published / model, metres):")
+    print("1:1 check (published / model, metres; angles in degrees):")
     for k, want, got in rows:
-        print(f"  {k:44s} {want:7.3f}  {got:7.3f}  {'ok' if abs(got - want) < 0.02 else 'OFF BY %.3f' % (got - want)}")
+        tol = 0.5 if is_angle(k) else 0.02
+        print(f"  {k:44s} {want:7.3f}  {got:7.3f}  {'ok' if abs(got - want) < tol else 'OFF BY %.3f' % (got - want)}")
     print(f"  lowest point above the ground: {low:.4f} m")
+
+
+def tangent_angle(points, axle_z, r, sign):
+    """Approach (sign +1: ahead of the front axle) or departure (sign -1: behind the rear axle) angle, in degrees: the
+    steepest ramp, tangent to the tyre of radius r, that clears every point beyond the axle. points: (z, y) pairs.
+    Also returns the index of the point that limits it."""
+    z = sign * (points[:, 0] - axle_z)
+    y = points[:, 1]
+    keep = np.nonzero(z > 0.05)[0]
+    z, y = z[keep], y[keep]
+    for d in np.arange(1.0, 89.9, 0.1):
+        t = math.radians(d)
+        T = np.array([r * math.sin(t), r - r * math.cos(t)])  # where the ramp touches the tyre
+        below = ((z - T[0]) * math.sin(t) - (y - T[1]) * math.cos(t) > 1e-4) & (z > T[0])
+        if below.any():
+            return d - 0.1, int(keep[np.nonzero(below)[0][0]])
+    return 89.9, None
 
 
 def run(V):
@@ -274,7 +297,7 @@ def run(V):
     glb = arg("--glb")
     if glb:
         with open(os.path.join(os.path.dirname(os.path.abspath(glb)), "measurements.json"), "w") as f:
-            json.dump({"units": "metres", "published_vs_model": [{"dimension": k, "published": round(float(w), 4), "model": round(float(g), 4)} for k, w, g in rows],
+            json.dump({"units": "metres; angles in degrees", "published_vs_model": [{"dimension": k, "published": round(float(w), 4), "model": round(float(g), 4), "unit": "deg" if is_angle(k) else "m"} for k, w, g in rows],
                        "on_the_ground": bool(abs(low) < 0.005), "triangles": int(tris), "meshes": int(n)}, f, indent=1)
         tex = arg("--texdir", os.path.join(os.path.dirname(os.path.abspath(glb)), "textures"))
         if "--raw" not in sys.argv:  # --raw: export with plain materials, unbaked (for testing)

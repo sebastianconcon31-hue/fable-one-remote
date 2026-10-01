@@ -66,16 +66,24 @@ def body(M, parent):
     sections = [(HOOD_BACK_Z - 0.02, upper(1.42)), (HOOD_BACK_Z - 0.14, upper(ROOF_Y - 0.06)), (CAB_BACK_Z, upper(ROOF_Y - 0.06))]
     loft(m, ZF, sections[::-1], radii=0.02, bevel=0.015)
     slab(m, Frame((0, ROOF_Y - 0.03, (HOOD_BACK_Z - 0.1 + CAB_BACK_Z) / 2), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(-1.05, -(HOOD_BACK_Z - 0.1 - CAB_BACK_Z) / 2), (1.05, -(HOOD_BACK_Z - 0.1 - CAB_BACK_Z) / 2), (1.05, (HOOD_BACK_Z - 0.1 - CAB_BACK_Z) / 2), (-1.05, (HOOD_BACK_Z - 0.1 - CAB_BACK_Z) / 2)], 0.06, 0.012)
-    # rear cargo shell, with the bumperettes and the pintle under it
-    shell = [(CAB_BACK_Z, SILL_Y), (CAB_BACK_Z, 1.62), (REAR_Z + 0.12, 1.55), (REAR_Z + 0.12, SILL_Y)]
+    # rear cargo shell: full width above the rear wheels, the cargo floor and wheel tubs between them, and side panels
+    # with the wheel arches cut in, so the wheels stand in open wells; the bumperettes and the pintle under it
+    top = 1.04  # above the arches' tops
+    shell = [(CAB_BACK_Z, top), (CAB_BACK_Z, 1.62), (REAR_Z + 0.12, 1.55), (REAR_Z + 0.12, top)]
     loft(m, SIDE, [(-BODY_HALF_W + 0.02, shell), (BODY_HALF_W - 0.02, shell)], radii=[0.01, 0.03, 0.03, 0.01], bevel=0.015)
+    tub = WHEEL_X - TYRE_W / 2 - 0.05  # the wells' inner walls, inboard of the tyres
+    floor = [(CAB_BACK_Z - 0.004, SILL_Y), (CAB_BACK_Z - 0.004, top + 0.006), (REAR_Z + 0.124, top + 0.006), (REAR_Z + 0.124, SILL_Y)]
+    loft(m, SIDE, [(-tub, floor), (tub, floor)], radii=0.01, bevel=0.01)
     zr = AXLES_Z[1]
-    for sx in (1, -1):  # rear wheel arches' flares
-        poly = [(CAB_BACK_Z + 0.02, 0.95), (CAB_BACK_Z + 0.02, 0.78)] + arch(zr, TYRE_R, 0.56, 0.78)[::-1] + [(REAR_Z + 0.16, 0.78), (REAR_Z + 0.16, 0.95)]
-        slab(m, Frame((sx * (BODY_HALF_W - 0.015), 0, 0), (0, 0, 1), (0, 1, 0), (-sx, 0, 0)), poly, 0.03, 0.006)
     for sx in (1, -1):
-        box(m, (sx * 0.85, 0.66, REAR_Z + 0.08), (0.3, 0.14, 0.14), 0.015, 1, mat=1)
-    lathe(m, Frame((0, 0.62, REAR_Z + 0.06), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.03, -0.03), (0.06, -0.03), (0.06, 0.03), (0.03, 0.03), (0.03, -0.03)], 14, mat=1)
+        poly = [(CAB_BACK_Z + 0.02, top + 0.03), (CAB_BACK_Z + 0.02, SILL_Y)] + arch(zr, TYRE_R, 0.56, SILL_Y)[::-1] + [(REAR_Z + 0.14, SILL_Y), (REAR_Z + 0.14, top + 0.03)]
+        slab(m, Frame((sx * (BODY_HALF_W - 0.015), 0, 0), (0, 0, 1), (0, 1, 0), (-sx, 0, 0)), poly, 0.03, 0.006)
+        # the shell's back below the deck, outboard of the floor
+        box(m, (sx * (tub + BODY_HALF_W - 0.02) / 2, (SILL_Y + top) / 2, REAR_Z + 0.135), (BODY_HALF_W - 0.02 - tub, top - SILL_Y, 0.03), 0.006, 1)
+    for sx in (1, -1):  # the bumperettes on the frame's ends, and the pintle hook between them: the departure angle's limit
+        box(m, (sx * 0.85, 0.6, REAR_Z + 0.08), (0.3, 0.16, 0.14), 0.015, 1, mat=1)
+    box(m, (0, 0.58, REAR_Z + 0.1), (0.24, 0.16, 0.12), 0.015, 1, mat=1)
+    lathe(m, Frame((0, 0.49, REAR_Z + 0.06), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.03, -0.03), (0.06, -0.03), (0.06, 0.03), (0.03, 0.03), (0.03, -0.03)], 14, mat=1)
     objs.append(m.to_object("Body_Shell", [M["paint"], M["chassis"]], node, sharp_angle=40))
     objs += windows(M, node)
     objs += doors(M, node)
@@ -112,9 +120,9 @@ def doors(M, parent):
     for row, (z0, z1) in (("Front", (HOOD_BACK_Z - 0.04, -0.02)), ("Rear", (-0.06, CAB_BACK_Z + 0.02))):
         for side, sx in (("Left", 1), ("Right", -1)):
             x = sx * (BODY_HALF_W + 0.012)
-            hinge = (x, 1.3, z0)
+            hinge = (x + sx * 0.068, 1.3, z0)  # on the outer skin at the front edge: the door's inside swings out and back
             d = empty(f"Door_{row}_{side}", hinge, parent)
-            drive(d, "an armoured door: swings about local Y on its front hinges; + opens it outward (to 70 degrees)", control="hinge",
+            drive(d, "an armoured door: swings about local Y on its front hinges, on its outer skin; + opens it outward (to 70 degrees)", control="hinge",
                   axis=[0, -1 if sx > 0 else 1, 0], limits=[0, 1.2], group="Doors")
             m = Mesh()
             L = z0 - z1
@@ -148,11 +156,13 @@ def front_end(M, parent):
     """The bumper with its shackles and the brush guard, and the air intake beside the windshield."""
     m = Mesh()
     zf = FRONT_Z
-    rbox(m, Zframe((0, 0.62, zf - 0.09)), (2.0, 0.18, 0.18), 0.02, 2)
+    # the bumper: a steel channel across the frame's ends, its underside 0.74 m up (the approach angle's limit)
+    rbox(m, Zframe((0, 0.825, zf - 0.07)), (2.0, 0.2, 0.14), 0.02, 2)
     for sx in (1, -1):
-        lathe(m, Frame((sx * 0.62, 0.5, zf - 0.05), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.022, -0.022), (0.045, -0.022), (0.045, 0.022), (0.022, 0.022), (0.022, -0.022)], 12, mat=1)
-    # the brush guard round the grille
-    path_tube(m, [np.array([0.72, 0.7, zf - 0.08]), np.array([0.72, 1.12, zf - 0.08]), np.array([0.6, 1.16, zf - 0.08]), np.array([-0.6, 1.16, zf - 0.08]), np.array([-0.72, 1.12, zf - 0.08]), np.array([-0.72, 0.7, zf - 0.08])], 0.025, 10)
+        lathe(m, Frame((sx * 0.62, 0.83, zf - 0.047), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.022, -0.022), (0.045, -0.022), (0.045, 0.022), (0.022, 0.022), (0.022, -0.022)], 12, mat=1)
+        box(m, (sx * 0.42, 0.75, zf - 0.22), (0.08, 0.1, 0.2), 0.01, 1, mat=1)  # the frame horn under it
+    # the brush guard round the grille, standing on the bumper
+    path_tube(m, [np.array([0.72, 0.94, zf - 0.08]), np.array([0.72, 1.12, zf - 0.08]), np.array([0.6, 1.16, zf - 0.08]), np.array([-0.6, 1.16, zf - 0.08]), np.array([-0.72, 1.12, zf - 0.08]), np.array([-0.72, 0.94, zf - 0.08])], 0.025, 10)
     # the engine air intake on the right of the windshield
     path_tube(m, [np.array([-1.0, HOOD_Y_BACK, HOOD_BACK_Z + 0.06]), np.array([-1.0, 1.85, HOOD_BACK_Z]), np.array([-1.0, 1.92, HOOD_BACK_Z - 0.04])], 0.07, 14)
     rbox(m, Zframe((-1.0, 1.95, HOOD_BACK_Z - 0.02)), (0.2, 0.08, 0.2), 0.02, 2)
@@ -220,12 +230,12 @@ def turret(M, parent):
     n = empty("Turret", tuple(c), parent)
     drive(n, "the gunner's turret: traverses about local Y; + turns it left (all the way round)", control="traverse", axis=[0, 1, 0])
     m, g = Mesh(), Mesh()
-    lathe(m, Yframe(c + np.array([0, 0.08, 0])), [(0.52, 0.0), (0.6, 0.0), (0.6, 0.05), (0.52, 0.05)], 40)
+    lathe(m, Yframe(c + np.array([0, 0.086, 0])), [(0.52, 0.0), (0.6, 0.0), (0.6, 0.05), (0.52, 0.05)], 40)  # turns on the fixed ring, just clear of it
     # the front shield: a wide plate, its window in the middle, a cut-out for the gun below
     y0 = ROOF_Y + 0.1
     Ff = Frame(c + np.array([0, 0.5, 0.6]), (1, 0, 0), (0, 1, 0), (0, 0, 1))
     # the plate, with the gun's slot up through its lower middle
-    slab(m, Ff, [(-0.6, -0.38), (-0.14, -0.38), (-0.14, -0.05), (0.14, -0.05), (0.14, -0.38), (0.6, -0.38), (0.6, 0.3), (0.45, 0.42), (-0.45, 0.42), (-0.6, 0.3)], 0.03, 0.006)
+    slab(m, Ff, [(-0.6, -0.38), (-0.15, -0.38), (-0.15, 0.0), (0.15, 0.0), (0.15, -0.38), (0.6, -0.38), (0.6, 0.3), (0.45, 0.42), (-0.45, 0.42), (-0.6, 0.3)], 0.03, 0.006)
     for p0, p1 in (((-0.28, 0.04), (0.28, 0.04)), ((0.28, 0.04), (0.28, 0.34)), ((0.28, 0.34), (-0.28, 0.34)), ((-0.28, 0.34), (-0.28, 0.04))):
         tube(m, Ff.p((p0[0], p0[1], 0.02)), Ff.p((p1[0], p1[1], 0.02)), 0.018, 6)
     g.face(g.verts([Ff.p((-0.27, 0.05, 0.025)), Ff.p((0.27, 0.05, 0.025)), Ff.p((0.27, 0.33, 0.025)), Ff.p((-0.27, 0.33, 0.025))]))
@@ -260,20 +270,21 @@ def chassis(M, parent):
     node = empty("Chassis", (0, 0.6, 0), parent)
     m = Mesh()
     for sx in (1, -1):
-        box(m, (sx * 0.42, 0.62, (FRONT_Z + REAR_Z) / 2), (0.08, 0.16, FRONT_Z - REAR_Z - 0.3), 0.01, 1)
+        box(m, (sx * 0.42, 0.62, (FRONT_Z - 0.32 + REAR_Z + 0.15) / 2), (0.08, 0.16, FRONT_Z - 0.32 - REAR_Z - 0.15), 0.01, 1)
     for k, za in enumerate(AXLES_Z):
-        # differential and half shafts up to the portal hubs, the A-arms
-        lathe(m, Zframe((0, TYRE_R + 0.03, za - 0.15)), [(0.0, 0.0), (0.12, 0.02), (0.15, 0.08), (0.15, 0.22), (0.12, 0.28), (0.0, 0.3)], 18)
+        # differential and half shafts out to the portal hubs (on the wheels), the A-arms; the differential's underside
+        # is the published 17.2 in ground clearance
+        lathe(m, Zframe((0, AXLE_Y, za - 0.15)), [(0.0, 0.0), (0.12, 0.02), (0.15, 0.08), (0.15, 0.22), (0.12, 0.28), (0.0, 0.3)], 18)
+        reach = WHEEL_X - 0.36  # the arms' outer ends, inboard of the hubs as they steer
         for sx in (1, -1):
-            tube(m, (sx * 0.15, TYRE_R + 0.03, za), (sx * (WHEEL_X - 0.2), TYRE_R + 0.03, za), 0.035, 10)
+            tube(m, (sx * 0.15, AXLE_Y, za), (sx * reach, AXLE_Y, za), 0.035, 10)
             for dz, dy in ((0.18, 0.12), (-0.18, 0.12), (0.18, -0.08), (-0.18, -0.08)):
-                tube(m, (sx * 0.4, TYRE_R + 0.03 + dy, za + dz), (sx * (WHEEL_X - 0.2), TYRE_R + 0.03 + dy * 0.6, za), 0.025, 8)
-            tube(m, (sx * (WHEEL_X - 0.3), TYRE_R + 0.05, za - 0.05), (sx * 0.7, 1.05, za - 0.1), 0.04, 10)  # coil-over
-            lathe(m, Xframe((sx * (WHEEL_X - 0.2), TYRE_R - 0.04, za), sx), [(0.0, 0.0), (0.12, 0.0), (0.13, 0.04), (0.13, 0.12), (0.0, 0.12)], 18)  # portal hub
-    # skid plate, exhaust and fuel tank
-    box(m, (0, 0.46, 1.9), (0.8, 0.02, 0.9), 0.006, 1)
+                tube(m, (sx * 0.36, AXLE_Y + dy, za + dz), (sx * reach, AXLE_Y + dy * 0.6, za), 0.025, 8)
+            tube(m, (sx * (reach - 0.04), AXLE_Y + 0.06, za - 0.05), (sx * 0.62, 1.05, za - 0.1), 0.04, 10)  # coil-over
+    # skid plate under the engine, exhaust and fuel tank
+    box(m, (0, 0.47, 1.25), (0.8, 0.02, 0.9), 0.006, 1)
     path_tube(m, [np.array([0.3, 0.55, 1.2]), np.array([0.5, 0.52, 0.0]), np.array([0.6, 0.52, -1.5]), np.array([0.7, 0.55, REAR_Z + 0.25])], 0.04, 10)
-    rbox(m, Zframe((-0.6, 0.6, -1.95)), (0.5, 0.3, 0.55), 0.04, 2)
+    rbox(m, Zframe((-0.46, 0.6, -1.95)), (0.4, 0.3, 0.55), 0.04, 2)  # inboard of the right rear wheel
     return [m.to_object("Frame_And_Running_Gear", [M["chassis"]], node, sharp_angle=50)]
 
 
@@ -286,7 +297,16 @@ def wheels(M, parent):
             holder = node
             if i == 0:
                 holder = empty(f"Steer_1_{side}", c, node)
-                drive(holder, "steer about local Y; + turns left", control="steer", axis=[0, 1, 0], limits=[-0.6, 0.6])
+                drive(holder, f"steer about local Y; + turns left. Full lock is the inner wheel's for the 25 ft turning radius ({math.degrees(STEER_LOCK):.0f} degrees)",
+                      control="steer", axis=[0, 1, 0], limits=[-round(STEER_LOCK, 4), round(STEER_LOCK, 4)])
+            # the portal hub's housing behind the wheel: its gears drop the drive from the half shaft to the wheel's centre
+            h = Mesh()
+            hx = sx * (WHEEL_X - 0.2)
+            rbox(h, Frame((hx + sx * 0.05, (TYRE_R + AXLE_Y) / 2, za), (0, 0, 1), (0, 1, 0), (1, 0, 0)), (0.22, AXLE_Y - TYRE_R + 0.24, 0.1), 0.05, 2)
+            lathe(h, Xframe((hx, AXLE_Y, za), sx), [(0.0, 0.0), (0.05, 0.0), (0.05, 0.03), (0.0, 0.03)], 12)
+            hub = h.to_object(f"Hub_{i + 1}_{side}", [M["chassis"]], None, sharp_angle=50)
+            set_parent(hub, holder)
+            objs.append(hub)
             w = empty(f"Wheel_{i + 1}_{side}", c, holder)
             drive(w, "spin about local X; + rolls the vehicle forward", control="wheel", axis=[1, 0, 0], radius=round(TYRE_R, 4))
             m = Mesh()

@@ -18,6 +18,8 @@ SPEC = {
     "tyreDiameter": 1.240,  # 16.00R20 Michelin XZL
     "tyreWidth": 0.430,
     "cargoBodyLength": 18 * 12 * IN,
+    "turningCircle": 100 * 12 * IN,  # diameter, curb to curb
+    "approachAngle": 41.0,  # degrees
 }
 
 AXLE_PAIR_SPACING = 60 * IN  # est.: the gap between the two axles of each pair
@@ -31,6 +33,8 @@ AXLES_Z = [FRONT_PAIR_Z + AXLE_PAIR_SPACING / 2, FRONT_PAIR_Z - AXLE_PAIR_SPACIN
 FRONT_Z = AXLES_Z[0] + 1.30  # est. front overhang: face of the bumper
 REAR_Z = FRONT_Z - SPEC["length"]
 HALF_W = SPEC["width"] / 2
+BUMPER_Y = 1.035  # the front bumper's middle; its underside is the approach angle's limit
+FENDER_Y = 1.44  # the front fenders' tops, clear of the tyres as they steer
 # the overall length runs from the tow eyes to the pintle hook; the bumpers' faces sit inside that
 BUMPER_FRONT_Z = FRONT_Z - 0.12
 BUMPER_REAR_Z = REAR_Z + 0.17
@@ -49,9 +53,10 @@ BED_FLOOR_Y = 1.56
 BED_SIDE_H = 0.60
 BED_HALF_W = 1.19
 
-# frame rails
+# frame rails; the front axles' springs hang under them, inboard of the steered tyres
 RAIL_X = 0.44
 RAIL_Y0, RAIL_Y1 = 0.98, 1.32
+SPRING_X = 0.4
 
 # the spare tyre stands behind the cab; its top is the truck's highest point
 SPARE = (0.72, SPEC["height"] - TYRE_R, 1.62)

@@ -23,6 +23,7 @@ from mathutils.bvhtree import BVHTree
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from geom import B
+from vehicle import tangent_angle
 
 
 def arg(name, default=None):
@@ -103,24 +104,6 @@ def named_pts(objs):
     return (np.vstack(pts) if pts else np.zeros((0, 3))), np.array(names)
 
 
-def tangent_angle(points, zc, r, sign):
-    """Approach (sign +1, ahead of the front axle) or departure (sign -1) angle: the steepest line from the tyre's
-    contact that clears every point of the vehicle beyond the axle; and the index of the point that limits it."""
-    z = sign * (points[:, 0] - zc)
-    y = points[:, 1]
-    keep = np.nonzero(z > 0.05)[0]
-    z, y = z[keep], y[keep]
-    for d in np.arange(1.0, 89.9, 0.1):
-        t = math.radians(d)
-        # tangent point on the tyre's lower leading side, and the line's direction
-        T = np.array([r * math.sin(t), r - r * math.cos(t)])
-        dirv = np.array([math.cos(t), math.sin(t)])
-        below = ((z - T[0]) * dirv[1] - (y - T[1]) * dirv[0] > 1e-4) & (z > T[0])
-        if below.any():
-            return d - 0.1, int(keep[np.nonzero(below)[0][0]])
-    return 89.9, None
-
-
 def main():
     glb = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else sys.argv[1]
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -179,6 +162,24 @@ def main():
         (ok if abs(n * pitch - L) < 0.01 and len(links) == n else issue)(f"{name}: {len(links)} links x {pitch:.4f} m = {n * pitch:.3f} m round a {L:.3f} m loop")
         bottom = path[:, 1].min()
         (ok if abs(bottom - 0.0) < 0.12 else issue)(f"{name}: the loop's bottom (pin line) at y = {bottom:.3f}")
+
+    # wheeled vehicles' wheels at rest: nothing but their own hubs inside them
+    for name in [n for n in kinds.get("wheel", []) if n.startswith("Wheel_")]:
+        o = driven[name]
+        own = set(meshes_under(o))
+        holder = o.parent if o.parent is not None and o.parent.get("control") == "steer" else o
+        own |= set(meshes_under(holder))
+        c = overlaps(list(set(meshes_under(o))), [m for m in meshes if m not in own and not m.name.startswith("Hub_")])
+        n = sum(c.values())
+        (ok if n <= 12 else issue)(f"{name}: {n} overlapping triangle pairs with the body at rest" + (" (" + ", ".join(f"into {b} {v}" for (_, b), v in c.most_common(3)) + ")" if n > 12 else ""))
+
+    # loads at rest: clear of the body they ride on and of each other
+    for name in kinds.get("cargo", []):
+        o = driven[name]
+        own = set(meshes_under(o))
+        c = overlaps(list(own), [m for m in meshes if m not in own])
+        n = sum(c.values())
+        (ok if n <= 12 else issue)(f"{name}: {n} overlapping triangle pairs with the rest at rest" + (" (" + ", ".join(f"into {b} {v}" for (_, b), v in c.most_common(3)) + ")" if n > 12 else ""))
 
     # moving parts against the rest of the vehicle, at their limits
     def test(node, poses, label, mount=False):
@@ -247,8 +248,16 @@ def main():
         if t is not None:
             rest(t)
         (ok if worst <= 12 else issue)(f"{name}: {worst} new overlaps through its elevation round the traverse" + (f" (worst at {where})" if worst > 12 else ""))
+    def sweep_pose(t, a):
+        pose(t, math.radians(a))
+        for g in [x for x in descendants(t) if x.get("control") == "elevate" and "limits_by_traverse" in x.keys()]:
+            table = list(g["limits_by_traverse"])  # what rides on it lifts as its table says (a crane's boom over the load)
+            lo = table[int(round(a / float(g.get("traverse_step", 5)))) % len(table)][0]
+            pose(g, max(0.0, lo))
     for t in trav:
-        base, worst, where, below = test(t, [(f"traverse {a} deg", lambda t=t, a=a: pose(t, math.radians(a))) for a in range(15, 360, 15)], t.name)
+        base, worst, where, below = test(t, [(f"traverse {a} deg", lambda t=t, a=a: sweep_pose(t, a)) for a in range(15, 360, 15)], t.name)
+        for g in [x for x in descendants(t) if x.get("control") == "elevate"]:
+            rest(g)
         rest(t)
         (ok if worst <= 12 else issue)(f"{t.name}: {worst} new overlaps sweeping round" + (f" (worst at {where})" if worst > 12 else ""))
 
@@ -258,9 +267,11 @@ def main():
         wz = sorted({round(float(model_pts(meshes_under(w))[:, 2].mean()), 3) for w in wheels})
         r = max(float(w.get("radius", 0.5)) for w in wheels)
         wheel_meshes = set()
-        for w in wheels:
+        for w in wheels + [driven[n] for n in kinds.get("steer", [])]:  # the wheels, and the hubs that steer with them
             wheel_meshes |= set(meshes_under(w))
-        body, owner = named_pts([m for m in meshes if m not in wheel_meshes and not m.name.startswith("Spare")])
+        wheel_meshes |= {m for m in meshes if m.name.startswith("Hub_")}
+        # rubber mud flaps bend out of the way, so the published angles leave them out
+        body, owner = named_pts([m for m in meshes if m not in wheel_meshes and not m.name.startswith("Spare") and "Mud_Flap" not in m.name])
         zy = body[:, [2, 1]]
         a, ia = tangent_angle(zy, wz[-1], r, +1)
         d, idp = tangent_angle(zy, wz[0], r, -1)

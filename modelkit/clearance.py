@@ -16,9 +16,10 @@ The build writes it into the elevating node's glTF extras before export:
 
 Interpolate between neighbouring pairs; the table already takes the tighter
 of the samples either side of each entry, so the gun stays clear between
-them. Whatever the gun already passes through at rest (the gun port in the
-turret's face, the armour round its mantlet) is its mounting and doesn't
-count.
+them. Whatever the gun already touches at rest (the gun port in the
+turret's face, the armour round its mantlet, a crane boom's rest) is its
+mounting, and only counts once the contact grows well past what it is at
+rest.
 
     gun_limits()                      in the open Blender scene: {node: table}
     python modelkit/clearance.py MODEL.glb   prints the table for a delivered model"""
@@ -113,33 +114,36 @@ def table_for(gun, step=STEP, log=None):
         v = (v - pt) @ _rot(at, a).T + pt
         return BVHTree.FromPolygons([Vector(p) for p in v], gt)
 
-    # whatever the gun already passes through at rest is its mounting - the gun port in the turret's face, the armour
-    # round the mantlet - and it moves through it by design; everything else counts
+    # whatever the gun already touches at rest is its mounting - the gun port in the turret's face, the armour round
+    # the mantlet, a crane boom's rest - and it moves against it by design: those meshes may take up to three times
+    # the contact they have at rest before a pose counts as touching; anything else, TOL pairs
     t0 = tree(0.0, 0.0)
-    mount = set(hull.hits(t0)) | set(turret.hits(t0))
-    hull, turret = hull.without(mount), turret.without(mount)
-    base_h, base_t = Counter(), Counter()
+    base_h, base_t = hull.hits(t0), turret.hits(t0)
     cache_t = {}
+
+    def touching(c, base):
+        return any(n > base.get(k, 0) + max(TOL, 2 * base.get(k, 0)) for k, n in c.items()) or \
+            sum(n for k, n in c.items() if k not in base) > TOL
 
     def clear(a, e):
         if e not in cache_t:  # against the turret it depends on the elevation only
-            c = turret.hits(tree(0.0, e))
-            cache_t[e] = sum(max(0, n - base_t.get(k, 0)) for k, n in c.items()) <= TOL
+            cache_t[e] = not touching(turret.hits(tree(0.0, e)), base_t)
         if not cache_t[e]:
             return False
-        c = hull.hits(tree(a, e))
-        return sum(max(0, n - base_h.get(k, 0)) for k, n in c.items()) <= TOL
+        return not touching(hull.hits(tree(a, e)), base_h)
 
     lo_lim, hi_lim = (float(x) for x in gun["limits"])
     coarse = math.radians(1.0)
 
     def edge(a, start, end):
-        """From a clear elevation `start` toward `end`: the last clear elevation before the gun touches."""
+        """From a clear elevation `start` toward `end`: the last clear elevation before the gun touches. A touch that's
+        clear again a degree further on is a graze in passing (a hook brushing a side board) and doesn't stop it."""
         sgn = 1 if end > start else -1
         e = start
         while sgn * (end - e) > 1e-9:
             nxt = e + sgn * min(coarse, abs(end - e))
-            if not clear(a, round(nxt, 6)):
+            beyond = nxt + sgn * min(coarse, abs(end - nxt))
+            if not clear(a, round(nxt, 6)) and (abs(beyond - nxt) < 1e-9 or not clear(a, round(beyond, 6))):
                 ok_e, bad = e, nxt
                 for _ in range(6):
                     mid = (ok_e + bad) / 2

@@ -13,7 +13,8 @@ from hmmwv import *
 import parts
 import markings
 import vehicle
-from vehicle import principled, lights_materials, points, span, node_pos
+from vehicle import principled, lights_materials, points, span, node_pos, tangent_angle
+import numpy as np
 
 ROOT = "M1151A1_HMMWV"
 NOTES = {
@@ -59,6 +60,15 @@ def measure():
         ("Wheelbase", SPEC["wheelbase"], w1l[2] - w2l[2]),
         ("Track", SPEC["track"], w1l[0] - w1r[0]),
         ("Tyre diameter (37 in)", SPEC["tyreDiameter"], span(points("Wheel_1_Left"), 1)),
+    ]
+    # off the road: the ramp angles over the ends and the clearance under the differentials (the wheels and hubs aside)
+    body = points(ROOT, skip={"Wheels"})
+    zy = body[:, [2, 1]]
+    under = body[(np.abs(body[:, 0]) < 0.6) & ((np.abs(body[:, 2] - w1l[2]) < 0.3) | (np.abs(body[:, 2] - w2l[2]) < 0.3))]
+    rows += [
+        ("Ground clearance (under the differentials)", SPEC["groundClearance"], float(under[:, 1].min())),
+        ("Approach angle", SPEC["approachAngle"], tangent_angle(zy, w1l[2], TYRE_R, +1)[0]),
+        ("Departure angle", SPEC["departureAngle"], tangent_angle(zy, w2l[2], TYRE_R, -1)[0]),
     ]
     return rows, float(allp[:, 1].min())
 

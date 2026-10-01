@@ -133,12 +133,14 @@ def tank_sides(M, parent):
         path_tube(s, [np.array([lx + dx * 0.0, 0.58, lz + dx]), np.array([lx, TANK_Y + TANK_B + 0.4, lz + dx])], 0.018, 10, mat=1)
     for y in np.arange(0.66, TANK_Y + TANK_B + 0.2, 0.3):
         tube(s, (lx, y, lz - 0.2), (lx, y, lz + 0.2), 0.014, 8, mat=1)
-    # hose tubes under the tank on the right: the suction hoses ride in them, capped at the back
-    for k, y in enumerate((1.22, 1.06)):
-        tube(s, (-1.0, y, TANK_FRONT_Z - 0.6), (-1.0, y, PUMP_FRONT_Z + 0.05), 0.075, 20, mat=0)
-        lathe(s, Zframe((-1.0, y, PUMP_FRONT_Z + 0.04), -1), [(0.0, 0.0), (0.085, 0.0), (0.085, 0.05), (0.0, 0.055)], 20, mat=1)
+    # hose tubes under the tank on the right, side by side between the tank and the tyres' tops: the suction hoses
+    # ride in them, capped at the back
+    for k, x in enumerate((-1.02, -0.84)):
+        y = 1.355
+        tube(s, (x, y, TANK_FRONT_Z - 0.6), (x, y, PUMP_FRONT_Z + 0.05), 0.07, 20, mat=0)
+        lathe(s, Zframe((x, y, PUMP_FRONT_Z + 0.04), -1), [(0.0, 0.0), (0.08, 0.0), (0.08, 0.05), (0.0, 0.055)], 20, mat=1)
         for z in (TANK_FRONT_Z - 1.0, TANK_REAR_Z + 1.2):
-            box(s, (-0.95, y + 0.05, z), (0.22, 0.03, 0.05), 0.006, 1, mat=1)
+            box(s, (x, y + 0.075, z), (0.17, 0.02, 0.05), 0.006, 1, mat=1)
     # fire extinguishers in quick-release brackets, front of the tank, both sides
     for sx in (1, -1):
         c = (sx * 1.02, 1.08, TANK_FRONT_Z - 0.2 if sx > 0 else TANK_FRONT_Z - 0.15)
@@ -148,9 +150,9 @@ def tank_sides(M, parent):
         for y in (0.12, 0.45):
             box(s, (c[0], c[1] + y, c[2]), (0.2, 0.03, 0.2), 0.004, 1, mat=1)
     # tool box under the left of the tank, behind the vehicle's own fuel tank
-    rbox(s, Zframe((1.0, 1.05, -0.95)), (0.38, 0.5, 0.9), 0.03, 2, mat=0)
+    rbox(s, Zframe((1.0, 1.05, -0.8)), (0.38, 0.5, 0.9), 0.03, 2, mat=0)  # ahead of the third axle's tyres
     for dz in (-0.25, 0.25):
-        box(s, (1.193, 1.2, -0.95 + dz), (0.012, 0.06, 0.05), 0.004, 1, mat=1)
+        box(s, (1.193, 1.2, -0.8 + dz), (0.012, 0.06, 0.05), 0.004, 1, mat=1)
     objs.append(s.to_object("Tank_Side_Equipment", [M["paint"], M["chassis"], M["extinguisher"]], parent, sharp_angle=45))
     return objs
 
@@ -225,17 +227,20 @@ def pump_module(M, parent):
 
 
 def pump_doors(M, parent):
-    """Rear doors hinge at their outer edges and swing out; side doors hinge along their tops and lift."""
+    """Rear doors hinge at the module's back corners and fold round flat against its sides; side doors hinge along
+    their tops and lift."""
     objs = []
     z1 = PUMP_REAR_Z
-    y0, y1 = PUMP_BOTTOM_Y + 0.12, PUMP_TOP_Y - 0.12
+    y0, y1 = PUMP_BOTTOM_Y + 0.12, PUMP_TOP_Y - 0.155  # the rear doors stop short of the side doors' hinges
     for side, sx in (("Left", 1), ("Right", -1)):
         hx = sx * (PUMP_HALF_W - 0.03)
-        d = empty(f"Pump_Door_{side}", (hx, (y0 + y1) / 2, z1 - 0.005), parent)
-        drive(d, "a rear pump-module door: swings about local Y on its outer hinges; + opens it outward (to 100 degrees)",
-              control="hinge", axis=[0, -1 if sx > 0 else 1, 0], limits=[0, 1.75], group="Pump doors")
+        d = empty(f"Pump_Door_{side}", (sx * (PUMP_HALF_W + 0.002), (y0 + y1) / 2, z1 + 0.001), parent)
+        drive(d, "a rear pump-module door: swings about local Y on its hinge at the module's back corner; + opens it outward, "
+                 "round to lie against the module's side (90 degrees)", control="hinge", axis=[0, -1 if sx > 0 else 1, 0], limits=[0, 1.57],
+              group="Pump rear doors")
         m = Mesh()
-        w = PUMP_HALF_W - 0.07
+        w = PUMP_HALF_W - 0.04  # out to the corner
+        hx = sx * PUMP_HALF_W
         cx = hx - sx * w / 2
         box(m, (cx, (y0 + y1) / 2, z1 - 0.012), (w - 0.01, y1 - y0 - 0.01, 0.025), 0.008, 1, mat=0)
         for yy in (y0 + 0.2, (y0 + y1) / 2, y1 - 0.2):  # stiffeners pressed into the door
@@ -253,9 +258,9 @@ def pump_doors(M, parent):
         hy = PUMP_TOP_Y - 0.12
         zc = (PUMP_FRONT_Z + PUMP_REAR_Z) / 2
         L = PUMP_FRONT_Z - PUMP_REAR_Z - 0.26
-        sd = empty(f"Pump_Side_Door_{side}", (sx * (PUMP_HALF_W + 0.002), hy, zc), parent)
+        sd = empty(f"Pump_Side_Door_{side}", (sx * (PUMP_HALF_W + 0.024), hy + 0.005, zc), parent)  # outside its hinge tube
         drive(sd, "a side door of the pump module: hinged along its top, turns about local Z; + lifts it (to 80 degrees)",
-              control="hinge", axis=[0, 0, 1 if sx > 0 else -1], limits=[0, 1.4], group="Pump doors")
+              control="hinge", axis=[0, 0, 1 if sx > 0 else -1], limits=[0, 1.4], group="Pump side doors")
         s = Mesh()
         sh = hy - (PUMP_BOTTOM_Y + 0.24)
         box(s, (sx * (PUMP_HALF_W + 0.012), hy - sh / 2, zc), (0.022, sh - 0.01, L), 0.008, 1, mat=0)

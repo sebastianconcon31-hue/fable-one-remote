@@ -5,6 +5,7 @@ in tanker.py.
 
     python hemtt-m978/build.py [--glb FILE] [--textures N] [--blend FILE] [--preview DIR [--lookdev] [--views a,b]]"""
 import sys
+import math
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -75,10 +76,12 @@ def notes():
     for i in range(1, 5):
         for s in ("Left", "Right"):
             drive(O[f"Wheel_{i}_{s}"], "spin about local X; + rolls the truck forward", control="wheel", axis=[1, 0, 0], radius=round(TYRE_R, 4))
-    for i, lim, ratio in ((1, 0.62, 1.0), (2, 0.42, 1.0)):
+    lock1, lock2 = truck.steer_limits()
+    for i, lim in ((1, lock1), (2, lock2)):
         for s in ("Left", "Right"):
-            drive(O[f"Steer_{i}_{s}"], "steer about local Y; + turns left. The second axle turns about two thirds as far as the first.",
-                  control="steer", axis=[0, 1, 0], limits=[-lim, lim], ratio=ratio)
+            drive(O[f"Steer_{i}_{s}"], f"steer about local Y; + turns left. Full lock ({math.degrees(lock1):.0f} degrees on the first axle, "
+                  f"{math.degrees(lock2):.0f} on the second) is the inner wheels' for the published 100 ft turning circle.",
+                  control="steer", axis=[0, 1, 0], limits=[-round(lim, 4), round(lim, 4)])
     for s in ("Left", "Right"):
         d = O[f"Door_{s}"]
         d["control"] = "hinge"

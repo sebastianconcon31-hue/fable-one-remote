@@ -108,7 +108,7 @@ def doors(M, parent):
     y0, y1 = 1.47, 2.76
     for side, sx in (("Left", 1), ("Right", -1)):
         x = sx * (CAB_HALF_W + 0.012)
-        hinge = (x, (y0 + y1) / 2, z0)
+        hinge = (x + sx * 0.03, (y0 + y1) / 2, z0)  # on the outer skin, so the door's front edge swings out, not forward
         d = empty(f"Door_{side}", hinge, parent)
         d["drive"] = "swing about the hinge; +angle about `axis` opens the door outward (up to 80 degrees)"
         d["axis"] = [0.0, -1.0 if sx > 0 else 1.0, 0.0]
@@ -157,9 +157,10 @@ def mirrors_and_trim(M, parent):
         # grab handle beside the door, and the two-step ladder below it
         hx0, hx1 = sx * (CAB_HALF_W - 0.01), sx * (CAB_HALF_W + 0.045)
         path_tube(m, [np.array([hx0, 1.7, 4.12]), np.array([hx1, 1.72, 4.12]), np.array([hx1, 2.42, 4.12]), np.array([hx0, 2.44, 4.12])], 0.014, 8, mat=1)
+        # the ladder between the first and second axles, narrow enough to clear both pairs of tyres as they steer
         for k, y in enumerate((0.86, 1.18)):
-            box(m, (sx * (0.98 + 0.05 * k), y, 2.67), (0.24, 0.035, 0.36), 0.008, 1, mat=1)
-        for dz in (-0.17, 0.17):
+            box(m, (sx * (0.98 + 0.05 * k), y, 2.67), (0.24, 0.035, 0.24), 0.008, 1, mat=1)
+        for dz in (-0.11, 0.11):
             tube(m, (sx * 0.98, 0.84, 2.67 + dz), (sx * 1.05, 1.42, 2.67 + dz), 0.014, 8, mat=1)
     # windscreen wipers
     for x0 in (0.5, -0.4):
@@ -174,30 +175,42 @@ def mirrors_and_trim(M, parent):
             mg.to_object("Mirror_Glass", [M["mirror"]], parent, smooth=False, per_face=lambda p: (p[0], p[1], p[2] + 1.0))]
 
 
+def steer_limits():
+    """Each steered axle's full lock (its inner wheel's) for the published turning circle, the wheels turning about one
+    centre on the line through the rear pair (Ackermann): the first axle's, the second's."""
+    R = SPEC["turningCircle"] / 2
+    rear = (AXLES_Z[2] + AXLES_Z[3]) / 2
+    L1, L2 = AXLES_Z[0] - rear, AXLES_Z[1] - rear
+    across = R * math.cos(math.asin(L1 / R)) - SPEC["track"]  # from the turning centre to the inner wheels
+    return math.atan(L1 / across), math.atan(L2 / across)
+
+
 # ---- front end ------------------------------------------------------------------------------------------------------------------
 def front(M, parent):
     node = empty("Front_End", (0, 0.85, FRONT_Z - 0.15), parent)
     m = Mesh()
     zf = BUMPER_FRONT_Z
-    # bumper: a heavy steel box with a chamfered underside
-    rbox(m, Zframe((0, 0.84, zf - 0.14)), (2.34, 0.4, 0.28), 0.03, 2, mat=0)
+    # bumper: a heavy steel box across the frame's ends, high enough (its underside 0.855 m up, the tow eyes' 0.885 m)
+    # for the published 41 degree approach angle
+    yb = BUMPER_Y
+    rbox(m, Zframe((0, yb, zf - 0.09)), (2.34, 0.36, 0.18), 0.03, 2, mat=0)
     # winch: recessed drum behind a roller fairlead
-    box(m, (0, 0.84, zf - 0.005), (0.62, 0.22, 0.02), 0.01, 1, mat=1)
-    lathe(m, Xframe((-0.24, 0.84, zf - 0.09)), [(0.0, 0.0), (0.09, 0.0), (0.09, 0.48), (0.0, 0.48)], 20, mat=1)
+    box(m, (0, yb, zf - 0.005), (0.62, 0.22, 0.02), 0.01, 1, mat=1)
+    lathe(m, Xframe((-0.24, yb, zf - 0.09)), [(0.0, 0.0), (0.06, 0.0), (0.06, 0.48), (0.0, 0.48)], 20, mat=1)
     for dy in (-0.07, 0.07):
-        tube(m, (-0.18, 0.84 + dy, zf + 0.03), (0.18, 0.84 + dy, zf + 0.03), 0.025, 12, mat=1)
+        tube(m, (-0.18, yb + dy, zf + 0.03), (0.18, yb + dy, zf + 0.03), 0.025, 12, mat=1)
     for dx in (-0.2, 0.2):
-        tube(m, (dx, 0.75, zf + 0.03), (dx, 0.93, zf + 0.03), 0.025, 12, mat=1)
+        tube(m, (dx, yb - 0.09, zf + 0.03), (dx, yb + 0.09, zf + 0.03), 0.025, 12, mat=1)
     # tow eyes and lifting shackles
     for sx in (1, -1):
-        lathe(m, Frame((sx * 0.62, 0.66, zf + 0.04), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.04, -0.04), (0.08, -0.04), (0.08, 0.04), (0.04, 0.04), (0.04, -0.04)], 20, mat=1)
-        rbox(m, Zframe((sx * 0.62, 0.74, zf - 0.02)), (0.08, 0.1, 0.12), 0.01, 1, mat=1)
-    # radiator guard between the bumper and the cab, with the steps either side
+        lathe(m, Frame((sx * 0.62, yb - 0.07, zf + 0.04), (1, 0, 0), (0, 0, -1), (0, 1, 0)), [(0.04, -0.04), (0.08, -0.04), (0.08, 0.04), (0.04, 0.04), (0.04, -0.04)], 20, mat=1)
+        rbox(m, Zframe((sx * 0.62, yb + 0.01, zf - 0.02)), (0.08, 0.1, 0.12), 0.01, 1, mat=1)
+    # radiator guard between the bumper and the cab, with the steps on the bumper's ends either side
     rbox(m, Zframe((0, 1.22, zf - 0.24)), (1.7, 0.4, 0.06), 0.02, 2, mat=0)
     for k in range(6):
         box(m, (0, 1.07 + k * 0.06, zf - 0.205), (1.6, 0.03, 0.02), 0.006, 1, mat=1)
     for sx in (1, -1):
-        box(m, (sx * 1.0, 1.06, zf - 0.14), (0.3, 0.035, 0.24), 0.008, 1, mat=1)
+        box(m, (sx * 1.0, yb + 0.198, zf - 0.09), (0.3, 0.035, 0.16), 0.008, 1, mat=1)
     objs = [m.to_object("Bumper", [M["paint"], M["chassis"]], node, sharp_angle=45)]
     # fenders over both front wheels, with mud flaps behind the second axle
     for side, sx in (("Left", 1), ("Right", -1)):
@@ -210,7 +223,7 @@ def front(M, parent):
                 drop = (z - 4.0) / 0.32 * 0.22
             if z < 1.35:
                 drop = (1.35 - z) / 0.23 * 0.05
-            y = 1.395 - drop
+            y = FENDER_Y - drop
             loop = fillet_path([(0.80, y), (1.205, y), (1.215, y - 0.17), (1.185, y - 0.17), (1.175, y - 0.03), (0.80, y - 0.03)], [0.0, 0.03, 0.01, 0.005, 0.02, 0.0], arc_n=3, seg_n=1, closed=True)
             rings.append([(sx * x, yy, z) for x, yy in loop])
         ids = f.grid(rings, closed=True)
@@ -245,13 +258,13 @@ def chassis(M, parent):
             for sx in (1, -1):
                 for j in range(6):
                     sag = 0.012 * j
-                    box(m, (sx * 0.6, 0.76 + j * 0.016 + sag * 0.3, za), (0.09, 0.014, 1.15 - j * 0.15), 0.004, 1, mat=0)
-                tube(m, (sx * 0.6, 0.76, za + 0.55), (sx * 0.6, RAIL_Y0, za + 0.6), 0.03, 8, mat=0)
-                tube(m, (sx * 0.6, 0.76, za - 0.55), (sx * 0.6, RAIL_Y0, za - 0.5), 0.03, 8, mat=0)
+                    box(m, (sx * SPRING_X, 0.76 + j * 0.016 + sag * 0.3, za), (0.09, 0.014, 1.15 - j * 0.15), 0.004, 1, mat=0)
+                tube(m, (sx * SPRING_X, 0.76, za + 0.55), (sx * SPRING_X, RAIL_Y0, za + 0.6), 0.03, 8, mat=0)
+                tube(m, (sx * SPRING_X, 0.76, za - 0.55), (sx * SPRING_X, RAIL_Y0, za - 0.5), 0.03, 8, mat=0)
                 # shock absorber
-                tube(m, (sx * 0.72, TYRE_R + 0.05, za + 0.15), (sx * 0.52, 1.1, za + 0.2), 0.035, 10, mat=0)
-            # steering arms and the drag link
-            tube(m, (WHEEL_X - 0.25, TYRE_R + 0.12, za - 0.15), (-WHEEL_X + 0.25, TYRE_R + 0.12, za - 0.15), 0.025, 10, mat=0)
+                tube(m, (sx * 0.56, TYRE_R + 0.05, za + 0.15), (sx * 0.46, 1.1, za + 0.2), 0.035, 10, mat=0)
+            # the tie rod between the steering arms, inboard of the tyres as they steer
+            tube(m, (WHEEL_X - 0.38, TYRE_R + 0.12, za - 0.15), (-WHEEL_X + 0.38, TYRE_R + 0.12, za - 0.15), 0.025, 10, mat=0)
         else:
             for sx in (1, -1):
                 tube(m, (sx * 0.7, TYRE_R + 0.18, za), (sx * 0.4, 1.0, za + (0.3 if k == 2 else -0.3)), 0.03, 8, mat=0)
@@ -399,19 +412,24 @@ def cargo_body(M, parent):
             lathe(m, Zframe((x + sx * 0.02, BED_FLOOR_Y + 0.02, z - 0.25)), [(0.0, -0.06), (0.018, -0.06), (0.018, 0.06), (0.0, 0.06)], 8, mat=1)
         box(m, (x + sx * 0.025, BED_FLOOR_Y + 0.35, BED_REAR_Z + 0.08), (0.04, 0.12, 0.05), 0.006, 1, mat=1)
         # tie-down rings along the floor edge
-        for z in np.arange(BED_FRONT_Z - 0.4, BED_REAR_Z, -0.9):
-            lathe(m, Yframe((sx * (BED_HALF_W - 0.1), BED_FLOOR_Y, z)), [(0.025, 0.0), (0.045, 0.0), (0.045, 0.012), (0.025, 0.012), (0.025, 0.0)], 12, mat=1)
+        for z in np.arange(BED_FRONT_Z - 0.4, BED_REAR_Z, -0.9):  # folded flat into the floor
+            lathe(m, Yframe((sx * (BED_HALF_W - 0.1), BED_FLOOR_Y - 0.01, z)), [(0.025, 0.0), (0.045, 0.0), (0.045, 0.009), (0.025, 0.009), (0.025, 0.0)], 12, mat=1)
     # front bulkhead (headboard) with ribs and a top rail; rear panel
     rbox(m, Zframe((0, BED_FLOOR_Y + 0.45, BED_FRONT_Z - 0.05)), (2 * BED_HALF_W, 0.9, 0.04), 0.01, 1, mat=0)
     for x in np.linspace(-1.0, 1.0, 6):
         box(m, (x, BED_FLOOR_Y + 0.45, BED_FRONT_Z - 0.015), (0.06, 0.86, 0.03), 0.006, 1, mat=0)
     box(m, (0, BED_FLOOR_Y + 0.9, BED_FRONT_Z - 0.05), (2 * BED_HALF_W, 0.05, 0.07), 0.012, 1, mat=0)
-    rbox(m, Zframe((0, BED_FLOOR_Y + BED_SIDE_H / 2, BED_REAR_Z + 0.0425)), (2 * BED_HALF_W - 0.06, BED_SIDE_H, 0.035), 0.008, 1, mat=0)
+    # the rear panel, cut down where the crane's boom and lift cylinder reach over it
+    n0, n1, nh = CRANE[0] - 0.2, CRANE[0] + 0.2, 0.36
+    for x0, x1, h in ((-(BED_HALF_W - 0.03), n0, BED_SIDE_H), (n0, n1, nh), (n1, BED_HALF_W - 0.03, BED_SIDE_H)):
+        rbox(m, Zframe(((x0 + x1) / 2, BED_FLOOR_Y + h / 2, BED_REAR_Z + 0.0425)), (x1 - x0, h, 0.035), 0.008, 1, mat=0)
     for x in np.linspace(-0.9, 0.9, 5):
-        box(m, (x, BED_FLOOR_Y + BED_SIDE_H / 2, BED_REAR_Z + 0.0125), (0.06, BED_SIDE_H - 0.1, 0.025), 0.006, 1, mat=0)
-    # the boom rest, where the stowed crane boom lies along the right side
-    box(m, (CRANE[0], BED_FLOOR_Y + 0.44, -1.15), (0.1, 0.88, 0.1), 0.01, 1, mat=0)
-    box(m, (CRANE[0], top + 0.27, -1.15), (0.3, 0.05, 0.14), 0.01, 1, mat=0)
+        h = nh if n0 < x < n1 else BED_SIDE_H
+        box(m, (x, BED_FLOOR_Y + h / 2, BED_REAR_Z + 0.0125), (0.06, h - 0.1, 0.025), 0.006, 1, mat=0)
+    # the boom rest, where the stowed crane boom lies along the right side: an arm off the right side's top rail,
+    # clear over the loads
+    box(m, (-(BED_HALF_W - 0.02), top + 0.03, -1.15), (0.06, 0.06, 0.1), 0.01, 1, mat=0)
+    box(m, ((-(BED_HALF_W + 0.01) + CRANE[0] + 0.12) / 2, top + 0.065, -1.15), (BED_HALF_W + 0.01 + CRANE[0] + 0.12, 0.04, 0.12), 0.01, 1, mat=0)
     objs = [m.to_object("Cargo_Body_Mesh", [M["paint"], M["chassis"]], node, sharp_angle=45)]
     # rear: crane deck, bumper with pintle hook, mud flaps
     r = Mesh()
@@ -464,12 +482,13 @@ def crane(M, parent):
     rbox(e, Zframe(tip - np.array([0, 0, 0.06])), (0.2, 0.26, 0.22), 0.03, 2, mat=0)
     lathe(e, Xframe(tip + np.array([-0.04, -0.02, 0.02]), 1), [(0.0, 0.0), (0.1, 0.0), (0.1, 0.08), (0.0, 0.08)], 20, mat=1)
     objs.append(e.to_object("Crane_Boom_Extension_Mesh", [M["paint"], M["chassis"]], ext, sharp_angle=45))
-    hook = empty("Crane_Hook", tip + np.array([0, -0.45, 0.06]), ext)
+    # the hook block, stowed drawn up under the boom's tip
+    hc = tip + np.array([0, -0.26, 0.06])
+    hook = empty("Crane_Hook", tuple(hc), ext)
     h = Mesh()
-    hc = tip + np.array([0, -0.45, 0.06])
     tube(h, tip + np.array([0, -0.12, 0.06]), hc + np.array([0, 0.1, 0]), 0.008, 6, mat=1)
     rbox(h, Zframe(hc), (0.1, 0.2, 0.12), 0.02, 2, mat=2)
-    hk = [hc + np.array([0, -0.1, 0]), hc + np.array([0, -0.22, 0]), hc + np.array([0, -0.28, 0.06]), hc + np.array([0, -0.24, 0.12]), hc + np.array([0, -0.18, 0.11])]
+    hk = [hc + np.array([0, -0.1, 0]), hc + np.array([0, -0.18, 0]), hc + np.array([0, -0.23, 0.05]), hc + np.array([0, -0.2, 0.1]), hc + np.array([0, -0.15, 0.09])]
     path_tube(h, hk, 0.022, 10, mat=1)
     objs.append(h.to_object("Crane_Hook_Mesh", [M["chassis"], M["steel"], M["hazard"]], hook, sharp_angle=50))
     return objs
@@ -486,10 +505,10 @@ def lights(M, parent):
     node = empty("Lights", (0, 1.2, 0), parent)
     objs = []
     specs = [
-        ("Light_Head_Left", M["light_white"], (0.92, 0.86, BUMPER_FRONT_Z + 0.002), (0, 0, 1), 0.09),
-        ("Light_Head_Right", M["light_white"], (-0.92, 0.86, BUMPER_FRONT_Z + 0.002), (0, 0, 1), 0.09),
-        ("Light_Turn_Front_Left", M["light_amber"], (0.72, 0.9, BUMPER_FRONT_Z + 0.002), (0, 0, 1), 0.045),
-        ("Light_Turn_Front_Right", M["light_amber"], (-0.72, 0.9, BUMPER_FRONT_Z + 0.002), (0, 0, 1), 0.045),
+        ("Light_Head_Left", M["light_white"], (0.92, BUMPER_Y + 0.03, BUMPER_FRONT_Z + 0.002), (0, 0, 1), 0.09),
+        ("Light_Head_Right", M["light_white"], (-0.92, BUMPER_Y + 0.03, BUMPER_FRONT_Z + 0.002), (0, 0, 1), 0.09),
+        ("Light_Turn_Front_Left", M["light_amber"], (0.72, BUMPER_Y + 0.07, BUMPER_FRONT_Z + 0.002), (0, 0, 1), 0.045),
+        ("Light_Turn_Front_Right", M["light_amber"], (-0.72, BUMPER_Y + 0.07, BUMPER_FRONT_Z + 0.002), (0, 0, 1), 0.045),
         ("Light_Tail_Left", M["light_red"], (0.9, 0.95, BUMPER_REAR_Z - 0.002), (0, 0, -1), 0.06),
         ("Light_Tail_Right", M["light_red"], (-0.9, 0.95, BUMPER_REAR_Z - 0.002), (0, 0, -1), 0.06),
         ("Light_Turn_Rear_Left", M["light_amber"], (0.74, 0.95, BUMPER_REAR_Z - 0.002), (0, 0, -1), 0.045),
@@ -547,18 +566,18 @@ def cargo(M, parent):
     """Resources on the bed: ammunition, fuel drums, crates and rations, each pallet its own node."""
     node = empty("Cargo", (0, BED_FLOOR_Y, -1.5), parent)
     objs = []
-    rows = [BED_FRONT_Z - 0.68 - k * 1.27 for k in range(4)]
+    rows = [BED_FRONT_Z - 0.695 - k * 1.27 for k in range(4)]  # the front row just clear of the headboard
     kinds = ["drums", "ammo", "crates", "rations", "drums", "crates", "ammo", "rations"]
     slot = 0
     for r, z in enumerate(rows):
         for side, x in (("Left", 0.58), ("Right", -0.58)):
-            kind = kinds[slot] if x > 0 else ["ammo", "rations", "crates", "ammo"][r]
+            kind = kinds[slot] if x > 0 else ["ammo", "ammo_low", "crates", "ammo"][r]  # the second sits under the stowed hook
             slot += 1
-            c = (x, BED_FLOOR_Y, z)
+            c = (x, BED_FLOOR_Y + 0.003, z)
             n = empty(f"Cargo_Pallet_{slot}", c, node)
             m = Mesh()
             pallet(m, c, 0)
-            y0 = BED_FLOOR_Y + 0.12
+            y0 = c[1] + 0.12
             if kind == "drums":  # four 55-gallon drums, ribbed, with bungs on top
                 for dx in (-0.25, 0.25):
                     for dz in (-0.3, 0.3):
@@ -567,16 +586,17 @@ def cargo(M, parent):
                         lathe(m, Yframe(p), prof, 28, mat=2)
                         lathe(m, Yframe((p[0] + 0.15, y0 + 0.88, p[2])), [(0.0, 0.0), (0.03, 0.0), (0.03, 0.015), (0.0, 0.015)], 10, mat=1)
                 strap(m, (x, y0, z), 1.0, 0.88, 1.2, 5)
-            elif kind == "ammo":  # olive ammunition cans, two layers, handles up
-                for layer in range(2):
+            elif kind in ("ammo", "ammo_low"):  # olive ammunition cans, handles up: two layers, or one under the crane's hook
+                layers = 1 if kind == "ammo_low" else 2
+                for layer in range(layers):
                     for i in range(3):
                         for j in range(4):
                             p = (x - 0.32 + i * 0.32, y0 + 0.095 + layer * 0.19, z - 0.45 + j * 0.3)
                             box(m, p, (0.3, 0.18, 0.28), 0.01, 1, mat=3)
-                            if layer == 1:
+                            if layer == layers - 1:
                                 box(m, (p[0], p[1] + 0.096, p[2]), (0.1, 0.012, 0.02), 0.004, 1, mat=1)
-                strap(m, (x, y0, z - 0.3), 0.96, 0.38, 1.2, 5)
-                strap(m, (x, y0, z + 0.3), 0.96, 0.38, 1.2, 5)
+                strap(m, (x, y0, z - 0.3), 0.96, 0.19 * layers, 1.2, 5)
+                strap(m, (x, y0, z + 0.3), 0.96, 0.19 * layers, 1.2, 5)
             elif kind == "crates":  # wooden crates, stencilled
                 for i, dz in enumerate((-0.31, 0.31)):
                     p = (x, y0 + 0.22, z + dz)
