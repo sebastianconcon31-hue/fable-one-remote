@@ -104,8 +104,9 @@ def front(M, parent):
     # driver's periscopes round the hatch
     g = Mesh()
     for k, (dx, a) in enumerate(((-0.22, 0.5), (-0.08, 0.15), (0.08, -0.15), (0.22, -0.5))):
-        z = 1.98 + abs(dx) * 0.1
-        c = np.array([0.6 + dx, ROOF_Y + 0.05, z + 0.35])
+        z = 1.98 + abs(dx) * 0.1 + 0.35
+        base = glacis_y(z) if z > GLACIS_TOP_Z else ROOF_Y  # they stand on the glacis, ahead of the hatch
+        c = np.array([0.6 + dx, base + 0.05, z])
         d = norm(np.array([math.sin(a) * 0.6, 0.0, 1.0]))
         rbox(m, Frame.along(c, d), (0.13, 0.1, 0.1), 0.015, 1)
         Fg = Frame.along(c + d * 0.051, d)
