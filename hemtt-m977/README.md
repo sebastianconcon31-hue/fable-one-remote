@@ -14,8 +14,8 @@ A game-ready US Army HEMTT M977A4: the 8×8 Heavy Expanded Mobility Tactical Tru
 
 | File | What it is |
 | --- | --- |
-| `hemtt_m977a4.glb` | **The truck.** Textured, with every wheel, the steering, the doors, the crane and each pallet load its own node. TBD |
-| `hemtt_m977a4_web.glb` | A lighter copy with half-size WebP textures, for browsers and phones. TBD |
+| `hemtt_m977a4.glb` | **The truck.** Textured, with every wheel, the steering, the doors, the crane and each pallet load its own node. 17.9 MB. |
+| `hemtt_m977a4_web.glb` | A lighter copy with half-size WebP textures, for browsers and phones. 8.7 MB. |
 | `hemtt_viewer.html` | Opens the truck in your browser with a double-click: orbit round it, open the doors, drive the wheels, work the crane, unload the cargo. |
 | `measurements.json` | The finished model measured against the published dimensions. |
 | `build.py`, `truck.py`, `markings.py`, `m977.py` | The Blender build (it uses the shared `../modelkit`). |
@@ -24,7 +24,17 @@ A game-ready US Army HEMTT M977A4: the 8×8 Heavy Expanded Mobility Tactical Tru
 
 Built to Oshkosh's published M977A4 figures; `build.py` measures the finished geometry against them on every build:
 
-TBD
+| Dimension | Published (m) | Model (m) |
+| --- | ---: | ---: |
+| Length (over the spare tyre) | 10.211 | 10.211 |
+| Width (without mirrors) | 2.438 | 2.435 |
+| Height (over the spare tyre) | 2.997 | 2.995 |
+| Wheelbase (axle pair to axle pair) | 5.334 | 5.334 |
+| Track | 2.007 | 2.007 |
+| Tyre diameter (16.00R20) | 1.240 | 1.238 |
+| Cargo body length (18 ft) | 5.486 | 5.486 |
+
+All within 3 mm. The tyres stand on the ground to within 1.2 mm.
 
 - **Units and axes:** metres, glTF axes. +Y is up, +Z points to the front, and +X is the driver's left.
 - **Origin:** on the ground, on the centreline, midway between the front and rear axle pairs. The tyres stand on y = 0.
@@ -62,6 +72,15 @@ Each is its own node, pivoted where the real part turns, and its glTF extras say
 | `HEMTT_Cargo` | 2048² | Pallets, drums, ammunition cans, crates, straps, ration cases |
 
 Each set has a base colour, an occlusion-roughness-metallic map and a normal map. Glass, mirrors and light lenses use plain material values.
+
+## Performance
+
+| File | Triangles | Draw calls | Nodes | Textures | Texture memory on the GPU |
+| --- | ---: | ---: | ---: | --- | ---: |
+| `hemtt_m977a4.glb` | 124,968 | 124 | 113 | 6 at 4096², 6 at 2048² | about 640 MB |
+| `hemtt_m977a4_web.glb` | 124,968 | 124 | 113 | 6 at 2048², 6 at 1024² | about 160 MB |
+
+Texture memory assumes uncompressed RGBA with mipmaps; GPU texture compression (KTX2/Basis, BCn or ASTC) cuts it by four to eight times. The normal maps carry MikkTSpace tangents, the space they were baked in.
 
 ## Rebuilding
 

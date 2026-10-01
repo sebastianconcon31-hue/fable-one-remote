@@ -10,7 +10,7 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "modelkit"))
-sys.path.insert(1, os.path.join(HERE, "..", "hemtt-m977"))
+sys.path.append(os.path.join(HERE, "..", "hemtt-m977"))  # last: markings.py here must win over the M977's
 
 import numpy as np
 
@@ -123,6 +123,14 @@ VIEWS = {
     "top": ((0.01, 18.0, -0.5), (0, 0, -0.5), 30),
     "pump": ((-3.4, 2.4, -9.6), (0, 1.8, -4.8), 30),
     "tank": ((5.5, 4.4, 2.5), (0, 2.2, -1.2), 30),
+}
+
+BEAUTY = {
+    "hero": ((7.4, 2.4, 10.6), (0, 1.35, 0.2), 32),
+    "side": ((15.5, 1.7, -0.5), (0, 1.45, -0.5), 30),
+    "rear": ((-4.4, 2.6, -11.0), (0, 1.6, -4.6), 30, ["Pump doors"]),
+    "tank": ((5.5, 4.4, 2.5), (0, 2.2, -1.2), 30),
+    "pump": ((-3.6, 2.2, -8.6), (-0.4, 1.8, -4.8), 30, ["Pump doors"]),
 }
 
 PALETTE = dict(

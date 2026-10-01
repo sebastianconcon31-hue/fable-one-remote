@@ -119,6 +119,12 @@ def centre(name):
     return (p.max(axis=0) + p.min(axis=0)) / 2
 
 
+def node_pos(name):
+    """Where a node (a wheel's hub, a pivot) sits, in model axes."""
+    t = bpy.data.objects[name].matrix_world.translation
+    return np.array([t.x, t.z, -t.y])
+
+
 def span(p, axis):
     return float(p[:, axis].max() - p[:, axis].min())
 
@@ -177,6 +183,18 @@ def split_paint(V, M):
     return [(V.PAINT_SETS[0][0], base)] + sets
 
 
+def hinge_pose(f):
+    """Swing every door, hatch and ramp to fraction f of its travel (0 shuts them again), so a bake sees their
+    insides lit as they will be when someone opens them."""
+    for o in bpy.data.objects:
+        if o.get("control") == "hinge":
+            lo, hi = o["limits"]
+            a = o["axis"]
+            o.rotation_mode = "AXIS_ANGLE"
+            o.rotation_axis_angle = (lo + (hi - lo) * f, *B(a))
+    bpy.context.view_layer.update()
+
+
 def bake_all(V, scene, M, tex, size):
     t0 = time.time()
     views = paint_views(V, os.path.join(tex, "paint_maps"))
@@ -186,11 +204,12 @@ def bake_all(V, scene, M, tex, size):
     scene.world.light_settings.distance = 1.0
     hide = {o.name for o in bpy.data.objects if o.type == "MESH" and o.material_slots and all(s.material and s.material.name in V.HIDE_MATS for s in o.material_slots)}
     hide |= {"Ground"}
+    hinge_pose(0.5)
     for label, mat in split_paint(V, M):
         if not paint.faces_using([mat]):
             continue
         all_mats = [m for m in bpy.data.materials if m.users]
-        paths = paint.bake_set(label, [mat], all_mats, size, tex, lambda ao, mat=mat: [paint.paint_shader(mat, views, ao, V.markings.VIEWS, pal)], extra_hide=hide, metal=False)
+        paths = paint.bake_set(label, [mat], all_mats, size, tex, lambda ao, mat=mat: [paint.paint_shader(mat, views, ao, V.markings.VIEWS, pal)], ao_samples=32, extra_hide=hide, metal=False)
         paint.textured(mat, paths)
     for label, keys, div in V.GROUPS:
         mats = [M[k] for k in keys]
@@ -199,6 +218,7 @@ def bake_all(V, scene, M, tex, size):
         paint.textured(mats[0], paths)
         mats[0].name = label
         paint.merge_slots(mats[0], mats[1:])
+    hinge_pose(0.0)
     print(f"painted and baked in {time.time() - t0:.0f}s", flush=True)
 
 

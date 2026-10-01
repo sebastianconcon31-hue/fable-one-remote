@@ -10,7 +10,7 @@ published; they are estimated from the truck's proportions."""
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "hemtt-m977"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "hemtt-m977"))  # last, so this folder's own modules come first
 from m977 import *  # noqa: E402,F401  the shared cab, frame and wheel positions
 import m977  # noqa: E402
 

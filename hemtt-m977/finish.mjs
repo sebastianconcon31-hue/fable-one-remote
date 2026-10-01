@@ -19,22 +19,44 @@ const require = createRequire(join(pkgs, "package.json"));
 const load = async (name) => import(pathToFileURL(require.resolve(name)).href);
 const { NodeIO } = await load("@gltf-transform/core");
 const { ALL_EXTENSIONS } = await load("@gltf-transform/extensions");
-const { textureCompress, prune, dedup } = await load("@gltf-transform/functions");
+const { textureCompress, prune, dedup, tangents, weld, unweld } = await load("@gltf-transform/functions");
+const { generateTangents } = await load("mikktspace");
 const sharp = (await load("sharp")).default;
 const esbuild = require("esbuild");
 
 const src = process.argv[2];
 if (!src) throw new Error("usage: node hemtt-m977/finish.mjs exported.glb");
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+// MikkTSpace leaves a zero tangent where a triangle's UVs are degenerate; give those a unit one
+const fixTangents = () => (doc) => {
+  for (const mesh of doc.getRoot().listMeshes()) {
+    for (const prim of mesh.listPrimitives()) {
+      const t = prim.getAttribute("TANGENT");
+      if (!t) continue;
+      const a = t.getArray().slice();
+      for (let i = 0; i < a.length; i += 4) {
+        const l = Math.hypot(a[i], a[i + 1], a[i + 2]);
+        if (l < 1e-6) a.set([1, 0, 0, 1], i);
+        else if (Math.abs(l - 1) > 1e-4) a.set([a[i] / l, a[i + 1] / l, a[i + 2] / l, a[i + 3] < 0 ? -1 : 1], i);
+      }
+      t.setArray(a);
+    }
+  }
+};
 const size = (p) => `${(statSync(p).size / 1048576).toFixed(1)} MB`;
 
 const full = await io.read(src);
-await full.transform(textureCompress({ encoder: sharp, targetFormat: "jpeg", quality: 94, pattern: /normal/i }), prune({ keepLeaves: true }));
+// MikkTSpace tangents, the space Blender baked the normal maps in
+await full.transform(unweld(), tangents({ generateTangents, overwrite: false }), fixTangents(), weld(), textureCompress({ encoder: sharp, targetFormat: "jpeg", quality: 94, pattern: /normal/i }), prune({ keepLeaves: true }));
 const fullPath = join(here, "hemtt_m977a4.glb");
 await io.write(fullPath, full);
 
 const web = await io.read(src);
 await web.transform(
+  unweld(),
+  tangents({ generateTangents, overwrite: false }),
+  fixTangents(),
+  weld(),
   textureCompress({ encoder: sharp, targetFormat: "webp", quality: 86, resize: [2048, 2048], pattern: /HEMTT_Paint/ }),
   textureCompress({ encoder: sharp, targetFormat: "webp", quality: 86, resize: [1024, 1024], pattern: /HEMTT_(Chassis|Cargo)/ }),
   dedup({ propertyTypes: ["Texture"] }),

@@ -204,7 +204,7 @@ def pump_module(M, parent):
     for k, x in enumerate((0.55, -0.55)):
         c = (x, PUMP_BOTTOM_Y + 0.62, z1 + 0.62)
         reel = empty(f"Hose_Reel_{k + 1}", c, node)
-        drive(reel, "a hose reel: turns about local X; + pays the hose out", control="wheel", axis=[1, 0, 0], radius=0.3)
+        drive(reel, "a hose reel: turns about local X; + pays the hose out", control="aux", axis=[1, 0, 0], radius=0.3)
         r = Mesh()
         F = Xframe(c)
         lathe(r, F, [(0.0, -0.3), (0.42, -0.3), (0.42, -0.28), (0.12, -0.27), (0.12, 0.27), (0.42, 0.28), (0.42, 0.3), (0.0, 0.3)], 36, mat=0)
