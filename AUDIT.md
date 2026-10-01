@@ -94,4 +94,37 @@ had no slew limits.
 - The audit's ground check was the only complaint: the aircraft's origin isn't on the ground (its lowest point is 0.95 m below it), which suits the cockpit viewer.
 - The M230 chain gun met the belly from 22° down: its trunnions hang lower, the turret drive is a ring for the breech to swing up into, and the ammunition runs along the belly to a rotary joint and down a feed chute that turns with the turret, so it reaches the full 60° round its ±86° traverse; its measured limits are in its extras and the viewer clamps to them. The swashplate turns with the rotor.
 
-<!-- per-vehicle findings and the final results table follow -->
+## Results
+
+Every delivered model, audited as the glTF a game loads:
+
+| Vehicle | Issues, first run | Issues, delivered | Published dimensions checked | Worst length error | Worst angle error |
+| --- | ---: | ---: | ---: | --- | --- |
+| M1151A1 HMMWV | 8 | 0 | 7 | 5 mm (Ground clearance (under the differentials)) | 0.2° (Departure angle) |
+| M1A2 SEPv3 Abrams | 4 | 0 | 8 | 0 mm (Length, gun forward) | - |
+| M2A3 Bradley | 3 | 0 | 6 | 1 mm (Width (over the add-on armour)) | - |
+| M1126 Stryker | 7 | 0 | 6 | 12 mm (Length) | - |
+| T-72B3 | 3 | 0 | 8 | 12 mm (Hull length) | - |
+| HEMTT M977A4 | 0 | 0 | 7 | 4 mm (Width (without mirrors)) | 0.2° (Approach angle) |
+| HEMTT M978A4 | 10 | 0 | 7 | 4 mm (Width (without mirrors)) | 0.2° (Approach angle) |
+| M1083A1P2 FMTV | 4 | 0 | 7 | 6 mm (Width (without mirrors)) | 0.2° (Approach angle) |
+
+"Issues, first run" is the audit as it was when it first ran, before it checked wheels and loads at rest or the off-road
+angles, so it undercounts what was wrong. Everything the audit finds is a collision a game would show: a part that goes
+through another in a pose the model is meant to reach.
+
+Two published figures can't be matched, and the models say so rather than bend to them:
+- **HEMTT departure angle.** Oshkosh quotes 45° for the HEMTT family; the published length, wheelbase and 18 ft body leave the body's back end more than 2 m behind the last axle, so the model's is about 22° (the tanker's 20.5°).
+- **Stryker approach and departure angles.** There are no published figures (44.8° and 22.8° are measured, not matched).
+
+## Using it
+
+```sh
+python3.11 modelkit/audit.py VEHICLE/model.glb --json out.json     # the checks above, on the delivered file
+python3.11 modelkit/clearance.py VEHICLE/model.glb --json out.json  # a gun's table of limits, to put into a model
+node modelkit/set_extras.mjs VEHICLE/model.glb out.json             # with set_extras.mjs
+```
+
+The Apache helmet has its own checks (`apache-helmet/fit.py`): nothing inside the wearer's head, every hinge clear
+through its travel.
+

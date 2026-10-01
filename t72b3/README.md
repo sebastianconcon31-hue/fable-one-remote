@@ -44,12 +44,14 @@ All within 12 mm.
 
 Each is its own node, pivoted where the real part turns. Its glTF extras say how it moves: `control` (wheel, steer, track, hinge, traverse, elevate, cargo), `axis`, `limits`, and `drive` in words.
 
+The gun also carries `limits_by_traverse`: its lowest and highest elevation every `traverse_step` (5) degrees of the turret's traverse, measured against the hull, so a game can lift it over the deck and whatever else stands in its way instead of letting it sink through. The viewer clamps to it.
+
 | Node | Moves |
 | --- | --- |
 | `Turret` | traverses about local Y; + turns it left, all the way round |
-| `Gun` | the 125 mm 2A46M-5 and its coaxial PKT: elevate about (−1, 0, 0); + raises them, −6° to +14° |
+| `Gun` | the 125 mm 2A46M-5 and its coaxial PKT: elevate about (−1, 0, 0); + raises them, −6° to +14°; over the engine deck and fuel drums its `limits_by_traverse` lift it to −2.4° |
 | `Commander_Cupola` | slews about local Y with its periscopes and the Kord (`control: aux`) |
-| `Driver_Hatch`, `Commander_Hatch`, `Gunner_Hatch` | open about their hinges (group `Hatches`) |
+| `Driver_Hatch`, `Commander_Hatch`, `Gunner_Hatch` | open about their hinges (group `Hatches`): the driver's lifts and swings back on the post at its right; the others hinge at their backs and stand open clear of the Kord |
 | `Road_Wheel_{Left,Right}_{1-6}`, `Idler_*`, `Sprocket_*`, `Return_Roller_*` | spin about local X; each node's `radius` turns distance driven into rotation |
 | `Track_Left`, `Track_Right` | the RMSh single-pin track, its top run sagging between the rollers |
 | `Light_*` | head, blackout and tail lights; their lens materials `Light_White`, `Light_Amber` and `Light_Red` are emissive, so scale the emission to switch them |
