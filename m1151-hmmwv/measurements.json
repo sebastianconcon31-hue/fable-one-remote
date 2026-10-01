@@ -1,0 +1,38 @@
+{
+ "units": "metres",
+ "published_vs_model": [
+  {
+   "dimension": "Length",
+   "published": 4.9276,
+   "model": 4.9261
+  },
+  {
+   "dimension": "Width (over the mirrors)",
+   "published": 2.5654,
+   "model": 2.5654
+  },
+  {
+   "dimension": "Height (to the cab roof)",
+   "published": 2.0066,
+   "model": 2.0066
+  },
+  {
+   "dimension": "Wheelbase",
+   "published": 3.302,
+   "model": 3.302
+  },
+  {
+   "dimension": "Track",
+   "published": 1.8186,
+   "model": 1.8186
+  },
+  {
+   "dimension": "Tyre diameter (37 in)",
+   "published": 0.9398,
+   "model": 0.943
+  }
+ ],
+ "on_the_ground": true,
+ "triangles": 45022,
+ "meshes": 37
+}
