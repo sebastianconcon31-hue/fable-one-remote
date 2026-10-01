@@ -1,0 +1,62 @@
+{
+ "units": "metres; angles in degrees",
+ "published_vs_model": [
+  {
+   "dimension": "Length",
+   "published": 7.206,
+   "model": 7.206,
+   "unit": "m"
+  },
+  {
+   "dimension": "Width (without mirrors)",
+   "published": 2.4384,
+   "model": 2.444,
+   "unit": "m"
+  },
+  {
+   "dimension": "Height (to the cab roof)",
+   "published": 2.8448,
+   "model": 2.8444,
+   "unit": "m"
+  },
+  {
+   "dimension": "Wheelbase (to the rear pair's centre)",
+   "published": 4.0996,
+   "model": 4.0996,
+   "unit": "m"
+  },
+  {
+   "dimension": "Tyre diameter (395/85R20)",
+   "published": 1.1795,
+   "model": 1.1827,
+   "unit": "m"
+  },
+  {
+   "dimension": "Cargo bed, inside length",
+   "published": 4.318,
+   "model": 4.318,
+   "unit": "m"
+  },
+  {
+   "dimension": "Cargo bed, inside width",
+   "published": 2.3114,
+   "model": 2.3114,
+   "unit": "m"
+  },
+  {
+   "dimension": "Approach angle",
+   "published": 40.0,
+   "model": 40.2,
+   "unit": "deg"
+  },
+  {
+   "dimension": "Departure angle",
+   "published": 49.0,
+   "model": 49.2,
+   "unit": "deg"
+  }
+ ],
+ "on_the_ground": true,
+ "triangles": 84360,
+ "meshes": 50
+}
