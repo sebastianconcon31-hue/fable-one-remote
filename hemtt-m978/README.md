@@ -14,7 +14,7 @@ The US Army's HEMTT M978A4 fuel servicing truck at 1:1 scale, outside only: the 
 
 | File | What it is |
 | --- | --- |
-| `hemtt_m978a4.glb` | **The tanker.** Textured, with the doors, pump doors, hose reels and every wheel and its steering its own node. 16.1 MB. |
+| `hemtt_m978a4.glb` | **The tanker.** Textured, with the doors, pump doors, hose reels and every wheel and its steering its own node. 16.3 MB. |
 | `hemtt_m978a4_web.glb` | A lighter copy with half-size WebP textures, for browsers and phones. 8.0 MB. |
 | `hemtt_m978a4_viewer.html` | Opens the tanker in your browser with a double-click: orbit round it, drive and steer it, open the cab and pump doors. 11.2 MB; not checked in, `node modelkit/finish.mjs` makes it. |
 | `measurements.json` | The finished model measured against the published dimensions. |
@@ -33,8 +33,9 @@ Built to Oshkosh's published M978A4 figures; `build.py` measures the finished ge
 | Track | 2.007 | 2.007 |
 | Tyre diameter (16.00R20) | 1.240 | 1.238 |
 | Tank, m3 (2,500 US gal) | 9.463 | 9.463 |
+| Approach angle | 41.0° | 40.8° |
 
-All within 4 mm.
+All within 4 mm, the angles within 0.2°.
 
 - **Units and axes:** metres, glTF axes. +Y is up, +Z points to the front, and +X is the left.
 - **Origin:** on the ground, on the centreline, midway between the front and rear axle pairs.
@@ -46,9 +47,9 @@ Each is its own node, pivoted where the real part turns. Its glTF extras say how
 | Node | Moves |
 | --- | --- |
 | `Wheel_{1-4}_{Left,Right}` | spin about local X; + rolls forward (radius 0.62 m) |
-| `Steer_{1,2}_{Left,Right}` | steer about local Y; + turns left; the second axle turns about two thirds as far as the first |
-| `Door_Left`, `Door_Right` | the cab doors swing about `axis` on their front hinges (group `Cab doors`) |
-| `Pump_Door_{Left,Right}`, `Pump_Side_Door_{Left,Right}` | the pump module's rear doors swing out on their outer hinges; its side doors lift on their tops (group `Pump doors`) |
+| `Steer_{1,2}_{Left,Right}` | steer about local Y; + turns left. Full lock is the inner wheels' for the published 100 ft turning circle: 27° on the first axle, 21° on the second |
+| `Door_Left`, `Door_Right` | the cab doors swing about `axis` on hinges on their outer skins (group `Cab doors`) |
+| `Pump_Door_{Left,Right}`, `Pump_Side_Door_{Left,Right}` | the pump module's rear doors swing out on hinges at its back corners and fold round flat against its sides (group `Pump rear doors`); its side doors lift on their tops (group `Pump side doors`) |
 | `Hose_Reel_1`, `Hose_Reel_2` | turn about local X to pay the hose out |
 | `Spare_Tire` | on its carrier behind the cab |
 | `Light_*` | head, blackout and tail lights; their lens materials `Light_White`, `Light_Amber` and `Light_Red` are emissive, so scale the emission to switch them |
@@ -89,6 +90,6 @@ python3.11 hemtt-m978/build.py --preview out --lookdev    # a quick look at the 
 
 ## Accuracy
 
-- **Published dimensions:** length, width, height over the spare tyre, wheelbase, track, the tyres and the tank's capacity all match.
+- **Published dimensions:** length, width, height over the spare tyre, wheelbase, track, the tyres, the tank's capacity, the 41° approach angle and the 100 ft turning circle (as the steering locks) all match.
 - **Estimated:** the tank's shape and length (sized to hold 2,500 gal), the pump module's layout and the fittings.
 - **Markings:** plausible but made up; the registration isn't a real truck's.
