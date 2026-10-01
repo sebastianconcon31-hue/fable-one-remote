@@ -1,0 +1,43 @@
+{
+ "units": "metres",
+ "published_vs_model": [
+  {
+   "dimension": "Length",
+   "published": 10.3886,
+   "model": 10.3886
+  },
+  {
+   "dimension": "Width (without mirrors)",
+   "published": 2.4384,
+   "model": 2.4346
+  },
+  {
+   "dimension": "Height (over the spare tyre)",
+   "published": 2.9972,
+   "model": 2.9949
+  },
+  {
+   "dimension": "Wheelbase (axle pair to axle pair)",
+   "published": 5.334,
+   "model": 5.334
+  },
+  {
+   "dimension": "Track",
+   "published": 2.0066,
+   "model": 2.0066
+  },
+  {
+   "dimension": "Tyre diameter (16.00R20)",
+   "published": 1.24,
+   "model": 1.2377
+  },
+  {
+   "dimension": "Tank, m3 (2,500 US gal)",
+   "published": 9.4635,
+   "model": 9.4633
+  }
+ ],
+ "on_the_ground": true,
+ "triangles": 134932,
+ "meshes": 65
+}

@@ -1,0 +1,28 @@
+{
+ "game": {
+  "file": "hemtt_m978a4.glb",
+  "mb": 16.1,
+  "triangles": 134932,
+  "drawCalls": 115,
+  "nodes": 110,
+  "materials": 9,
+  "textures": {
+   "2048": 3,
+   "4096": 6
+  },
+  "gpuTextureMB": 576
+ },
+ "web": {
+  "file": "hemtt_m978a4_web.glb",
+  "mb": 8,
+  "triangles": 134932,
+  "drawCalls": 115,
+  "nodes": 110,
+  "materials": 9,
+  "textures": {
+   "1024": 9
+  },
+  "gpuTextureMB": 48
+ },
+ "viewerMB": 11.2
+}
