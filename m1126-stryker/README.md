@@ -42,12 +42,14 @@ All within 12 mm.
 
 Each is its own node, pivoted where the real part turns. Its glTF extras say how it moves: `control` (wheel, steer, track, hinge, traverse, elevate, cargo), `axis`, `limits`, and `drive` in words.
 
+The gun also carries `limits_by_traverse`: its lowest and highest elevation every `traverse_step` (5) degrees of the turret's traverse, measured against the hull, so a game can lift it over the deck and whatever else stands in its way instead of letting it sink through. The viewer clamps to it.
+
 | Node | Moves |
 | --- | --- |
 | `RWS` | the M151 Protector: slews about local Y; + turns it left |
-| `RWS_Cradle` | the M2 and its sights: elevate about (−1, 0, 0); + raises them, −20° to +60° |
+| `RWS_Cradle` | the M2 and its sights: elevate about (−1, 0, 0); + raises them, −20° to +60°; its `limits_by_traverse` keep the gun off the hull, down to −12° over the front corners |
 | `Wheel_{1-4}_{Left,Right}` | spin about local X; + rolls forward (radius in the extras) |
-| `Steer_{1,2}_{Left,Right}` | steer about local Y; + turns left. The second axle turns about two thirds as far as the first. The wheels sit inside these nodes. |
+| `Steer_{1,2}_{Left,Right}` | steer about local Y; + turns left. Full lock is the inner wheels' for the published 52 ft turning circle: 37° on the first axle, 26° on the second. The wheels sit inside these nodes. |
 | `Ramp` | lowers about local X at its foot (group `Ramp`); `Ramp_Door` opens in it (group `Ramp door`) |
 | `Driver_Hatch`, `Commander_Hatch`, `Troop_Hatch_{Left,Right}` | open about their hinges (group `Hatches`) |
 | `Light_*` | head, blackout and tail lights; their lens materials `Light_White`, `Light_Amber` and `Light_Red` are emissive, so scale the emission to switch them |
@@ -87,6 +89,6 @@ python3.11 m1126-stryker/build.py --preview out --lookdev    # a quick look at t
 
 ## Accuracy
 
-- **Published dimensions:** length, width, height to the top of the weapon station, ground clearance and the tyres all match.
-- **Estimated:** the axle spacing (taken from the LAV III), the track, the hull's facets and the tiles' layout.
+- **Published dimensions:** length, width, height to the top of the weapon station, ground clearance (the belly and the differentials both 0.53 m up), the tyres and the 52 ft turning circle (as the steering locks) all match.
+- **Estimated:** the axle spacing (taken from the LAV III, each pair far enough apart that its tyres clear), the track, the hull's facets and the tiles' layout.
 - **Markings:** plausible but made up.
