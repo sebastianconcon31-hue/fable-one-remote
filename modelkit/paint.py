@@ -355,12 +355,15 @@ def weathered_shader(mat, spec, ao_image):
 
 # ---- UVs ----------------------------------------------------------------------------------------------------------------------
 def faces_using(mats):
-    """{object: [polygon indices]} for every face whose material is in mats."""
+    """{object: [polygon indices]} for every face whose material is in mats. Objects sharing a mesh (instances,
+    like track links) are unwrapped and baked once, through the first of them."""
     names = {m.name for m in mats}
     out = {}
+    seen = set()
     for o in bpy.data.objects:
-        if o.type != "MESH":
+        if o.type != "MESH" or o.data.name in seen:
             continue
+        seen.add(o.data.name)
         slots = [s.material.name if s.material else None for s in o.material_slots]
         idx = [p.index for p in o.data.polygons if p.material_index < len(slots) and slots[p.material_index] in names]
         if idx:
@@ -552,7 +555,7 @@ def bake_set(label, group_mats, all_mats, size, out_dir, shaders_fn, ao_samples=
         print(f"  reusing the textures already baked for {label}", flush=True)
         return {"color": done["basecolor"], "orm": done["orm"], "normal": done["normal"]}
     dummy = new_image("__dummy__", 8, False)
-    hidden = [o for o in bpy.data.objects if o.type == "MESH" and (o.name in extra_hide)]
+    hidden = [o for o in bpy.data.objects if o.type == "MESH" and o.name in extra_hide and o not in group]  # never what is being baked
     for o in hidden:
         o.hide_render = True
     # 1. ambient occlusion (everything else in the scene occludes)

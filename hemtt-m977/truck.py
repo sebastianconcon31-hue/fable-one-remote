@@ -589,6 +589,8 @@ def cargo(M, parent):
                     for i in range(2):
                         for j in range(3):
                             box(m, (x - 0.25 + i * 0.5, y0 + 0.12 + layer * 0.24, z - 0.4 + j * 0.4), (0.48, 0.23, 0.38), 0.006, 1, mat=6)
-                rbox(m, Zframe((x, y0 + 0.24, z)), (1.0, 0.485, 1.22), 0.01, 1, mat=7)
-            objs.append(m.to_object(f"Cargo_Pallet_{slot}_Mesh", [M["wood"], M["chassis"], M["drum"], M["ammo_can"], M["crate"], M["strap"], M["cardboard"], M["wrap"]], n, sharp_angle=50))
+                wrap = Mesh()
+                rbox(wrap, Zframe((x, y0 + 0.24, z)), (1.0, 0.485, 1.22), 0.01, 1)
+                objs.append(wrap.to_object(f"Cargo_Pallet_{slot}_Wrap", [M["wrap"]], n, sharp_angle=50))
+            objs.append(m.to_object(f"Cargo_Pallet_{slot}_Mesh", [M["wood"], M["chassis"], M["drum"], M["ammo_can"], M["crate"], M["strap"], M["cardboard"]], n, sharp_angle=50))
     return objs

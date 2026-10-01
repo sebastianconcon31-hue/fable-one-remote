@@ -1,0 +1,58 @@
+{
+ "units": "metres",
+ "published_vs_model": [
+  {
+   "dimension": "Fuselage length",
+   "published": 14.97,
+   "model": 14.96
+  },
+  {
+   "dimension": "Length, rotors turning",
+   "published": 17.73,
+   "model": 17.73
+  },
+  {
+   "dimension": "Main rotor diameter",
+   "published": 14.63,
+   "model": 14.63
+  },
+  {
+   "dimension": "Tail rotor diameter",
+   "published": 2.79,
+   "model": 2.79
+  },
+  {
+   "dimension": "Wingspan",
+   "published": 5.227,
+   "model": 5.227
+  },
+  {
+   "dimension": "Wheel track",
+   "published": 2.03,
+   "model": 2.038
+  },
+  {
+   "dimension": "Wheelbase",
+   "published": 10.59,
+   "model": 10.59
+  },
+  {
+   "dimension": "Height to top of rotor head",
+   "published": 3.87,
+   "model": 3.87
+  },
+  {
+   "dimension": "Height to top of radome",
+   "published": 4.95,
+   "model": 4.95
+  },
+  {
+   "dimension": "Height to top of tail rotor",
+   "published": 4.66,
+   "model": 4.66
+  }
+ ],
+ "wheels_on_ground": true,
+ "triangles": 161408,
+ "meshes": 77
+}

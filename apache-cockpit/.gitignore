@@ -2,3 +2,5 @@ textures/
 apache_ah64d_viewer.html
 node_modules/
 __pycache__/
+apache_exterior.glb
+*.blend

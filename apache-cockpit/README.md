@@ -22,10 +22,10 @@ A game-ready AH-64D Apache Longbow for VR, inside and out, at 1:1 scale.
 
 | File | What it is |
 | --- | --- |
-| `apache_ah64d.glb` | **The aircraft.** The textured 1:1 outside and the working cockpit, with every control and moving part its own node. TBD |
-| `apache_ah64d_static.glb` | The same, with the cockpit's controls merged in, for when nothing inside needs to move. TBD |
-| `apache_ah64d_web.glb` | A lighter copy for the browser viewer, with half-size WebP textures. TBD |
-| `apache_exterior.glb` | The outside on its own, as Blender exports it. TBD |
+| `apache_ah64d.glb` | **The aircraft.** The textured 1:1 outside and the working cockpit, with every control and moving part its own node. 18.6 MB. |
+| `apache_ah64d_static.glb` | The same, with the cockpit's controls merged in, for when nothing inside needs to move. 18.2 MB. |
+| `apache_ah64d_web.glb` | A lighter copy for the browser viewer, with half-size WebP textures. 8.3 MB. |
+| `apache_exterior.glb` | The outside on its own, as Blender exports it: `exterior/build.py` makes it (it isn't checked in). |
 | `controls.json` | Every operable control: its node, what it does, how it moves. |
 | `measurements.json` | The finished model measured against the published dimensions. |
 | `viewer.html`, `viewer/`, `lib/paint.js` | The working aircraft in three.js: the systems, the flight model, live displays, weapons, VR. |
@@ -85,7 +85,20 @@ Canopy glass, sensor windows, rotor blades and light lenses use plain material v
 
 The outside is built to published AH-64D figures. `exterior/build.py` measures the finished geometry against them on every build and writes `measurements.json`:
 
-TBD
+| Dimension | Published (m) | Model (m) |
+| --- | ---: | ---: |
+| Fuselage length | 14.970 | 14.960 |
+| Length, rotors turning | 17.730 | 17.730 |
+| Main rotor diameter | 14.630 | 14.630 |
+| Tail rotor diameter | 2.790 | 2.790 |
+| Wingspan | 5.227 | 5.227 |
+| Wheel track | 2.030 | 2.038 |
+| Wheelbase | 10.590 | 10.590 |
+| Height to top of rotor head | 3.870 | 3.870 |
+| Height to top of radome | 4.950 | 4.950 |
+| Height to top of tail rotor | 4.660 | 4.660 |
+
+Everything is within 1 cm except the wheel track, 8 mm wide of the published figure because of the tyres' bulge.
 
 - **Units and axes:** metres, glTF axes. +Y is up, +Z points toward the nose, and +X is the crew's left.
 - **Origin:** on the front cockpit floor, under the gunner's seat back. The cockpit and the outside share it.
@@ -207,7 +220,13 @@ Browsers allow VR only on HTTPS pages or on localhost, so host the folder on HTT
 
 ## Performance
 
-TBD
+| File | Triangles | Draw calls | Nodes | Textures | Texture memory on the GPU |
+| --- | ---: | ---: | ---: | --- | ---: |
+| `apache_ah64d.glb` | 193,941 | 651 | 554 | 6 at 4096², 8 at 2048², 12 smaller | about 700 MB |
+| `apache_ah64d_static.glb` | 193,941 | 246 | 157 | the same | about 700 MB |
+| `apache_ah64d_web.glb` | 193,941 | 651 | 554 | none above 2048² | about 215 MB |
+
+Texture memory assumes uncompressed RGBA with mipmaps; GPU texture compression (KTX2/Basis, BCn or ASTC) cuts it by four to eight times.
 
 For standalone headsets:
 
