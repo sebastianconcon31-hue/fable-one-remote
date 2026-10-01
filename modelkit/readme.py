@@ -47,10 +47,12 @@ def main(vdir):
     rows = M["published_vs_model"]
     deg = lambda r: r.get("unit") == "deg"
     fmt = lambda r, v: f"{v:.1f}°" if deg(r) else f"{v:.3f}"
-    L.append(table(["Dimension", "Published (m)", "Model (m)"], [[r["dimension"], fmt(r, r["published"]), fmt(r, r["model"])] for r in rows], ["---", "---:", "---:"]))
-    worst = max(abs(r["published"] - r["model"]) for r in rows if not deg(r))
+    unit = "°" if all(deg(r) for r in rows) else "m"
+    L.append(table(["Dimension", f"Published ({unit})", f"Model ({unit})"], [[r["dimension"], fmt(r, r["published"]), fmt(r, r["model"])] for r in rows], ["---", "---:", "---:"]))
+    worst = max([abs(r["published"] - r["model"]) for r in rows if not deg(r)], default=0)
     angles = [abs(r["published"] - r["model"]) for r in rows if deg(r)]
-    L += ["", f"All within {max(1, round(worst * 1000))} mm" + (f", the angles within {max(0.1, round(max(angles), 1))}°." if angles else "."), "",
+    within = f"the angles within {max(0.1, round(max(angles), 1))}°" if angles and not worst else f"All within {max(1, round(worst * 1000))} mm" + (f", the angles within {max(0.1, round(max(angles), 1))}°" if angles else "")
+    L += ["", within[0].upper() + within[1:] + ".", "",
           "- **Units and axes:** metres, glTF axes. +Y is up, +Z points to the front, and +X is the left.",
           f"- **Origin:** {A['origin']}.", ""]
     L += ["## Moving parts", "", "Each is its own node, pivoted where the real part turns. Its glTF extras say how it moves: `control` (wheel, steer, track, hinge, traverse, elevate, cargo), `axis`, `limits`, and `drive` in words.", ""]
