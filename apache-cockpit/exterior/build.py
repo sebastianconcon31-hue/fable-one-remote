@@ -15,6 +15,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "..", "modelkit"))  # geometry, paint and baking shared with the other models
 
 import bpy
 import numpy as np
@@ -304,6 +305,7 @@ def main():
         with open(os.path.join(os.path.dirname(os.path.abspath(arg("--glb"))), "measurements.json"), "w") as f:
             json.dump({"units": "metres", "published_vs_model": [{"dimension": k, "published": float(w), "model": round(float(g), 4)} for k, w, g in rows],
                        "wheels_on_ground": bool(abs(clearance) < 0.005), "triangles": int(tris), "meshes": int(n)}, f, indent=1)
+    paint.RESUME = "--resume" in sys.argv
     glb = arg("--glb")
     if glb:
         tex = arg("--texdir", os.path.join(os.path.dirname(os.path.abspath(glb)), "exterior_textures"))
@@ -315,7 +317,7 @@ def main():
         if not os.path.exists(os.path.join(maps, "paint_left_lines.png")):
             decals.draw_all(maps)
         views = {v: {k: paint.load_image(os.path.join(maps, f"paint_{v}_{k}.png")) for k in ("lines", "marks")} for v in decals.VIEWS}
-        paint.paint_shader(M["paint"], views, None)
+        paint.paint_shader(M["paint"], views, None, decals.VIEWS)
         for k, spec in paint.MECH.items():
             paint.weathered_shader(M[k], spec, None)
     prev = arg("--preview")
@@ -355,7 +357,7 @@ def paint_and_bake(scene, M, tex, size):
                 sl.material = M["paint_b"]
     for key, label in (("paint", "AH64_Paint_Fwd"), ("paint_b", "AH64_Paint_Aft")):
         all_mats = [m for m in bpy.data.materials if m.users]
-        paths = paint.bake_set(label, [M[key]], all_mats, size, tex, lambda ao, key=key: [paint.paint_shader(M[key], views, ao)], extra_hide=glass, metal=False)
+        paths = paint.bake_set(label, [M[key]], all_mats, size, tex, lambda ao, key=key: [paint.paint_shader(M[key], views, ao, decals.VIEWS)], extra_hide=glass, metal=False)
         paint.textured(M[key], paths)
     # mechanical parts, and the stores
     for label, keys, sz in (("AH64_Mech", ["mech", "steel", "gun", "rubber", "exhaust", "engine", "stores_dark"], size // 2), ("AH64_Stores", ["stores", "band_yellow", "band_brown"], size // 2)):

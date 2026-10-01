@@ -479,3 +479,19 @@ def disc(m, F, r, n=16, mat=0):
     ids = m.verts([F.p((r * math.cos(2 * math.pi * i / n), r * math.sin(2 * math.pi * i / n), 0)) for i in range(n)])
     m.face(ids, mat)
     return ids
+
+
+# ---- frames for parts that turn about a model axis -----------------------------------------------------------------------------
+def Yframe(o):
+    """Frame at o with local Z pointing up (lathes about a vertical axis)."""
+    return Frame(o, (1, 0, 0), (0, 0, -1), (0, 1, 0))
+
+
+def Xframe(o, sx=1):
+    """Frame at o with local Z along +X (sx=1) or -X (wheels, axles)."""
+    return Frame(o, (0, 0, -sx), (0, 1, 0), (sx, 0, 0))
+
+
+def Zframe(o, sz=1):
+    """Frame at o with local Z along +Z (sz=1) or -Z."""
+    return Frame(o, (sz, 0, 0), (0, 1, 0), (0, 0, sz))

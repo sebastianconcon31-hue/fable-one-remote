@@ -1,9 +1,10 @@
-"""Paint, weathering and baking.
+"""Paint, weathering and baking, shared by the models in this repository.
 
-The skin's look is built procedurally in Cycles - the paint maps from
-decals.py projected from four sides, plus fading, dust, grime from ambient
-occlusion, rain streaks and worn edges - then baked into plain PBR textures
-(base colour, occlusion-roughness-metallic, normal) that any engine can use."""
+A skin's look is built procedurally in Cycles - paint maps (paintmaps.py)
+projected from the sides, top, bottom and ends, plus fading, dust, grime
+from ambient occlusion, rain streaks and worn edges - then baked into plain
+PBR textures (base colour, occlusion-roughness-metallic, normal) that any
+engine can use."""
 import math
 import os
 import time
@@ -11,7 +12,7 @@ import bpy
 import bmesh
 import numpy as np
 
-import decals
+RESUME = False  # set by build.py --resume: keep texture sets an interrupted run already finished
 
 # ---- node helpers -------------------------------------------------------------------------------------------------------------
 class NT:
@@ -140,6 +141,11 @@ STENCIL = (0.009, 0.009, 0.008)
 SOOT = (0.006, 0.0055, 0.005)
 OIL = (0.012, 0.01, 0.006)
 WORN = (0.11, 0.118, 0.09)
+# A look, as one dict: colours (linear) and how strongly each layer shows. paint_shader(palette=...) overrides any of them.
+PALETTE = dict(PAINT=PAINT, PAINT_VARIANT=(0.066, 0.072, 0.05), FADED=FADED, GRIME=GRIME, DUST=DUST, STENCIL=STENCIL, SOOT=SOOT, OIL=OIL, WORN=WORN,
+               LINE=(0.01, 0.01, 0.009), WALK=(0.024, 0.025, 0.021),
+               low_y=0.35, low_gain=1.1, dust=0.4, grime=1.0, oil_mix=0.75, oil_rough=-0.42, soot_rough=0.15, walk_rough=0.25, rough=0.6,
+               rivet=0.12, line_depth=1.0)
 
 
 def model_space(t):
@@ -152,30 +158,38 @@ def model_space(t):
     return g, (px, pz, mz), (nx, nz, nzm)
 
 
-def projections(t, P, N, images):
-    """Blend the four paint views by how squarely each surface faces them. Returns the eight channels."""
-    mx, my, mz = P
-    nx, ny, nz = N
-    L, H, W = decals.Z1 - decals.Z0, decals.Y1 - decals.Y0, decals.X1 - decals.X0
-    uv = {
-        "left": (t.madd(mz, -1 / L, decals.Z1 / L), t.madd(my, 1 / H, -decals.Y0 / H)),
-        "right": (t.madd(mz, 1 / L, -decals.Z0 / L), t.madd(my, 1 / H, -decals.Y0 / H)),
-        "top": (t.madd(mx, -1 / W, decals.X1 / W), t.madd(mz, 1 / L, -decals.Z0 / L)),
-        "bottom": (t.madd(mx, 1 / W, -decals.X0 / W), t.madd(mz, 1 / L, -decals.Z0 / L)),
-    }
+# Which way each paint view looks, and the model axis its surfaces face along.
+FACES = {"left": ("x", 1), "right": ("x", -1), "top": ("y", 1), "bottom": ("y", -1), "front": ("z", 1), "back": ("z", -1)}
+
+
+def projections(t, P, N, images, specs):
+    """Blend the paint views by how squarely each surface faces them. Returns the eight channels.
+    specs: {view: dict(u=(axis, u0, u1), v=(axis, v0, v1))} as paintmaps.View draws them."""
+    axes = dict(zip("xyz", P))
+    normals = dict(zip("xyz", N))
     pw = 4.0
-    w = {
-        "left": t.math("POWER", t.math("MAXIMUM", nx, 0.0), pw),
-        "right": t.math("POWER", t.math("MAXIMUM", t.mul(nx, -1.0), 0.0), pw),
-        "top": t.math("POWER", t.math("MAXIMUM", ny, 0.0), pw),
-        "bottom": t.math("POWER", t.math("MAXIMUM", t.mul(ny, -1.0), 0.0), pw),
-    }
-    wf = t.math("POWER", t.math("ABSOLUTE", nz), pw)
-    total = t.add(t.add(t.add(w["left"], w["right"]), t.add(w["top"], w["bottom"])), t.add(wf, 1e-4))
-    lines_rgb, lines_a, marks_rgb, marks_a = None, t.mul(wf, 0.5), None, None
-    for k in ("left", "right", "top", "bottom"):
-        wk = t.math("DIVIDE", w[k], total)
-        vec = t.comb(*uv[k])
+    weights = {}
+    for name, (ax, sign) in FACES.items():
+        n = normals[ax] if sign > 0 else t.mul(normals[ax], -1.0)
+        weights[name] = t.math("POWER", t.math("MAXIMUM", n, 0.0), pw)
+    used = [k for k in FACES if k in specs]
+    neutral = None  # surfaces facing a side nobody painted
+    for k in FACES:
+        if k not in used:
+            neutral = weights[k] if neutral is None else t.add(neutral, weights[k])
+    total = None
+    for k in FACES:
+        total = weights[k] if total is None else t.add(total, weights[k])
+    total = t.add(total, 1e-4)
+    lines_rgb, marks_rgb, marks_a = None, None, None
+    lines_a = t.mul(t.math("DIVIDE", neutral, total), 0.5) if neutral is not None else 0.0
+    for k in used:
+        sp = specs[k]
+        (ua, u0, u1), (va, v0, v1) = sp["u"], sp["v"]
+        u = t.madd(axes[ua], 1 / (u1 - u0), -u0 / (u1 - u0))
+        v = t.madd(axes[va], 1 / (v1 - v0), -v0 / (v1 - v0))
+        wk = t.math("DIVIDE", weights[k], total)
+        vec = t.comb(u, v)
         li = t.image(images[k]["lines"], vec)
         mk = t.image(images[k]["marks"], vec)
         lr = t.vmath("SCALE", li.outputs["Color"], scale=wk)
@@ -186,19 +200,21 @@ def projections(t, P, N, images):
         marks_rgb = mr if marks_rgb is None else t.vmath("ADD", marks_rgb, mr)
         lines_a = t.add(lines_a, la)
         marks_a = ma if marks_a is None else t.add(marks_a, ma)
-    lines_a = t.add(lines_a, t.mul(t.math("DIVIDE", wf, total), 0.0))
     line, halo, rivet = t.xyz(lines_rgb)
     mark, walk, oil = t.xyz(marks_rgb)
     return dict(line=line, halo=halo, rivet=rivet, tint=lines_a, mark=mark, walk=walk, oil=oil, soot=marks_a)
 
 
-def paint_shader(mat, images, ao_image):
-    """The skin. Returns the node tree helper and the colour, roughness and height sockets (for baking)."""
+def paint_shader(mat, images, ao_image, specs, palette=None):
+    """A painted skin. Returns the node tree helper and the colour, roughness and height sockets (for baking).
+    images: {view: {"lines": img, "marks": img}}; specs: the views' placements (paintmaps); palette: overrides of PALETTE."""
+    pal = dict(PALETTE, **(palette or {}))
+    PAINT, FADED, GRIME, DUST, STENCIL, SOOT, OIL, WORN = (pal[k] for k in ("PAINT", "FADED", "GRIME", "DUST", "STENCIL", "SOOT", "OIL", "WORN"))
     t = NT(mat)
     g, P, N = model_space(t)
     mx, my, mz = P
     nx, ny, nz = N
-    ch = projections(t, P, N, images)
+    ch = projections(t, P, N, images, specs)
     pos = g.outputs["Position"]
     big = t.noise(pos, 0.35, 2.0)
     mid = t.noise(pos, 2.2, 4.0)
@@ -214,7 +230,7 @@ def paint_shader(mat, images, ao_image):
         uv = t.n("ShaderNodeUVMap", _uv_map="UVMap")
         ao_v = t.xyz(t.image(ao_image, uv.outputs["UV"]).outputs["Color"])[0]
     # base paint, faded unevenly, panel by panel
-    c = t.mix(PAINT, (0.066, 0.072, 0.05), t.mul(mid, 0.3))
+    c = t.mix(PAINT, pal["PAINT_VARIANT"], t.mul(mid, 0.3))
     c = t.mix(c, t.vmath("SCALE", c, scale=t.madd(big, 0.3, 0.85)), 1.0)
     c = t.vmath("SCALE", c, scale=t.madd(t.add(ch["tint"], -0.5), 0.45, 1.0))
     up = t.math("MAXIMUM", ny, 0.0)
@@ -225,12 +241,12 @@ def paint_shader(mat, images, ao_image):
     c = t.vmath("SCALE", c, scale=t.math("SUBTRACT", 1.0, t.mul(t.mul(vert, streak), 0.16)))
     # grime in the corners and round the panel lines
     grime = t.math("POWER", t.math("SUBTRACT", 1.0, ao_v, clamp=True), 1.3)
-    c = t.mix(c, GRIME, t.clamp01(t.mul(grime, t.madd(mid, 0.4, 0.3))))
+    c = t.mix(c, GRIME, t.clamp01(t.mul(t.mul(grime, pal["grime"]), t.madd(mid, 0.4, 0.3))))
     c = t.mix(c, GRIME, t.mul(ch["halo"], 0.35))
     # dust: heavier low down and on top
-    low = t.math("SUBTRACT", 0.35, my, clamp=True)
-    dust = t.clamp01(t.add(t.mul(t.mul(low, 1.1), mid), t.mul(t.mul(up, t.smooth(mid, 0.45, 0.8)), 0.45)))
-    c = t.mix(c, DUST, t.mul(dust, 0.4))
+    low = t.math("SUBTRACT", pal["low_y"], my, clamp=True)
+    dust = t.clamp01(t.add(t.mul(t.mul(low, pal["low_gain"]), mid), t.mul(t.mul(up, t.smooth(mid, 0.45, 0.8)), 0.45)))
+    c = t.mix(c, DUST, t.mul(dust, pal["dust"]))
     # edges worn through the paint
     bev = t.n("ShaderNodeBevel", _samples=8)
     bev.inputs["Radius"].default_value = 0.006
@@ -238,23 +254,23 @@ def paint_shader(mat, images, ao_image):
     wear = t.mul(t.smooth(edge, 0.02, 0.12), t.smooth(fine, 0.5, 0.62))
     c = t.mix(c, WORN, t.mul(wear, 0.8))
     # panel lines, rivets, walkways, stencils, fluids, soot
-    c = t.mix(c, (0.01, 0.01, 0.009), t.mul(ch["line"], 0.85))
-    c = t.vmath("SCALE", c, scale=t.math("SUBTRACT", 1.0, t.mul(ch["rivet"], 0.12)))
-    c = t.mix(c, (0.024, 0.025, 0.021), t.mul(ch["walk"], 0.9))
+    c = t.mix(c, pal["LINE"], t.mul(ch["line"], 0.85))
+    c = t.vmath("SCALE", c, scale=t.math("SUBTRACT", 1.0, t.mul(ch["rivet"], pal["rivet"])))
+    c = t.mix(c, pal["WALK"], t.mul(ch["walk"], 0.9))
     c = t.mix(c, STENCIL, ch["mark"])
-    c = t.mix(c, OIL, t.mul(ch["oil"], 0.75))
+    c = t.mix(c, OIL, t.mul(ch["oil"], pal["oil_mix"]))
     c = t.mix(c, SOOT, t.clamp01(t.mul(ch["soot"], 1.15)))
     # roughness
-    r = t.madd(mid, 0.14, 0.6)
+    r = t.madd(mid, 0.14, pal["rough"])
     r = t.add(r, t.mul(fade, 0.12))
-    r = t.add(r, t.mul(ch["walk"], 0.25))
+    r = t.add(r, t.mul(ch["walk"], pal["walk_rough"]))
     r = t.add(r, t.mul(ch["mark"], -0.12))
-    r = t.add(r, t.mul(ch["oil"], -0.42))
-    r = t.add(r, t.mul(ch["soot"], 0.15))
+    r = t.add(r, t.mul(ch["oil"], pal["oil_rough"]))
+    r = t.add(r, t.mul(ch["soot"], pal["soot_rough"]))
     r = t.add(r, t.mul(dust, 0.12))
     r = t.math("MAXIMUM", t.math("MINIMUM", r, 0.95), 0.18)
     # height: grooves, rivet heads, non-skid grit, a faint orange peel
-    h = t.mul(ch["line"], -1.0)
+    h = t.mul(ch["line"], -pal["line_depth"])
     h = t.add(h, t.mul(ch["rivet"], 0.4))
     h = t.add(h, t.mul(t.mul(ch["walk"], grain), 0.5))
     h = t.add(h, t.mul(fine, 0.04))
@@ -306,12 +322,21 @@ def weathered_shader(mat, spec, ao_image):
     up = t.math("MAXIMUM", nzb, 0.0)
     dust = t.mul(t.mul(up, t.smooth(mid, 0.4, 0.8)), 0.4)
     c = t.mix(c, DUST, dust)
+    mud = 0.0
+    if "mud" in spec:  # caked on low down (tyres, running gear): thickest at the ground, broken up
+        _, _, pz = t.xyz(pos)
+        low = t.math("DIVIDE", t.math("SUBTRACT", spec.get("mud_y", 1.0), pz, clamp=True), spec.get("mud_y", 1.0))
+        blot = t.smooth(t.noise(pos, 6.0, 4.0, 0.6), 0.35, 0.6)
+        mud = t.clamp01(t.mul(t.mul(t.math("POWER", low, 0.7), blot), spec.get("mud_amount", 1.0)))
+        c = t.mix(c, spec["mud"], mud)
     bev = t.n("ShaderNodeBevel", _samples=8)
     bev.inputs["Radius"].default_value = 0.004
     edge = t.math("SUBTRACT", 1.0, t.vmath("DOT_PRODUCT", bev.outputs[0], g.outputs["Normal"]))
     wear = t.mul(t.smooth(edge, 0.02, 0.1), t.smooth(fine, 0.48, 0.6))
     c = t.mix(c, spec["wear"], t.mul(wear, 0.85))
     r = t.add(t.madd(mid, 0.14, spec["r"] - 0.07), t.mul(dust, 0.2))
+    if "mud" in spec:
+        r = t.mixf(r, 0.9, mud)
     r = t.add(r, t.mul(wear, 0.05 if spec["wm"] > 0.5 else 0.1))
     r = t.math("MAXIMUM", t.math("MINIMUM", r, 0.95), 0.12)
     m = t.madd(wear, spec["wm"] - spec["m"], spec["m"])
@@ -521,6 +546,11 @@ def bake_set(label, group_mats, all_mats, size, out_dir, shaders_fn, ao_samples=
     texel = math.sqrt(a3 / (a2 * size * size)) * 1000 if a2 else 0
     print(f"  {len(group)} objects, {a3:.1f} m2 of surface, {a2 * 100:.0f}% of the atlas used, {texel:.2f} mm per texel at {size}px", flush=True)
     objs = list(group)
+    done = {k: os.path.join(out_dir, f"{label}_{k}.{'png' if k == 'normal' else 'jpg'}") for k in ("basecolor", "orm", "normal")}
+    if RESUME and all(os.path.exists(p) for p in done.values()):
+        # the build is deterministic, so a set baked by an earlier, interrupted run still fits these UVs
+        print(f"  reusing the textures already baked for {label}", flush=True)
+        return {"color": done["basecolor"], "orm": done["orm"], "normal": done["normal"]}
     dummy = new_image("__dummy__", 8, False)
     hidden = [o for o in bpy.data.objects if o.type == "MESH" and (o.name in extra_hide)]
     for o in hidden:
