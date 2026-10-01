@@ -37,9 +37,9 @@ def main(vdir):
         L.append("| " + " | ".join(f"![{c[2]}](docs/{c[0]})" for c in pair) + " |")
     L += ["", "## Files", ""]
     L.append(table(["File", "What it is"], [
-        [f"`{name}.glb`", f"**The {A['short']}.** {A['game_note']} {g['mb']} MB."],
-        [f"`{name}_web.glb`", f"A lighter copy with half-size WebP textures, for browsers and phones. {w['mb']} MB."],
-        [f"`{name}_viewer.html`", f"Opens the {A['short']} in your browser with a double-click: {A['viewer_note']} {S['viewerMB']} MB; not checked in, `node modelkit/finish.mjs` makes it."],
+        [f"`{name}.glb`", f"**The {A['short']}.** {A['game_note']} {g['mb']:.1f} MB."],
+        [f"`{name}_web.glb`", f"A lighter copy with half-size WebP textures, for browsers and phones. {w['mb']:.1f} MB."],
+        [f"`{name}_viewer.html`", f"Opens the {A['short']} in your browser with a double-click: {A['viewer_note']} {S['viewerMB']:.1f} MB; not checked in, `node modelkit/finish.mjs` makes it."],
         ["`measurements.json`", "The finished model measured against the published dimensions."],
         [", ".join(f"`{f}`" for f in A["sources"]), "The Blender build (it uses the shared `../modelkit`)."],
     ]))
