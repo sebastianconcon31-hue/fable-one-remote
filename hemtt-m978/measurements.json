@@ -1,40 +1,53 @@
 {
- "units": "metres",
+ "units": "metres; angles in degrees",
  "published_vs_model": [
   {
    "dimension": "Length",
    "published": 10.3886,
-   "model": 10.3886
+   "model": 10.3886,
+   "unit": "m"
   },
   {
    "dimension": "Width (without mirrors)",
    "published": 2.4384,
-   "model": 2.4346
+   "model": 2.4346,
+   "unit": "m"
   },
   {
    "dimension": "Height (over the spare tyre)",
    "published": 2.9972,
-   "model": 2.9949
+   "model": 2.9949,
+   "unit": "m"
   },
   {
    "dimension": "Wheelbase (axle pair to axle pair)",
    "published": 5.334,
-   "model": 5.334
+   "model": 5.334,
+   "unit": "m"
   },
   {
    "dimension": "Track",
    "published": 2.0066,
-   "model": 2.0066
+   "model": 2.0066,
+   "unit": "m"
   },
   {
    "dimension": "Tyre diameter (16.00R20)",
    "published": 1.24,
-   "model": 1.2377
+   "model": 1.2377,
+   "unit": "m"
   },
   {
    "dimension": "Tank, m3 (2,500 US gal)",
    "published": 9.4635,
-   "model": 9.4633
+   "model": 9.4633,
+   "unit": "m"
+  },
+  {
+   "dimension": "Approach angle",
+   "published": 41.0,
+   "model": 40.8,
+   "unit": "deg"
   }
  ],
  "on_the_ground": true,
