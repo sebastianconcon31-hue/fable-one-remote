@@ -41,8 +41,13 @@ def body(M, parent):
     objs = []
     m = Mesh()
     # the hood: a thick fibreglass shell over the engine bay and both front wheels
-    hood = [(HOOD_FRONT_Z, HOOD_Y_FRONT - 0.09), (HOOD_FRONT_Z, HOOD_Y_FRONT), (HOOD_BACK_Z, HOOD_Y_BACK), (HOOD_BACK_Z, HOOD_Y_BACK - 0.09)]
-    loft(m, SIDE, [(-BODY_HALF_W, hood), (BODY_HALF_W, hood)], radii=[0.01, 0.04, 0.02, 0.01], bevel=0.02)
+    # the hood: wide and flat on top, its shoulders sloping down to the fenders, lofted from the windshield to the nose
+    def hood_section(z):
+        yt = hood_y(z)
+        hw = BODY_HALF_W - 0.006  # just inside the fender panels' faces
+        return [(-hw, 1.04), (hw, 1.04), (hw, yt - 0.11), (0.86, yt - 0.015), (0.0, yt), (-0.86, yt - 0.015), (-hw, yt - 0.11)]
+    ZF = Frame((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))
+    loft(m, ZF, [(HOOD_BACK_Z, hood_section(HOOD_BACK_Z)), (HOOD_FRONT_Z, hood_section(HOOD_FRONT_Z))], radii=[0.01, 0.01, 0.03, 0.05, 0.3, 0.05, 0.03], bevel=0.03)
     # its side panels with the wheel arches cut in
     zc = AXLES_Z[0]
     for sx in (1, -1):
@@ -66,7 +71,7 @@ def body(M, parent):
     loft(m, SIDE, [(-BODY_HALF_W + 0.02, shell), (BODY_HALF_W - 0.02, shell)], radii=[0.01, 0.03, 0.03, 0.01], bevel=0.015)
     zr = AXLES_Z[1]
     for sx in (1, -1):  # rear wheel arches' flares
-        poly = [(CAB_BACK_Z + 0.02, 0.95), (CAB_BACK_Z + 0.02, 0.78)] + arch(zr, TYRE_R, 0.56, 0.78) + [(REAR_Z + 0.16, 0.78), (REAR_Z + 0.16, 0.95)]
+        poly = [(CAB_BACK_Z + 0.02, 0.95), (CAB_BACK_Z + 0.02, 0.78)] + arch(zr, TYRE_R, 0.56, 0.78)[::-1] + [(REAR_Z + 0.16, 0.78), (REAR_Z + 0.16, 0.95)]
         slab(m, Frame((sx * (BODY_HALF_W - 0.015), 0, 0), (0, 0, 1), (0, 1, 0), (-sx, 0, 0)), poly, 0.03, 0.006)
     for sx in (1, -1):
         box(m, (sx * 0.85, 0.66, REAR_Z + 0.08), (0.3, 0.14, 0.14), 0.015, 1, mat=1)
