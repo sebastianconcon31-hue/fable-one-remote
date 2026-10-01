@@ -2,7 +2,7 @@
  "game": {
   "file": "apache_helmet.glb",
   "mb": 7.1,
-  "triangles": 74372,
+  "triangles": 74156,
   "drawCalls": 45,
   "nodes": 44,
   "materials": 8,
@@ -15,7 +15,7 @@
  "web": {
   "file": "apache_helmet_web.glb",
   "mb": 3.2,
-  "triangles": 74372,
+  "triangles": 74156,
   "drawCalls": 45,
   "nodes": 44,
   "materials": 8,
