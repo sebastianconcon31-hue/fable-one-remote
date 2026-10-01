@@ -76,7 +76,7 @@ def main(vdir):
           "(cd apache-cockpit && npm install)                # once: glTF-Transform, sharp, esbuild, three",
           f"python3.11 {folder}/build.py --glb out/{name}.glb --textures 4096   # build, paint, bake, export",
           f"node modelkit/finish.mjs out/{name}.glb {folder} {name}            # game and web files, the viewer",
-          f"python3.11 modelkit/beauty.py {folder} {folder}/{name}.glb out/docs     # the renders",
+          A.get("render_cmd") or f"python3.11 modelkit/beauty.py {folder} {folder}/{name}.glb out/docs     # the renders",
           f"python3.11 {folder}/build.py --preview out --lookdev    # a quick look at the paint, without baking",
           "```", ""]
     if A.get("scheme"):

@@ -61,6 +61,8 @@ const mats = {};
 const rest = new Map();
 const state = { drive: 0, speed: 0, travel: 0, steer: 0, traverse: 0, elevate: 0, night: false, groups: {}, lifting: null, unloaded: [] };
 let model;
+let bench = false; // a small thing on a stand (a helmet) rather than a vehicle on the ground
+const BENCH = 0x2a2e31;
 
 function group(title) {
   const g = document.createElement("div");
@@ -124,6 +126,7 @@ function buildControls(root) {
     }
   }
   const g = group("Scene");
+  if (mats.HDU_Display) button(g, "Display", (b) => { const on = b.getAttribute("aria-pressed") !== "true"; toggle(b, on); mats.HDU_Display.emissiveIntensity = on ? 1 : 0; }, true); // a head-worn display's screen
   button(g, "Night", (b) => { state.night = !state.night; toggle(b, state.night); night(state.night); }, false);
   if (parts.cargo.length) {
     button(g, "Unload", unload);
@@ -135,8 +138,8 @@ function night(n) {
   hemi.intensity = n ? 0.06 : 0.9;
   sun.intensity = n ? 0.05 : 3.2;
   scene.environmentIntensity = n ? 0.05 : 0.6;
-  scene.background.set(n ? 0x0a0e16 : SKY);
-  scene.fog.color.copy(scene.background);
+  scene.background.set(n ? 0x0a0e16 : bench ? BENCH : SKY);
+  if (scene.fog) scene.fog.color.copy(scene.background);
   for (const k of ["Light_White", "Light_Amber", "Light_Red"]) if (mats[k]) mats[k].emissiveIntensity = n ? 6 : 1;
   for (const [name, o] of Object.entries(nodes)) {
     if (!/^Light_Head/.test(name)) continue;
@@ -228,6 +231,22 @@ function onModel(gltf) {
     rear: [new THREE.Vector3(c.x - r * 0.6, h + r * 0.4, c.z - r * 1.0), new THREE.Vector3(c.x, h, c.z - size.z * 0.1)],
     top: [new THREE.Vector3(c.x + 0.01, size.y + r * 1.25, c.z), new THREE.Vector3(c.x, 0, c.z)],
   };
+  if (root?.userData.stand === "bench") {
+    bench = true;
+    ground.visible = false;
+    scene.fog = null;
+    scene.background.set(BENCH);
+    const d = Math.max(size.x, size.y, size.z) * 2.3;
+    camera.near = 0.01;
+    camera.updateProjectionMatrix();
+    Object.assign(orbit, { minDistance: d * 0.3, maxDistance: d * 4, maxPolarAngle: Math.PI });
+    VIEWS = {
+      front: [new THREE.Vector3(c.x + d * 0.45, c.y + d * 0.2, c.z + d * 0.85), c.clone()],
+      side: [new THREE.Vector3(c.x + d, c.y, c.z), c.clone()],
+      rear: [new THREE.Vector3(c.x - d * 0.5, c.y + d * 0.25, c.z - d * 0.85), c.clone()],
+      top: [new THREE.Vector3(c.x + 0.001, c.y + d, c.z), c.clone()],
+    };
+  }
   Object.assign(sun.shadow.camera, { left: -r, right: r, top: r, bottom: -r });
   sun.shadow.camera.updateProjectionMatrix();
   view("front");

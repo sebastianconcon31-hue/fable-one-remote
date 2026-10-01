@@ -1,0 +1,28 @@
+{
+ "game": {
+  "file": "apache_helmet.glb",
+  "mb": 7.1,
+  "triangles": 74372,
+  "drawCalls": 45,
+  "nodes": 44,
+  "materials": 8,
+  "textures": {
+   "1024": 4,
+   "2048": 6
+  },
+  "gpuTextureMB": 148
+ },
+ "web": {
+  "file": "apache_helmet_web.glb",
+  "mb": 3.2,
+  "triangles": 74372,
+  "drawCalls": 45,
+  "nodes": 44,
+  "materials": 8,
+  "textures": {
+   "1024": 10
+  },
+  "gpuTextureMB": 52
+ },
+ "viewerMB": 4.8
+}

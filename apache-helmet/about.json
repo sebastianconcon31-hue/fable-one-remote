@@ -1,0 +1,110 @@
+{
+ "title": "AH-64 crew helmet: HGU-56/P with the IHADSS display",
+ "short": "helmet",
+ "name": "apache_helmet",
+ "lede": "The Apache crew helmet at 1:1: the HGU-56/P shell with its dual visors under their housing, in-helmet ear cups and chin strap, the boom microphone, the Integrated Helmet and Display Sighting System's helmet display unit with its combiner in front of the right eye (the second screen, drawn as a live display surface), and the head tracker's infrared emitters.",
+ "hero_alt": "The helmet, its display unit and boom microphone",
+ "grid": [
+  [
+   "front.jpg",
+   "Front",
+   "Front view, the visors down"
+  ],
+  [
+   "right.jpg",
+   "Display unit side",
+   "The right side: the display unit on its ear dome, both visors raised"
+  ],
+  [
+   "left.jpg",
+   "Microphone side",
+   "The left side, with the boom microphone at the mouth"
+  ],
+  [
+   "monocle.jpg",
+   "The second screen",
+   "The display seen from the right eye: the combiner and the picture on it"
+  ],
+  [
+   "rear.jpg",
+   "Rear",
+   "Rear three-quarter view with the display cable and the comms cord"
+  ],
+  [
+   "mic.jpg",
+   "Boom microphone",
+   "The boom microphone and its capsule"
+  ]
+ ],
+ "game_note": "Textured, with each visor and the boom its own hinged node, the display a ready UV-mapped surface for a game's own picture, and the eyes and mouth marked by empties.",
+ "viewer_note": "orbit round it, raise and lower the two visors, swing the microphone boom, and switch the display's picture on and off.",
+ "sources": [
+  "build.py",
+  "parts.py",
+  "helmet.py",
+  "look.py",
+  "display.py",
+  "fit.py",
+  "studio.py",
+  "render.py"
+ ],
+ "scale_intro": "The helmet is built round an average adult head (about 58 cm round, the ear canals' midpoint at the origin), because the drawings aren't public. What is published is matched on every build: the display's field of view, seen from the right eye:",
+ "origin": "the wearer's head centre: midway between the two ear canals",
+ "render_cmd": "python3.11 apache-helmet/render.py apache-helmet/apache_helmet.glb out/docs               # the renders",
+ "moving": [
+  [
+   "`Visor_Clear`, `Visor_Tinted`",
+   "swing up into the housing about local X on the pivots at the shell's sides; + raises one (to 42°, group `Visors`). Independent: raise either or both. Both have the cut-away at the bottom right the real ones have, for the display unit."
+  ],
+  [
+   "`Mic_Boom`",
+   "swings on its mount on the left ear dome about local X; + lifts the capsule away from the lips (to 15°, where it meets the clear visor; group `Microphone`)"
+  ],
+  [
+   "`HDU`",
+   "the helmet display unit (CRT, relay optics, combiner), fixed to the right ear dome's adapter block. Its children: `HDU_Body`, `HDU_Combiner` (the tinted glass) and `HDU_Screen`."
+  ],
+  [
+   "`HDU_Screen`",
+   "the display: a quad on the combiner, UV-mapped 0 to 1 (top left to bottom right), that subtends exactly 40 x 30 degrees from `Eye_Right`. Its material `HDU_Display` is emissive; put a game's own picture in its emission texture. Extras: `role` `display`, `fov`, `aspect`, `eyeRelief`."
+  ],
+  [
+   "`Eye_Right`, `Eye_Left`, `Mouth`",
+   "empties where the eyes and lips are, for a game's first-person camera and voice (extras: `role`)"
+  ],
+  [
+   "`IR_Emitter_{Left,Right}_{Front,Rear}`",
+   "the head tracker's emitters: housing and two lenses each (material `Light_IR`)"
+  ]
+ ],
+ "look": [
+  "**Shell:** sage-green composite with its orange-peel finish, edge wear and scuffs where a helmet bag and a cockpit rub it; a black rolled edge round the lower rim.",
+  "**Visor housing:** gloss black plastic over the front of the shell; the visors are smoked and clear polycarbonate.",
+  "**Display unit:** black anodised aluminium, the CRT module with cooling fins above the ear, the relay down along the cheek, the combiner's bezel in front of the eye; the combiner is a green-tinted glass.",
+  "**Soft parts:** woven nylon webbing for the chin strap and nape strap, black foam ear seals and chin cup, an energy-absorbing liner and comfort pad inside the shell."
+ ],
+ "textures": [
+  [
+   "`Helmet_Shell`",
+   "2048²",
+   "Shell, ear domes and the shell's inside"
+  ],
+  [
+   "`Helmet_Gear`",
+   "2048²",
+   "Visor housing, display unit, boom microphone, emitters, hardware, rubber trim and cords"
+  ],
+  [
+   "`Helmet_Soft`",
+   "1024²",
+   "Webbing, foam, liner and comfort pad"
+  ]
+ ],
+ "accuracy": [
+  "**Published and matched:** the display's 40 x 30 degree monocular field of view (the `HDU_Screen` quad subtends exactly that from the right eye), the 10 mm exit pupil and the 1-inch CRT image source (carried as extras), and the HGU-56/P's published 1.338 kg (2.95 lb) mass (an extra on the root).",
+  "**Built as published descriptions say:** the dual clear and smoked visors, both with a piece cut from the bottom of the right side; the adapter block moulded to the right ear dome, which the display unit clips to; the visor housing built to take the combiner; in-helmet ear cups; the head tracker's infrared emitters on both sides of the shell in identical positions; a Gentex-style flexboom microphone mount, which fits either side (here the left, because the display is on the right); the display feeding the right eye through a half-mirror combiner.",
+  "**Estimated** (the drawings aren't public): the shell's proportions and the housing's shape; the emitters' positions and size; the display unit's geometry (CRT module, relay, elbow and bezel sizes, and the 28 mm eye relief); the microphone's 13 mm distance from the lips; the strap routing and the cords. Shell sizes vary on the real helmet; this one is for a mid-range head.",
+  "**Not modelled:** the display unit's adjustment mechanism, the sizing pads, the labels and data plates (nothing is made up), and the cords' connectors' pin detail.",
+  "**Checked on every build** (`apache-helmet/fit.py`, `build.py --fit`): no part inside the wearer's head except what is meant to touch it; each hinge through its whole travel with no new contact."
+ ]
+}
