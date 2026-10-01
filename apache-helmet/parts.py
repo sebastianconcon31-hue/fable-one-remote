@@ -187,8 +187,8 @@ def sphere_pt(R, beta, alpha):
 
 
 # ---- the visor housing, the visors ---------------------------------------------------------------------------------
-HOOD_HALF_X = 0.1085
-STOW = math.radians(42)  # how far the visors turn up to stow
+HOOD_HALF_X = 0.1000
+STOW = math.radians(30)  # how far the visors turn up to stow
 
 
 def hood_lip(beta):
@@ -200,12 +200,12 @@ def hood_lip(beta):
 def visor_housing(M, parent):
     m = Mesh()
     bm = math.asin(HOOD_HALF_X / R_HOOD)
-    ahi = math.radians(62)
     rings_o, rings_i = [], []
-    nb, na = 26, 22
+    nb, na = 26, 20
     for i in range(nb + 1):
         beta = -bm + 2 * bm * i / nb
         a0 = hood_lip(beta)
+        ahi = math.radians(51 - 15 * (beta / bm) ** 2)  # the top edge rounds over toward the sides, like the dome
         ro, ri = [], []
         for j in range(na + 1):
             a = a0 + (ahi - a0) * j / na
@@ -235,12 +235,12 @@ def visor(M, parent, name, R, mat, right_cut=True):
     drive(node, f"a visor: swings up into the housing about local X; + raises it (to {math.degrees(STOW):.0f} degrees)", control="hinge", axis=[-1, 0, 0], limits=[0, STOW], group="Visors")
     m = Mesh()
     bm = math.asin(VISOR_HALF_X / R)
-    ahi = math.radians(18)
     rings_o, rings_i = [], []
     nb, na = 28, 18
     for i in range(nb + 1):
         beta = -bm + 2 * bm * i / nb
         a0 = visor_low(beta, right_cut)
+        ahi = math.radians(18 - 10 * (beta / bm) ** 2)  # and the visors' tops follow, so they stow under it
         ro, ri = [], []
         for j in range(na + 1):
             a = a0 + (ahi - a0) * j / na
