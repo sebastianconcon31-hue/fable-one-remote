@@ -43,7 +43,7 @@
   ],
   [
    "`Gun`",
-   "the 25 mm M242 and coaxial M240C: elevate about (−1, 0, 0); + raises them, −10° to +60°"
+   "the 25 mm M242 and coaxial M240C: elevate about (−1, 0, 0); + raises them, −10° to +60°; over the hull roof and the squad's hatch its `limits_by_traverse` lift it to −6°"
   ],
   [
    "`TOW_Launcher`",
@@ -55,7 +55,7 @@
   ],
   [
    "`Driver_Hatch`, `Commander_Hatch`, `Gunner_Hatch`, `Troop_Hatch`",
-   "open about their hinges (group `Hatches`)"
+   "open about their hinges (group `Hatches`); the commander's stands open in front of the CIV"
   ],
   [
    "`CIV`",
