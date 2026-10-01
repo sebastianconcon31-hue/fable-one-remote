@@ -47,4 +47,4 @@ HALF_W = 1.32  # the hull's sides; the armour tiles stand out to SPEC["width"] /
 TILE_X = SPEC["width"] / 2
 
 # the remote weapon station (M151 Protector with an M2) on the roof, ahead of the commander's hatch
-RWS = (-0.25, ROOF_Y, 0.9)
+RWS = (-0.25, ROOF_Y, 1.06)
