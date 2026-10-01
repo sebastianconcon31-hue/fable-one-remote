@@ -10,6 +10,8 @@ A game-ready US Army HEMTT M977A4: the 8×8 Heavy Expanded Mobility Tactical Tru
 | **Cab** | **Running gear** |
 | ![Cab, grille, bumper and winch](docs/cab.jpg) | ![16.00R20 XZL tyres and the front axles](docs/wheels.jpg) |
 
+![The crane swung out, lifting a pallet of ammunition off the bed](docs/crane.jpg)
+
 ## Files
 
 | File | What it is |
