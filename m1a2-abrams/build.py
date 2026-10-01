@@ -16,7 +16,7 @@ import hull
 import turret
 import markings
 import vehicle
-from vehicle import principled, lights_materials, points, span, centre
+from vehicle import principled, lights_materials, points, span, centre, node_pos
 
 ROOT = "M1A2_SEPv3_Abrams"
 NOTES = {
@@ -69,6 +69,7 @@ def measure():
         ("Ground clearance", SPEC["groundClearance"], float(belly[:, 1].min())),
         ("Track width (T158)", SPEC["trackWidth"], span(link, 0)),
         ("Road wheel diameter", SPEC["roadWheelDiameter"], span(rw, 1)),
+        ("Track on the ground (road wheel 1 to 7)", SPEC["trackOnGround"], float(node_pos("Road_Wheel_Left_1")[2] - node_pos("Road_Wheel_Left_7")[2])),
     ]
     return rows, float(allp[:, 1].min())
 

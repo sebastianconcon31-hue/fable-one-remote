@@ -41,7 +41,7 @@ def meshes_under(o):
     return [x for x in [o] + descendants(o) if x.type == "MESH"]
 
 
-def world_tris(objs):
+def world_tris(objs, owners=None):
     verts, polys = [], []
     for o in objs:
         me = o.data
@@ -54,6 +54,8 @@ def world_tris(objs):
         verts += [Vector(v) for v in w]
         me.calc_loop_triangles()
         polys += [tuple(base + i for i in t.vertices) for t in me.loop_triangles]
+        if owners is not None:
+            owners += [o.name] * len(me.loop_triangles)
     return verts, polys
 
 
@@ -63,12 +65,16 @@ def bvh(objs):
 
 
 def overlaps(a_objs, b_objs):
+    """Overlapping triangle pairs between a_objs and b_objs, counted by the pair of meshes they belong to."""
+    from collections import Counter
     bpy.context.view_layer.update()
-    A, _ = bvh(a_objs)
-    Bt, _ = bvh(b_objs)
-    if A is None or Bt is None:
-        return 0
-    return len(A.overlap(Bt))
+    na, nb = [], []
+    va, pa = world_tris(a_objs, na)
+    vb, pb = world_tris(b_objs, nb)
+    if not pa or not pb:
+        return Counter()
+    A, Bt = BVHTree.FromPolygons(va, pa), BVHTree.FromPolygons(vb, pb)
+    return Counter((na[i], nb[j]) for i, j in A.overlap(Bt))
 
 
 def model_pts(objs):
@@ -87,21 +93,32 @@ def rest(o):
     o.rotation_axis_angle = (0.0, 0.0, 0.0, 1.0)
 
 
+def named_pts(objs):
+    """Every vertex of objs in model axes, and the name of the mesh it belongs to."""
+    pts, names = [], []
+    for o in objs:
+        p = model_pts([o])
+        pts.append(p)
+        names += [o.name] * len(p)
+    return (np.vstack(pts) if pts else np.zeros((0, 3))), np.array(names)
+
+
 def tangent_angle(points, zc, r, sign):
     """Approach (sign +1, ahead of the front axle) or departure (sign -1) angle: the steepest line from the tyre's
-    contact that clears every point of the vehicle beyond the axle."""
-    best = 89.9
-    pts = [(sign * (z - zc), y) for z, y in points if sign * (z - zc) > 0.05]
+    contact that clears every point of the vehicle beyond the axle; and the index of the point that limits it."""
+    z = sign * (points[:, 0] - zc)
+    y = points[:, 1]
+    keep = np.nonzero(z > 0.05)[0]
+    z, y = z[keep], y[keep]
     for d in np.arange(1.0, 89.9, 0.1):
         t = math.radians(d)
         # tangent point on the tyre's lower leading side, and the line's direction
         T = np.array([r * math.sin(t), r - r * math.cos(t)])
         dirv = np.array([math.cos(t), math.sin(t)])
-        for z, y in pts:
-            rel = np.array([z, y]) - T
-            if rel[0] * dirv[1] - rel[1] * dirv[0] > 1e-4 and z > T[0]:  # below the line
-                return d - 0.1
-    return best
+        below = ((z - T[0]) * dirv[1] - (y - T[1]) * dirv[0] > 1e-4) & (z > T[0])
+        if below.any():
+            return d - 0.1, int(keep[np.nonzero(below)[0][0]])
+    return 89.9, None
 
 
 def main():
@@ -164,20 +181,25 @@ def main():
         (ok if abs(bottom - 0.0) < 0.12 else issue)(f"{name}: the loop's bottom (pin line) at y = {bottom:.3f}")
 
     # moving parts against the rest of the vehicle, at their limits
-    def test(node, poses, label):
+    def test(node, poses, label, mount=False):
         parts = meshes_under(node)
         others = [m for m in meshes if m not in parts]
         base = overlaps(parts, others)
+        if mount:  # a gun moves through its mounting (the gun port, the armour round the mantlet) by design
+            held = {b for (_, b) in base}
+            others = [m for m in others if m.name not in held]
+            base = overlaps(parts, others)
         worst, where, below = 0, None, 0.0
         for desc, fn in poses:
             fn()
-            n = overlaps(parts, others)
+            c = overlaps(parts, others)
+            new = {k: v - base.get(k, 0) for k, v in c.items() if v > base.get(k, 0)}
+            n = sum(new.values())
             gp = model_pts(parts)
             below = min(below, float(gp[:, 1].min()) if len(gp) else 0.0)
-            if n - base > worst:
-                worst, where = n - base, desc
-        for o in [node] + [x for x in descendants(node) if "control" in x.keys()]:
-            pass
+            if n > worst:
+                top = sorted(new.items(), key=lambda kv: -kv[1])[:3]
+                worst, where = n, desc + "; " + ", ".join(f"{a} into {b} {v}" for (a, b), v in top)
         return base, worst, where, below
 
     for name in kinds.get("hinge", []):
@@ -209,14 +231,18 @@ def main():
         lim = g["limits"]
         t = next((x for x in trav if g.name in [d.name for d in descendants(x)]), None)
         poses = []
+        table, step = (list(g["limits_by_traverse"]), float(g.get("traverse_step", 5))) if "limits_by_traverse" in g.keys() else (None, None)
         for a in range(0, 360, 30):
-            for e in (lim[0], lim[1]):
+            ends = (lim[0], lim[1])
+            if table:  # the gun's own limits at this traverse
+                ends = tuple(table[int(round(a / step)) % len(table)])
+            for e in ends:
                 def f(a=a, e=e):
                     if t is not None:
                         pose(t, math.radians(a))
                     pose(g, e)
                 poses.append((f"traverse {a} deg, elevation {math.degrees(e):.0f} deg", f))
-        base, worst, where, below = test(g, poses, name)
+        base, worst, where, below = test(g, poses, name, mount=True)
         rest(g)
         if t is not None:
             rest(t)
@@ -234,15 +260,31 @@ def main():
         wheel_meshes = set()
         for w in wheels:
             wheel_meshes |= set(meshes_under(w))
-        body = model_pts([m for m in meshes if m not in wheel_meshes and not m.name.startswith("Spare")])
-        pts = [(z, y) for _, y, z in body]
-        a = tangent_angle(pts, wz[-1], r, +1)
-        d = tangent_angle(pts, wz[0], r, -1)
+        body, owner = named_pts([m for m in meshes if m not in wheel_meshes and not m.name.startswith("Spare")])
+        zy = body[:, [2, 1]]
+        a, ia = tangent_angle(zy, wz[-1], r, +1)
+        d, idp = tangent_angle(zy, wz[0], r, -1)
         R["approach"], R["departure"] = a, d
-        between = body[(body[:, 2] < wz[-1] - 0.3) & (body[:, 2] > wz[0] + 0.3)]
-        R["clearance"] = float(body[:, 1].min())
-        R["clearanceBetweenAxles"] = float(between[:, 1].min()) if len(between) else None
-        ok(f"approach {a:.1f} deg, departure {d:.1f} deg; lowest point off the wheels {R['clearance']:.3f} m, between the axles {R['clearanceBetweenAxles']:.3f} m")
+        R["approachLimitedBy"] = owner[ia] if ia is not None else None
+        R["departureLimitedBy"] = owner[idp] if idp is not None else None
+        ok(f"approach {a:.1f} deg (limited by {R['approachLimitedBy']}), departure {d:.1f} deg (limited by {R['departureLimitedBy']})")
+        mid = (body[:, 2] < wz[-1] - 0.3) & (body[:, 2] > wz[0] + 0.3)
+        lowest = int(np.argmin(body[:, 1]))
+        R["clearance"] = float(body[lowest, 1])
+        R["clearanceAt"] = owner[lowest]
+        if mid.any():
+            i = np.nonzero(mid)[0][int(np.argmin(body[mid, 1]))]
+            R["clearanceBetweenAxles"], R["clearanceBetweenAxlesAt"] = float(body[i, 1]), owner[i]
+        # under each axle (within a tyre's width of its centre), the lowest point that isn't a wheel
+        under = []
+        for zc in wz:
+            near = (np.abs(body[:, 2] - zc) < 0.25) & (np.abs(body[:, 0]) < 0.6)
+            if near.any():
+                i = np.nonzero(near)[0][int(np.argmin(body[near, 1]))]
+                under.append((round(zc, 3), round(float(body[i, 1]), 3), owner[i]))
+        R["underAxles"] = under
+        ok(f"lowest point off the wheels {R['clearance']:.3f} m ({R['clearanceAt']}), between the axles {R.get('clearanceBetweenAxles', float('nan')):.3f} m ({R.get('clearanceBetweenAxlesAt')})")
+        ok("under the axles: " + "; ".join(f"z {z}: {y} m ({n})" for z, y, n in under))
     if "--json" in sys.argv:
         json.dump(R, open(arg("--json"), "w"), indent=1)
     print(f"{len(R['issues'])} issue(s)", flush=True)

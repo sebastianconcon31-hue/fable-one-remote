@@ -141,7 +141,7 @@ def roof(M, parent):
             lathe(m, Frame((sx * 1.55, ROOF_Y + 0.045, z), (0, 0, 1), (0, 1, 0), (1, 0, 0)), [(0.025, -0.015), (0.05, -0.015), (0.05, 0.015), (0.025, 0.015), (0.025, -0.015)], 12, mat=1)
     objs.append(m.to_object("Hull_Roof_Fittings", [M["paint"], M["chassis"]], parent, sharp_angle=40))
     objs.append(ant.to_object("Antennas", [M["chassis"]], parent, sharp_angle=40))
-    objs += hatch_lid(M, parent, "Troop_Hatch", (0, ROOF_Y + 0.05, tz - 0.55), (0, ROOF_Y + 0.03, tz), 0.52, [1, 0, 0], [0, 1.7], "the squad's roof hatch: hinged at its back, turns about local X; + opens it upward and back", group="Hatches")
+    objs += hatch_lid(M, parent, "Troop_Hatch", (0, ROOF_Y + 0.05, tz - 0.55), (0, ROOF_Y + 0.03, tz), 0.52, [-1, 0, 0], [0, 1.7], "the squad's roof hatch: hinged at its back, turns about local X; + opens it upward and back", group="Hatches")
     return objs
 
 
@@ -326,8 +326,9 @@ def turret_top(M, parent):
         lathe(s, Frame(F_.o + F_.z * t, F_.x, F_.y, F_.z), [(0.16, -0.02), (0.175, -0.02), (0.175, 0.02), (0.16, 0.02)], 20, mat=1)
     rbox(s, Xframe(at(0.4, 2.52, -1.2)), (0.26, 0.24, 0.6), 0.1, 3, mat=2)
     objs.append(s.to_object("Turret_Stowage", [M["canvas"], M["strap"], M["duffel"]], parent, sharp_angle=50))
-    # the commander's independent viewer on its mast at the right rear: the vehicle's highest point
-    cv = at(-0.62, y, -0.62)
+    # the commander's independent viewer on its mast at the right rear, behind the commander's hatch with room for the
+    # hatch to stand open in front of it: the vehicle's highest point
+    cv = at(-0.62, y, -0.74)
     n = empty("CIV", tuple(cv), parent)
     drive(n, "the commander's independent viewer: its head slews about local Y", control="aux", axis=[0, 1, 0])
     c = Mesh()

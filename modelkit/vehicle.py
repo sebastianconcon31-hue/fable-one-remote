@@ -268,6 +268,8 @@ def run(V):
     print(f"built {n} meshes, {tris:,} triangles in {time.time() - t:.1f}s", flush=True)
     rows, low = V.measure()
     report(rows, low)
+    import clearance
+    clearance.gun_limits()  # each gun's elevation round its traverse, clear of the hull, into its extras
     paint.RESUME = "--resume" in sys.argv
     glb = arg("--glb")
     if glb:

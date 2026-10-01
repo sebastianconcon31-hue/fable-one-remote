@@ -207,6 +207,7 @@ function onModel(gltf) {
     const kind = u.control;
     if (!kind || !parts[kind]) return;
     const p = { o, axis: new THREE.Vector3().fromArray(u.axis || [1, 0, 0]).normalize(), limits: u.limits || [0, 1], group: u.group || "Hatches", radius: u.radius || 0.5, ratio: u.ratio ?? 1 };
+    if (u.limits_by_traverse) Object.assign(p, { table: u.limits_by_traverse, step: u.traverse_step || 5 });
     if (kind === "track") Object.assign(p, { lp: loop(u.path), pitch: u.pitch, links: [] });
     parts[kind].push(p);
   });
@@ -248,6 +249,13 @@ if (embedded) {
 
 // ---- animation ---------------------------------------------------------------------------------------------------------------
 const qa = new THREE.Quaternion();
+// a gun's elevation limits at the turret's traverse: its extras hold [lowest, highest] every `step` degrees
+function byTraverse(p, a) {
+  const n = p.table.length;
+  const f = ((((a * 180) / Math.PI) % 360) + 360) % 360 / p.step;
+  const i = Math.floor(f) % n, j = (i + 1) % n, t = f - Math.floor(f);
+  return [0, 1].map((k) => p.table[i][k] * (1 - t) + p.table[j][k] * t);
+}
 function turn(o, a, axis) {
   o.quaternion.copy(rest.get(o).q).multiply(qa.setFromAxisAngle(axis, a));
 }
@@ -278,7 +286,10 @@ function tick() {
       });
     }
     for (const p of parts.traverse) turn(p.o, state.traverse, p.axis);
-    for (const p of parts.elevate) turn(p.o, Math.min(p.limits[1], Math.max(p.limits[0], state.elevate)), p.axis);
+    for (const p of parts.elevate) {
+      const [lo, hi] = p.table ? byTraverse(p, state.traverse) : p.limits;
+      turn(p.o, Math.min(hi, Math.max(lo, state.elevate)), p.axis);
+    }
     for (const [name, s] of Object.entries(state.groups)) {
       s.v += (s.target - s.v) * Math.min(1, dt * 2.5);
       for (const p of [...parts.hinge, ...parts.slide]) {

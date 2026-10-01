@@ -90,23 +90,26 @@ def front(M, parent):
         rbox(m, Frame.along(c + np.array([0, 0.065, -0.01]), (a * 0.4, 0, 1)), (0.24, 0.02, 0.17), 0.006, 1)  # brow
     objs.append(m.to_object("Hull_Front_Fittings", [M["paint"], M["chassis"]], parent, sharp_angle=40))
     objs.append(g.to_object("Driver_Periscope_Glass", [M["optic"]], parent, smooth=False, per_face=lambda p: (p[0], p[1], p[2] - 1.0)))
-    # driver's hatch: a disc set into the glacis, its hinge on the right; it lifts and swings right
-    hz = 2.44
+    # driver's hatch: a disc set into the glacis. It lifts clear of its ring and swings round to the right on a post
+    # at its right front corner, turning in the glacis' plane
+    hz = 2.41
     hy = glacis_y(hz)
-    hinge = (-0.36, hy + 0.04, hz)
-    d = empty("Driver_Hatch", hinge, parent)
-    drive(d, "the driver's hatch: lifts and swings right about its hinge, local Y; + opens it (to 90 degrees)", control="hinge", axis=[0, 1, 0], limits=[0, -1.57], group="Hatches")
-    h = Mesh()
     slope = math.atan2(1.585 - 1.15, HULL_FRONT_Z - 2.0)
     Fh = Frame((0.0, hy + 0.03, hz), (1, 0, 0), (0, math.sin(slope), -math.cos(slope)), (0, math.cos(slope), math.sin(slope)))
+    post = Fh.p((-0.262, -0.262, 0.0))
+    d = empty("Driver_Hatch", tuple(post), parent)
+    drive(d, "the driver's hatch: swings round to the right on the post at its right front corner, about local `axis` "
+             "(square to the glacis); + opens it (to 90 degrees)", control="hinge", axis=[round(v, 4) for v in Fh.z], limits=[0, 1.57], group="Hatches")
+    h = Mesh()
     lathe(h, Fh, [(0.0, 0.0), (0.33, 0.0), (0.34, 0.02), (0.32, 0.05), (0.0, 0.055)], 36)
-    rbox(h, Frame(Fh.p((-0.33, 0.0, 0.04)), Fh.x, Fh.y, Fh.z), (0.12, 0.14, 0.05), 0.012, 1)
+    rbox(h, Frame(Fh.p((-0.24, -0.24, 0.04)), Fh.x, Fh.y, Fh.z), (0.12, 0.12, 0.05), 0.012, 1)  # the post's arm
     path_tube(h, [Fh.p((0.12, -0.08, 0.05)), Fh.p((0.12, -0.08, 0.1)), Fh.p((0.12, 0.08, 0.1)), Fh.p((0.12, 0.08, 0.05))], 0.012, 8)
     o = h.to_object("Driver_Hatch_Lid", [M["paint"]], None, sharp_angle=40)
     set_parent(o, d)
     objs.append(o)
     r = Mesh()
-    lathe(r, Fh, [(0.36, -0.03), (0.42, -0.03), (0.42, 0.015), (0.36, 0.015)], 36)
+    lathe(r, Fh, [(0.36, -0.03), (0.42, -0.03), (0.42, -0.003), (0.36, -0.003)], 36)  # flush below the lid, which swings over it
+    lathe(r, Frame(post, Fh.x, Fh.y, Fh.z), [(0.0, -0.03), (0.035, -0.03), (0.035, 0.0), (0.0, 0.0)], 14)  # the post's base
     objs.append(r.to_object("Driver_Hatch_Ring", [M["paint"]], parent, sharp_angle=40))
     return objs
 
@@ -124,24 +127,26 @@ def deck(M, parent):
         box(m, (xc, y + 0.012, zc), (w, 0.024, L), 0.006, 1)
         for z in np.arange(z0 - 0.06, z1 + 0.05, -0.055):
             rbox(m, Frame((xc, y + 0.03, z), (1, 0, 0), (0, math.cos(35 * deg), math.sin(35 * deg)), (0, -math.sin(35 * deg), math.cos(35 * deg))), (w - 0.08, 0.008, 0.05), 0.002, 1, mat=1)
+        # hinges and a folding lift handle, all below the turret's underside, which sweeps over the deck
         for z in (z0 - 0.4, z1 + 0.4):
-            lathe(m, Xframe((x0 + sx * 0.02, y + 0.03, z), sx), [(0.0, 0.0), (0.03, 0.0), (0.03, 0.12), (0.0, 0.12)], 10, mat=1)
-        path_tube(m, [np.array([xc + sx * 0.3, y + 0.02, zc - 0.1]), np.array([xc + sx * 0.3, y + 0.08, zc - 0.1]), np.array([xc + sx * 0.3, y + 0.08, zc + 0.1]), np.array([xc + sx * 0.3, y + 0.02, zc + 0.1])], 0.012, 8, mat=1)
+            lathe(m, Xframe((x0 + sx * 0.02, y + 0.022, z), sx), [(0.0, 0.0), (0.02, 0.0), (0.02, 0.12), (0.0, 0.12)], 10, mat=1)
+        path_tube(m, [np.array([xc + sx * 0.3, y + 0.02, zc - 0.1]), np.array([xc + sx * 0.3, y + 0.03, zc - 0.1]), np.array([xc + sx * 0.3, y + 0.03, zc + 0.1]), np.array([xc + sx * 0.3, y + 0.02, zc + 0.1])], 0.01, 8, mat=1)
     # air intake grilles along the deck's sides behind the turret
     for sx in (1, -1):
         for z in np.arange(-0.9, -1.55, -0.05):
             box(m, (sx * 1.45, y + 0.015, z), (0.4, 0.012, 0.02), 0.003, 1, mat=1)
         box(m, (sx * 1.45, y + 0.004, -1.22), (0.46, 0.008, 0.72), 0.003, 1)
-    # fuel fillers at the deck's corners, lifting eyes, access-plate handles
+    # fuel fillers at the deck's corners, lifting eyes, access-plate handles; those the turret sweeps over lie low,
+    # under its underside (DECK_Y + 0.05), the lifting eyes folded flat
     for sx in (1, -1):
         for z in (1.45, REAR_PLATE_Z + 0.25):
             lathe(m, Yframe((sx * 1.5, y, z)), [(0.0, 0.0), (0.1, 0.0), (0.1, 0.018), (0.085, 0.03), (0.0, 0.032)], 20)
-            box(m, (sx * 1.5, y + 0.04, z), (0.12, 0.02, 0.03), 0.006, 1, mat=1)
+            box(m, (sx * 1.5, y + 0.032, z), (0.12, 0.016, 0.03), 0.006, 1, mat=1)
         for z in (1.2, REAR_PLATE_Z + 0.5):
-            lathe(m, Frame((sx * 1.62, y + 0.05, z), (0, 0, 1), (0, 1, 0), (1, 0, 0)), [(0.03, -0.015), (0.055, -0.015), (0.055, 0.015), (0.03, 0.015), (0.03, -0.015)], 14, mat=1)
-            box(m, (sx * 1.62, y + 0.015, z), (0.03, 0.03, 0.12), 0.006, 1, mat=1)
-    # turret ring guard round the turret's base
-    lathe(m, Yframe((0, y, TURRET_Z)), [(RING_R + 0.05, 0.0), (RING_R + 0.12, 0.0), (RING_R + 0.12, 0.03), (RING_R + 0.05, 0.05)], 72)
+            lathe(m, Yframe((sx * 1.62, y + 0.012, z)), [(0.03, -0.012), (0.055, -0.012), (0.055, 0.012), (0.03, 0.012), (0.03, -0.012)], 14, mat=1)
+            box(m, (sx * 1.62, y + 0.01, z), (0.03, 0.02, 0.12), 0.006, 1, mat=1)
+    # turret ring guard round the turret's base, a centimetre under it
+    lathe(m, Yframe((0, y, TURRET_Z)), [(RING_R + 0.05, 0.0), (RING_R + 0.12, 0.0), (RING_R + 0.12, 0.025), (RING_R + 0.05, 0.04)], 72)
     objs.append(m.to_object("Engine_Deck", [M["paint"], M["chassis"]], parent, sharp_angle=40))
     return objs
 

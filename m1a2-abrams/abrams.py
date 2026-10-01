@@ -17,18 +17,20 @@ SPEC = {
     "groundClearance": 0.48,
     "trackWidth": 25 * IN,  # T158
     "roadWheelDiameter": 25 * IN,
+    "trackOnGround": 180 * IN,
 }
 
-# running gear (est. from the proportions, around the published track and wheels)
-CONTACT = 4.62  # first to last road wheel centres
+# running gear: the published 180 in of track on the ground, first to last road wheel centres; the rest est. from the
+# proportions, around the published track and wheels
+CONTACT = 180 * IN
 WHEELS_Z = [CONTACT / 2 - k * CONTACT / 6 for k in range(7)]
 TRACK_X = 1.40  # track centres either side
 TRACK_W = SPEC["trackWidth"]
 WHEEL_R = SPEC["roadWheelDiameter"] / 2
 T_IN, T_OUT = 0.042, 0.058  # pin centre to the shoe's inner face / to the pads' face
 WHEEL_Y = WHEEL_R + T_IN + T_OUT
-IDLER = (WHEELS_Z[0] + 0.95, 0.62, 0.32)  # z, y, r
-SPROCKET = (WHEELS_Z[-1] - 0.91, 0.74)
+IDLER = (WHEELS_Z[0] + 0.974, 0.62, 0.32)  # z, y, r
+SPROCKET = (WHEELS_Z[-1] - 0.934, 0.74)
 SPROCKET_TEETH = 11
 PITCH = 0.192  # T158 shoe pitch
 ROLLERS = [(1.15, 0.86, 0.12), (-1.2, 0.86, 0.12)]

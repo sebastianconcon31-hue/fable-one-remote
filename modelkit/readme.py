@@ -51,6 +51,8 @@ def main(vdir):
           "- **Units and axes:** metres, glTF axes. +Y is up, +Z points to the front, and +X is the left.",
           f"- **Origin:** {A['origin']}.", ""]
     L += ["## Moving parts", "", "Each is its own node, pivoted where the real part turns. Its glTF extras say how it moves: `control` (wheel, steer, track, hinge, traverse, elevate, cargo), `axis`, `limits`, and `drive` in words.", ""]
+    if any("elevat" in r[1] for r in A["moving"]):
+        L += ["The gun also carries `limits_by_traverse`: its lowest and highest elevation every `traverse_step` (5) degrees of the turret's traverse, measured against the hull, so a game can lift it over the deck and whatever else stands in its way instead of letting it sink through. The viewer clamps to it.", ""]
     L.append(table(["Node", "Moves"], A["moving"]))
     if A.get("track_note"):
         L += ["", A["track_note"]]
