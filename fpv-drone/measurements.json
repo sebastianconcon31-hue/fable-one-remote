@@ -1,0 +1,73 @@
+{
+ "units": "metres",
+ "nominal_vs_model": [
+  {
+   "dimension": "Motor to motor, diagonal",
+   "nominal": 0.22,
+   "model": 0.22,
+   "unit": "m"
+  },
+  {
+   "dimension": "Motor to motor, side by side",
+   "nominal": 0.1556,
+   "model": 0.1556,
+   "unit": "m"
+  },
+  {
+   "dimension": "Prop diameter",
+   "nominal": 0.127,
+   "model": 0.1271,
+   "unit": "m"
+  },
+  {
+   "dimension": "Stack mount (standoff to standoff)",
+   "nominal": 0.0305,
+   "model": 0.0305,
+   "unit": "m"
+  },
+  {
+   "dimension": "Plate gap (standoff length)",
+   "nominal": 0.028,
+   "model": 0.028,
+   "unit": "m"
+  },
+  {
+   "dimension": "Arm thickness",
+   "nominal": 0.005,
+   "model": 0.005,
+   "unit": "m"
+  },
+  {
+   "dimension": "Battery length",
+   "nominal": 0.076,
+   "model": 0.076,
+   "unit": "m"
+  },
+  {
+   "dimension": "Battery width",
+   "nominal": 0.039,
+   "model": 0.039,
+   "unit": "m"
+  },
+  {
+   "dimension": "Battery height",
+   "nominal": 0.036,
+   "model": 0.036,
+   "unit": "m"
+  },
+  {
+   "dimension": "Camera width",
+   "nominal": 0.019,
+   "model": 0.019,
+   "unit": "m"
+  }
+ ],
+ "lowest_point_below_origin": -0.0209,
+ "overall": {
+  "width": 0.2826,
+  "length": 0.267,
+  "height": 0.088
+ },
+ "triangles": 30832,
+ "meshes": 47
+}

@@ -1,0 +1,28 @@
+{
+ "game": {
+  "file": "m2a3_bradley.glb",
+  "mb": 18.1,
+  "triangles": 185048,
+  "drawCalls": 433,
+  "nodes": 272,
+  "materials": 8,
+  "textures": {
+   "1024": 3,
+   "4096": 9
+  },
+  "gpuTextureMB": 784
+ },
+ "web": {
+  "file": "m2a3_bradley_web.glb",
+  "mb": 4.8,
+  "triangles": 185048,
+  "drawCalls": 433,
+  "nodes": 272,
+  "materials": 8,
+  "textures": {
+   "1024": 12
+  },
+  "gpuTextureMB": 64
+ },
+ "viewerMB": 7
+}

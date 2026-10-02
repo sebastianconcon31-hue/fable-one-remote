@@ -1,0 +1,28 @@
+{
+ "game": {
+  "file": "m1151_hmmwv.glb",
+  "mb": 7.3,
+  "triangles": 45654,
+  "drawCalls": 60,
+  "nodes": 68,
+  "materials": 8,
+  "textures": {
+   "2048": 3,
+   "4096": 3
+  },
+  "gpuTextureMB": 320
+ },
+ "web": {
+  "file": "m1151_hmmwv_web.glb",
+  "mb": 2.9,
+  "triangles": 45654,
+  "drawCalls": 60,
+  "nodes": 68,
+  "materials": 8,
+  "textures": {
+   "1024": 6
+  },
+  "gpuTextureMB": 32
+ },
+ "viewerMB": 4.4
+}

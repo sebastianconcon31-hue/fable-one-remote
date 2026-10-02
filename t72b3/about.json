@@ -1,0 +1,103 @@
+{
+ "title": "T-72B3",
+ "short": "tank",
+ "name": "t72b3",
+ "lede": "The Russian T-72B3 main battle tank at 1:1 scale, outside only: the cast turret with its Kontakt-5 wedges and roof bricks, the 125 mm 2A46M-5 gun, the Sosna-U sight, the commander's cupola with a 12.7 mm Kord, 902B smoke dischargers, Kontakt-5 on the glacis, the dozer blade, rubber skirts, fuel drums and the unditching log, and the single-pin track on six road wheels a side.",
+ "hero_alt": "The T-72B3 on the pad",
+ "grid": [
+  [
+   "side.jpg",
+   "Side",
+   "Side view"
+  ],
+  [
+   "rear.jpg",
+   "Rear",
+   "Rear three-quarter view with the fuel drums and log"
+  ],
+  [
+   "turret.jpg",
+   "Turret",
+   "The turret with its Kontakt-5 and hatches open"
+  ],
+  [
+   "running.jpg",
+   "Running gear",
+   "Road wheels and the sagging single-pin track"
+  ]
+ ],
+ "game_note": "Textured, with the turret, gun, cupola, hatches, every wheel and each track link its own node.",
+ "viewer_note": "orbit round it, drive it with the tracks running, traverse the turret, elevate the gun and open the hatches.",
+ "sources": [
+  "build.py",
+  "parts.py",
+  "markings.py",
+  "t72.py"
+ ],
+ "scale_intro": "Built to the published T-72B3 figures; `build.py` measures the finished geometry against them on every build:",
+ "origin": "on the ground, on the centreline, midway between the first and last road wheels",
+ "moving": [
+  [
+   "`Turret`",
+   "traverses about local Y; + turns it left, all the way round"
+  ],
+  [
+   "`Gun`",
+   "the 125 mm 2A46M-5 and its coaxial PKT: elevate about (−1, 0, 0); + raises them, −6° to +14°; over the engine deck and fuel drums its `limits_by_traverse` lift it to −2.4°"
+  ],
+  [
+   "`Commander_Cupola`",
+   "slews about local Y with its periscopes and the Kord (`control: aux`)"
+  ],
+  [
+   "`Driver_Hatch`, `Commander_Hatch`, `Gunner_Hatch`",
+   "open about their hinges (group `Hatches`): the driver's lifts and swings back on the post at its right; the others hinge at their backs and stand open clear of the Kord"
+  ],
+  [
+   "`Road_Wheel_{Left,Right}_{1-6}`, `Idler_*`, `Sprocket_*`, `Return_Roller_*`",
+   "spin about local X; each node's `radius` turns distance driven into rotation"
+  ],
+  [
+   "`Track_Left`, `Track_Right`",
+   "the RMSh single-pin track, its top run sagging between the rollers"
+  ],
+  [
+   "`Light_*`",
+   "head, blackout and tail lights; their lens materials `Light_White`, `Light_Amber` and `Light_Red` are emissive, so scale the emission to switch them"
+  ]
+ ],
+ "track_note": "**Tracks.** Each `Track_*` node's extras carry the loop its links ride round (`path`: z and y pairs in the node's own frame, clockwise seen from the left), the link `pitch` and the number of `links`. Link *i* sits on the chord between the pins at *i*·pitch + travel and (*i* + 1)·pitch + travel, where travel is how far the vehicle has driven forward. That is all a game needs to run the tracks; the shared viewer does exactly this.",
+ "look": [
+  "**Paint:** Russian protective green with weld seams.",
+  "**Markings:** the tactical number 211 in white on the turret, fenders and rear.",
+  "**Weathering:** heavy mud over the skirts, fenders and running gear, dust settled on top, exhaust soot along the left side from the exhaust louvre.",
+  "**Kit:** two 200 l fuel drums and the unditching log at the back, the snorkel and a tarpaulin on the turret's rear."
+ ],
+ "textures": [
+  [
+   "`T72_Paint_Hull`",
+   "4096²",
+   "Hull, Kontakt-5, fenders and boxes, lights"
+  ],
+  [
+   "`T72_Paint_Turret`",
+   "4096²",
+   "Turret, Kontakt-5, gun, sights, cupola"
+  ],
+  [
+   "`T72_Running_Gear`",
+   "4096²",
+   "Road wheels, idler, sprocket, rollers, suspension arms, the track link"
+  ],
+  [
+   "`T72_Kit`",
+   "1024²",
+   "Tarpaulin, drums, log"
+  ]
+ ],
+ "accuracy": [
+  "**Published dimensions:** length with the gun forward, hull length (over the fuel drums), width over the skirts, height to the turret roof, track width, track on the ground, tread and road wheel diameter all match.",
+  "**Estimated:** the idler and sprocket positions, the turret's cast shape, the link pitch and the fittings' layout.",
+  "**Markings:** a plausible tactical number, not a real tank's."
+ ]
+}

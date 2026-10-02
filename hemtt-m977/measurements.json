@@ -1,0 +1,56 @@
+{
+ "units": "metres; angles in degrees",
+ "published_vs_model": [
+  {
+   "dimension": "Length (over the spare tyre)",
+   "published": 10.2108,
+   "model": 10.2108,
+   "unit": "m"
+  },
+  {
+   "dimension": "Width (without mirrors)",
+   "published": 2.4384,
+   "model": 2.4346,
+   "unit": "m"
+  },
+  {
+   "dimension": "Height (over the spare tyre)",
+   "published": 2.9972,
+   "model": 2.9949,
+   "unit": "m"
+  },
+  {
+   "dimension": "Wheelbase (axle pair to axle pair)",
+   "published": 5.334,
+   "model": 5.334,
+   "unit": "m"
+  },
+  {
+   "dimension": "Track",
+   "published": 2.0066,
+   "model": 2.0066,
+   "unit": "m"
+  },
+  {
+   "dimension": "Tyre diameter (16.00R20)",
+   "published": 1.24,
+   "model": 1.2377,
+   "unit": "m"
+  },
+  {
+   "dimension": "Cargo body length (18 ft)",
+   "published": 5.4864,
+   "model": 5.4864,
+   "unit": "m"
+  },
+  {
+   "dimension": "Approach angle",
+   "published": 41.0,
+   "model": 40.8,
+   "unit": "deg"
+  }
+ ],
+ "tyres_on_ground": true,
+ "triangles": 126108,
+ "meshes": 62
+}

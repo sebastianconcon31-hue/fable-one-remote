@@ -1,0 +1,56 @@
+{
+ "units": "metres; angles in degrees",
+ "published_vs_model": [
+  {
+   "dimension": "Length, gun forward",
+   "published": 9.53,
+   "model": 9.53,
+   "unit": "m"
+  },
+  {
+   "dimension": "Hull length",
+   "published": 6.86,
+   "model": 6.8718,
+   "unit": "m"
+  },
+  {
+   "dimension": "Width (over the skirts)",
+   "published": 3.6,
+   "model": 3.6,
+   "unit": "m"
+  },
+  {
+   "dimension": "Height (to the turret roof)",
+   "published": 2.26,
+   "model": 2.26,
+   "unit": "m"
+  },
+  {
+   "dimension": "Track width (RMSh)",
+   "published": 0.58,
+   "model": 0.58,
+   "unit": "m"
+  },
+  {
+   "dimension": "Track on the ground (wheel 1 to 6)",
+   "published": 4.27,
+   "model": 4.27,
+   "unit": "m"
+  },
+  {
+   "dimension": "Tread (track centres)",
+   "published": 2.79,
+   "model": 2.79,
+   "unit": "m"
+  },
+  {
+   "dimension": "Road wheel diameter",
+   "published": 0.75,
+   "model": 0.75,
+   "unit": "m"
+  }
+ ],
+ "on_the_ground": true,
+ "triangles": 236650,
+ "meshes": 245
+}

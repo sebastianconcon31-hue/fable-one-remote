@@ -1,0 +1,102 @@
+{
+ "title": "M1083A1P2 FMTV",
+ "short": "truck",
+ "name": "m1083_fmtv",
+ "lede": "The US Army's M1083A1P2 Family of Medium Tactical Vehicles 5-ton cargo truck at 1:1 scale, outside only: the flat-fronted cab over the engine, the 6×6 running gear on 395/85R20 tyres, the drop-side cargo body and its tailgate, and six pallet loads of supplies: fuel drums, ammunition, crates and rations.",
+ "hero_alt": "The FMTV on the pad",
+ "grid": [
+  [
+   "side.jpg",
+   "Side",
+   "Side view"
+  ],
+  [
+   "rear.jpg",
+   "Rear, tailgate down",
+   "Rear three-quarter view with the tailgate down"
+  ],
+  [
+   "cab.jpg",
+   "Cab",
+   "The cab, grille and bumper"
+  ],
+  [
+   "cargo.jpg",
+   "Cargo",
+   "Six pallets of supplies on the bed"
+  ]
+ ],
+ "game_note": "Textured, with the doors, tailgate, every wheel and the steering, and each pallet load its own node.",
+ "viewer_note": "orbit round it, drive and steer it, open the doors and the tailgate, unload and reload the pallets.",
+ "sources": [
+  "build.py",
+  "parts.py",
+  "markings.py",
+  "fmtv.py"
+ ],
+ "scale_intro": "Built to the published M1083A1P2 figures; `build.py` measures the finished geometry against them on every build, the approach and departure angles included:",
+ "origin": "on the ground, on the centreline, midway between the front axle and the centre of the rear pair",
+ "moving": [
+  [
+   "`Door_Left`, `Door_Right`",
+   "swing about `axis` on hinges on their outer skins, at their front edges; + opens them outward (group `Doors`)"
+  ],
+  [
+   "`Tailgate`",
+   "drops about local X at its foot (group `Tailgate`)"
+  ],
+  [
+   "`Wheel_{1-3}_{Left,Right}`",
+   "spin about local X; + rolls forward (radius in the extras)"
+  ],
+  [
+   "`Steer_1_{Left,Right}`",
+   "steer about local Y; + turns left. Full lock is the inner wheel's for the published 65.6 ft turning circle (30°). The front wheels sit inside these nodes."
+  ],
+  [
+   "`Cargo_Pallet_1` … `_6`",
+   "the supplies, one pallet load each: lift one off, hide it, or reload (`control: cargo`)"
+  ],
+  [
+   "`Spare_Tire`",
+   "on its carrier between the cab and the body, facing back"
+  ],
+  [
+   "`Light_*`",
+   "head, blackout and tail lights; their lens materials `Light_White`, `Light_Amber` and `Light_Red` are emissive, so scale the emission to switch them"
+  ]
+ ],
+ "look": [
+  "**Paint:** CARC green 383 with the cab's and body's seams. Rebuild with `--scheme tan` for desert tan.",
+  "**Markings:** the registration (NL 07 2265), bumper codes (2-3BSB, A-14), the tyre pressures and the troop seats' stencil.",
+  "**Hazard stripes:** yellow and black on the bumpers' ends.",
+  "**Weathering:** mud thrown up by every wheel, dust low down and on top, soot round the exhaust, scuffs on the bed."
+ ],
+ "textures": [
+  [
+   "`M1083_Paint_Front`",
+   "4096²",
+   "Cab, doors, bumper, fenders, intake and exhaust"
+  ],
+  [
+   "`M1083_Paint_Back`",
+   "4096²",
+   "Cargo body, tailgate, rear end, fuel tank, battery box"
+  ],
+  [
+   "`M1083_Chassis`",
+   "2048²",
+   "Frame, axles and springs, wheels and tyres, exhaust"
+  ],
+  [
+   "`M1083_Cargo`",
+   "2048²",
+   "Pallets, drums, ammunition cans, crates, straps, ration cases"
+  ]
+ ],
+ "accuracy": [
+  "**Published dimensions:** length, width, operational height, wheelbase, the tyres, the cargo bed's inside length and width, the 40° approach and 49° departure angles and the 65.6 ft turning circle (as the steering lock) all match.",
+  "**Estimated:** the rear pair's spacing, the track, the cab's shape and the layout behind it.",
+  "**Markings:** plausible but made up."
+ ]
+}

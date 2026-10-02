@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AH-64D Apache</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=Saira+Condensed:wght@500;600;700&display=swap">
+<style>
+  /* One look on purpose: a dark cockpit. Chrome is drawn like the aircraft's
+     own panels - dark grey plates, white condensed lettering, lit legends in
+     the keyboard unit's amber. */
+  :root {
+    color-scheme: dark;
+    --ground: #0d0f10;
+    --plate: rgba(38, 42, 44, 0.9);
+    --edge: rgba(236, 235, 226, 0.12);
+    --ink: #ecebe2;
+    --muted: #a3a898;
+    --lit: #ffc23d;
+    --lit-dim: rgba(255, 194, 61, 0.16);
+    --warn: #ff7a5c;
+    --label: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 15px/1.45 var(--body); overflow: hidden; }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+
+  .hud { position: fixed; left: 0; right: 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: flex-start; padding-inline: 16px; pointer-events: none; }
+  .hud > * { pointer-events: auto; }
+  .top { top: 0; padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+  .bottom { bottom: 0; align-items: flex-end; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+
+  .plate { background: var(--plate); border: 1px solid var(--edge); border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); position: relative; }
+  .plate::before, .plate::after { content: ""; position: absolute; top: 6px; width: 5px; height: 5px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #8d8f8c, #3b3d3c); }
+  .plate::before { left: 6px; }
+  .plate::after { right: 6px; }
+
+  .id { padding: 10px 18px 11px; max-width: 30rem; }
+  h1 { margin: 0; font: 700 22px/1.05 var(--label); letter-spacing: 0.06em; text-transform: uppercase; text-wrap: balance; }
+  .id p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+  .id p b { color: var(--lit); font-weight: 500; }
+
+  .group { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; }
+  .group .cap-label { flex-basis: 100%; margin: 0 0 1px 4px; font: 600 10.5px/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  button {
+    font: 600 14px/1 var(--label); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink);
+    background: linear-gradient(180deg, #2f3336, #1f2224); border: 1px solid #0a0b0b; border-radius: 3px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    padding: 10px 14px 9px; min-width: 64px; cursor: pointer; transition: transform 0.08s ease, color 0.15s ease;
+  }
+  button:hover { color: #fff; }
+  button:active { transform: translateY(1px); }
+  button:focus-visible { outline: 2px solid var(--lit); outline-offset: 2px; }
+  button[aria-pressed="true"], button[aria-selected="true"], button[aria-expanded="true"] { color: var(--lit); text-shadow: 0 0 10px rgba(255, 194, 61, 0.55); background: linear-gradient(180deg, #2a2618, #1a1810); }
+
+  .dash { padding: 9px 14px 10px; min-width: 18rem; max-width: 34rem; flex: 1 1 22rem; }
+  .dash .readout { font: 500 12.5px/1.5 var(--mono); color: var(--lit); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+  .dash .status { font-size: 13.5px; color: var(--ink); min-height: 1.45em; overflow-wrap: anywhere; }
+
+  #help { position: fixed; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); width: min(26rem, calc(100vw - 32px)); max-height: calc(100vh - 220px); overflow-y: auto; padding: 14px 18px 12px; z-index: 2; }
+  #help h2 { margin: 0 0 6px; font: 700 15px/1.1 var(--label); letter-spacing: 0.12em; text-transform: uppercase; }
+  #help h3 { margin: 12px 0 4px; font: 600 12px/1.1 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  #help ol, #help ul { margin: 0; padding-left: 1.2em; font-size: 13.5px; }
+  #help li { margin: 2px 0; }
+  kbd { font: 500 11.5px var(--mono); background: #17191a; border: 1px solid #3a3e40; border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; color: var(--ink); }
+
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; }
+  #loading .plate { padding: 14px 22px; font: 600 15px var(--label); letter-spacing: 0.14em; text-transform: uppercase; }
+  #loading .bar { margin-top: 8px; height: 3px; background: var(--lit-dim); border-radius: 2px; overflow: hidden; }
+  #loading .bar i { display: block; height: 100%; width: 0; background: var(--lit); }
+  #loading.err .plate { color: var(--warn); }
+
+  @media (max-width: 620px) {
+    .id { max-width: none; flex: 1 1 100%; }
+    .dash { min-width: 0; flex: 1 1 100%; }
+    button { padding: 9px 11px 8px; min-width: 0; }
+    #help { bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
+  }
+  @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+</style>
+<script>window.COCKPIT_MODEL_URL = "apache_ah64d_web.glb";</script>
+</head>
+<body>
+<canvas id="view" aria-label="3D view of the AH-64D Apache, inside and out. Click controls to operate them; drag empty space to look around."></canvas>
+
+<header class="hud top">
+  <div class="id plate">
+    <h1>AH-64D Apache</h1>
+    <p>1:1 scale, and every switch works: <b id="count">loading</b>. Start the engines, fly it, fire it.</p>
+  </div>
+  <div class="group plate" role="tablist" aria-label="Viewpoint">
+    <span class="cap-label">Seat</span>
+    <button id="seat-pilot" role="tab" aria-selected="true" data-seat="pilot">Pilot</button>
+    <button id="seat-cpg" role="tab" aria-selected="false" data-seat="cpg">Gunner</button>
+    <button id="seat-walk" role="tab" aria-selected="false" data-seat="walk">Walkaround</button>
+  </div>
+</header>
+
+<footer class="hud bottom">
+  <div class="group plate">
+    <span class="cap-label">Scene</span>
+    <button id="night" aria-pressed="false">Night</button>
+    <button id="sound" aria-pressed="false">Sound</button>
+    <button id="reset">Reset</button>
+    <button id="help-toggle" aria-expanded="false" aria-controls="help">How to fly</button>
+    <button id="vr" hidden>Enter VR</button>
+  </div>
+  <div class="dash plate" aria-live="polite">
+    <div class="readout" id="readout">0 KT · 0 FT AGL · HDG 000 · NR 101%</div>
+    <div class="status" id="status">Click switches, knobs and buttons. Drag sticks and levers. Drag empty space to look.</div>
+  </div>
+</footer>
+
+<section id="help" class="plate" hidden aria-label="How to fly">
+  <h2>How to fly</h2>
+  <p style="margin:0;color:var(--muted);font-size:13px">You start on the pad with both engines running and the rotor turning.</p>
+  <h3>Take off</h3>
+  <ol>
+    <li>Hold <kbd>R</kbd> to raise the collective until you lift off (about 55%).</li>
+    <li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> tilt the cyclic, <kbd>Q</kbd> <kbd>E</kbd> press the pedals.</li>
+    <li><kbd>F</kbd> lowers the collective to land.</li>
+  </ol>
+  <h3>Shut down and start up</h3>
+  <ol>
+    <li>Pull both power levers (left console) back to OFF. Click a lever to move it; right-click moves it back.</li>
+    <li>Set the rotor brake to BRK once the rotor slows.</li>
+    <li>Press APU. When it's lit, lever to IDLE, flip ENG 1 START up, then ENG 2.</li>
+    <li>Brake OFF, levers to FLY.</li>
+  </ol>
+  <h3>Weapons</h3>
+  <ul>
+    <li>Press ARM/SAFE to arm and GND ORIDE to fire on the ground.</li>
+    <li><kbd>G</kbd> or the WPN page picks gun, rockets or missiles. <kbd>Space</kbd> fires.</li>
+    <li>In the gunner's seat, <kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> slew the sight. The left grip's trigger fires the laser.</li>
+  </ul>
+  <h3>Displays</h3>
+  <ul>
+    <li>The keys under each display change pages. The keys round the edge pick options.</li>
+    <li>Type on the keyboard units. The up-front display's RTS key changes radio.</li>
+  </ul>
+  <h3>Keys</h3>
+  <ul>
+    <li><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> change seats. The arrow keys and dragging empty space look around; scroll to zoom.</li>
+    <li>Scroll over a knob to turn it.</li>
+    <li>In VR, point and pull the trigger, or grab sticks and levers with the grip. The right thumbstick flies the cyclic, the left the collective and pedals.</li>
+  </ul>
+</section>
+
+<div id="loading"><div class="plate">Loading cockpit <span id="pct">0%</span><div class="bar"><i id="bar"></i></div></div></div>
+
+<script src="lib/paint.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="viewer/main.js"></script>
+</body>
+</html>

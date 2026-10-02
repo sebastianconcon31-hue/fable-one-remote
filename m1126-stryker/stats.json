@@ -1,0 +1,28 @@
+{
+ "game": {
+  "file": "m1126_stryker.glb",
+  "mb": 9.2,
+  "triangles": 71510,
+  "drawCalls": 58,
+  "nodes": 70,
+  "materials": 6,
+  "textures": {
+   "2048": 3,
+   "4096": 3
+  },
+  "gpuTextureMB": 320
+ },
+ "web": {
+  "file": "m1126_stryker_web.glb",
+  "mb": 4,
+  "triangles": 71510,
+  "drawCalls": 58,
+  "nodes": 70,
+  "materials": 6,
+  "textures": {
+   "1024": 6
+  },
+  "gpuTextureMB": 32
+ },
+ "viewerMB": 5.9
+}

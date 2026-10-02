@@ -1,0 +1,92 @@
+{
+ "title": "M1151A1 HMMWV",
+ "short": "Humvee",
+ "name": "m1151_hmmwv",
+ "lede": "The US Army's up-armoured M1151A1 HMMWV at 1:1 scale, outside only: the wide hood and slotted grille, the armoured cab with four heavy doors and thick windows, the rear cargo shell, the gunner's turret with O-GPK shields round an M2, and four wheels on 37 x 12.50 R16.5 tyres and beadlock rims.",
+ "hero_alt": "The Humvee on the pad",
+ "grid": [
+  [
+   "side.jpg",
+   "Side",
+   "Side view"
+  ],
+  [
+   "rear.jpg",
+   "Rear",
+   "Rear three-quarter view"
+  ],
+  [
+   "turret.jpg",
+   "Gunner's turret",
+   "The O-GPK turret and its M2"
+  ],
+  [
+   "doors.jpg",
+   "Doors open",
+   "The four armoured doors open"
+  ]
+ ],
+ "game_note": "Textured, with the turret, gun, doors, cargo lid and every wheel and the steering its own node.",
+ "viewer_note": "orbit round it, drive and steer it, traverse the turret, elevate the M2, open the doors and the cargo lid.",
+ "sources": [
+  "build.py",
+  "parts.py",
+  "markings.py",
+  "hmmwv.py"
+ ],
+ "scale_intro": "Built to AM General's published M1151A1 figures; `build.py` measures the finished geometry against them on every build, the off-road angles and the ground clearance included:",
+ "origin": "on the ground, on the centreline, midway between the axles",
+ "moving": [
+  [
+   "`Turret`",
+   "the gunner's turret: traverses about local Y; + turns it left, all the way round"
+  ],
+  [
+   "`Gun`",
+   "the M2 on its pintle: elevates about (−1, 0, 0); + raises it, −15° to +50° on its mount; the shield and the roof stop it at about +25° (its `limits_by_traverse`)"
+  ],
+  [
+   "`Door_{Front,Rear}_{Left,Right}`",
+   "swing about `axis` on hinges on their outer skins, at their front edges; + opens them outward (group `Doors`)"
+  ],
+  [
+   "`Cargo_Lid`",
+   "the cargo shell's deck lid lifts about local X (group `Cargo lid`)"
+  ],
+  [
+   "`Wheel_{1,2}_{Left,Right}`",
+   "spin about local X; + rolls forward (radius in the extras)"
+  ],
+  [
+   "`Steer_1_{Left,Right}`",
+   "steer about local Y; + turns left. Full lock is the inner wheel's for the published 25 ft turning radius (33°). The front wheels and their portal hubs sit inside these nodes."
+  ],
+  [
+   "`Light_*`",
+   "head, blackout and tail lights; their lens materials `Light_White`, `Light_Amber` and `Light_Red` are emissive, so scale the emission to switch them"
+  ]
+ ],
+ "look": [
+  "**Paint:** CARC green 383 with the hood's seams and latches. Rebuild with `--scheme tan` for desert tan.",
+  "**Markings:** bumper codes (1-23IN, HHC-14) and stencils.",
+  "**Weathering:** mud thrown up by the wheels, dust on the hood and roof, worn edges.",
+  "**Glass:** armoured windows tinted dark, the cab's interior dark behind them."
+ ],
+ "textures": [
+  [
+   "`M1151_Paint`",
+   "4096²",
+   "Body, doors, turret shields, bumper, lights"
+  ],
+  [
+   "`M1151_Chassis`",
+   "2048²",
+   "Wheels and tyres, frame and axles, the M2"
+  ]
+ ],
+ "accuracy": [
+  "**Published dimensions:** length, width over the mirrors, height to the cab roof, wheelbase, track and the tyres all match, and so do the off-road figures: the 48.8° approach and 37° departure angles, the 17.2 in ground clearance under the differentials and the 25 ft turning radius (as the steering lock).",
+  "**Estimated:** the body's sections, the doors and windows, the turret's shields and the underbody.",
+  "**Markings:** plausible but made up."
+ ]
+}

@@ -1,0 +1,28 @@
+{
+ "game": {
+  "file": "m1a2_sepv3.glb",
+  "mb": 21.6,
+  "triangles": 200728,
+  "drawCalls": 422,
+  "nodes": 264,
+  "materials": 8,
+  "textures": {
+   "2048": 3,
+   "4096": 9
+  },
+  "gpuTextureMB": 832
+ },
+ "web": {
+  "file": "m1a2_sepv3_web.glb",
+  "mb": 6.2,
+  "triangles": 200728,
+  "drawCalls": 422,
+  "nodes": 264,
+  "materials": 8,
+  "textures": {
+   "1024": 12
+  },
+  "gpuTextureMB": 64
+ },
+ "viewerMB": 8.9
+}

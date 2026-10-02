@@ -1,0 +1,28 @@
+{
+ "game": {
+  "file": "m1083_fmtv.glb",
+  "mb": 13,
+  "triangles": 84360,
+  "drawCalls": 96,
+  "nodes": 89,
+  "materials": 10,
+  "textures": {
+   "2048": 6,
+   "4096": 6
+  },
+  "gpuTextureMB": 640
+ },
+ "web": {
+  "file": "m1083_fmtv_web.glb",
+  "mb": 4.9,
+  "triangles": 84360,
+  "drawCalls": 96,
+  "nodes": 89,
+  "materials": 10,
+  "textures": {
+   "1024": 12
+  },
+  "gpuTextureMB": 64
+ },
+ "viewerMB": 7.1
+}

@@ -1,0 +1,91 @@
+{
+ "title": "M1126 Stryker ICV",
+ "short": "Stryker",
+ "name": "m1126_stryker",
+ "lede": "The US Army's M1126 Stryker infantry carrier vehicle at 1:1 scale, outside only: the faceted hull with its bolted ceramic armour tiles, the M151 Protector remote weapon station with an M2, the driver's and commander's stations, roof hatches, the rear ramp for nine infantry, and eight wheels on Michelin 12.00R20 XML tyres.",
+ "hero_alt": "The Stryker on the pad",
+ "grid": [
+  [
+   "side.jpg",
+   "Side",
+   "Side view"
+  ],
+  [
+   "rear.jpg",
+   "Rear, ramp down",
+   "Rear three-quarter view with the ramp lowered"
+  ],
+  [
+   "rws.jpg",
+   "Weapon station",
+   "The M151 Protector with its M2"
+  ],
+  [
+   "wheels.jpg",
+   "Wheels",
+   "The front wheels and their 12.00R20 tyres"
+  ]
+ ],
+ "game_note": "Textured, with the weapon station, ramp, hatches and every wheel and its steering its own node.",
+ "viewer_note": "orbit round it, drive and steer it, slew and elevate the weapon station, lower the ramp and open the hatches.",
+ "sources": [
+  "build.py",
+  "parts.py",
+  "markings.py",
+  "stryker.py"
+ ],
+ "scale_intro": "Built to the published M1126 figures; `build.py` measures the finished geometry against them on every build:",
+ "origin": "on the ground, on the centreline, midway between the first and last axles",
+ "moving": [
+  [
+   "`RWS`",
+   "the M151 Protector: slews about local Y; + turns it left"
+  ],
+  [
+   "`RWS_Cradle`",
+   "the M2 and its sights: elevate about (−1, 0, 0); + raises them, −20° to +60°; its `limits_by_traverse` keep the gun off the hull, down to −12° over the front corners"
+  ],
+  [
+   "`Wheel_{1-4}_{Left,Right}`",
+   "spin about local X; + rolls forward (radius in the extras)"
+  ],
+  [
+   "`Steer_{1,2}_{Left,Right}`",
+   "steer about local Y; + turns left. Full lock is the inner wheels' for the published 52 ft turning circle: 37° on the first axle, 26° on the second. The wheels sit inside these nodes."
+  ],
+  [
+   "`Ramp`",
+   "lowers about local X at its foot (group `Ramp`); `Ramp_Door` opens in it (group `Ramp door`)"
+  ],
+  [
+   "`Driver_Hatch`, `Commander_Hatch`, `Troop_Hatch_{Left,Right}`",
+   "open about their hinges (group `Hatches`)"
+  ],
+  [
+   "`Light_*`",
+   "head, blackout and tail lights; their lens materials `Light_White`, `Light_Amber` and `Light_Red` are emissive, so scale the emission to switch them"
+  ]
+ ],
+ "look": [
+  "**Paint:** CARC green 383 with the armour tiles' bolts and non-skid on the roof. Rebuild with `--scheme tan` for desert tan.",
+  "**Markings:** bumper codes (1-23IN, C-21) and the vehicle number on the sides and roof.",
+  "**Weathering:** mud thrown up by every wheel, dust settled on top, exhaust soot down the right side, worn edges."
+ ],
+ "textures": [
+  [
+   "`M1126_Paint`",
+   "4096²",
+   "Hull, armour tiles, ramp, hatches, weapon station, lights"
+  ],
+  [
+   "`M1126_Chassis`",
+   "2048²",
+   "Wheels and tyres, axles and suspension, gun metal"
+  ]
+ ],
+ "accuracy": [
+  "**Published dimensions:** length, width, height to the top of the weapon station, ground clearance (the belly and the differentials both 0.53 m up), the tyres and the 52 ft turning circle (as the steering locks) all match.",
+  "**Estimated:** the axle spacing (taken from the LAV III, each pair far enough apart that its tyres clear), the track, the hull's facets and the tiles' layout.",
+  "**Markings:** plausible but made up."
+ ]
+}

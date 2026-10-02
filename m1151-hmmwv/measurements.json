@@ -1,0 +1,62 @@
+{
+ "units": "metres; angles in degrees",
+ "published_vs_model": [
+  {
+   "dimension": "Length",
+   "published": 4.9276,
+   "model": 4.9261,
+   "unit": "m"
+  },
+  {
+   "dimension": "Width (over the mirrors)",
+   "published": 2.5654,
+   "model": 2.5654,
+   "unit": "m"
+  },
+  {
+   "dimension": "Height (to the cab roof)",
+   "published": 2.0066,
+   "model": 2.0066,
+   "unit": "m"
+  },
+  {
+   "dimension": "Wheelbase",
+   "published": 3.302,
+   "model": 3.302,
+   "unit": "m"
+  },
+  {
+   "dimension": "Track",
+   "published": 1.8186,
+   "model": 1.8186,
+   "unit": "m"
+  },
+  {
+   "dimension": "Tyre diameter (37 in)",
+   "published": 0.9398,
+   "model": 0.943,
+   "unit": "m"
+  },
+  {
+   "dimension": "Ground clearance (under the differentials)",
+   "published": 0.4369,
+   "model": 0.4422,
+   "unit": "m"
+  },
+  {
+   "dimension": "Approach angle",
+   "published": 48.8,
+   "model": 48.7,
+   "unit": "deg"
+  },
+  {
+   "dimension": "Departure angle",
+   "published": 37.0,
+   "model": 37.2,
+   "unit": "deg"
+  }
+ ],
+ "on_the_ground": true,
+ "triangles": 45654,
+ "meshes": 41
+}

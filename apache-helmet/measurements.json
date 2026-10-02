@@ -1,0 +1,19 @@
+{
+ "units": "metres; angles in degrees",
+ "published_vs_model": [
+  {
+   "dimension": "Display field of view, horizontal (angle)",
+   "published": 40.0,
+   "model": 40.0,
+   "unit": "deg"
+  },
+  {
+   "dimension": "Display field of view, vertical (angle)",
+   "published": 30.0,
+   "model": 30.0,
+   "unit": "deg"
+  }
+ ],
+ "triangles": 74156,
+ "meshes": 32
+}

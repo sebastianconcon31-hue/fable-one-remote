@@ -1,0 +1,44 @@
+{
+ "units": "metres; angles in degrees",
+ "published_vs_model": [
+  {
+   "dimension": "Length",
+   "published": 6.95,
+   "model": 6.962,
+   "unit": "m"
+  },
+  {
+   "dimension": "Width",
+   "published": 2.72,
+   "model": 2.72,
+   "unit": "m"
+  },
+  {
+   "dimension": "Height (to the top of the weapon station)",
+   "published": 2.64,
+   "model": 2.6282,
+   "unit": "m"
+  },
+  {
+   "dimension": "Ground clearance",
+   "published": 0.53,
+   "model": 0.53,
+   "unit": "m"
+  },
+  {
+   "dimension": "Tyre diameter (12.00R20)",
+   "published": 1.1303,
+   "model": 1.1322,
+   "unit": "m"
+  },
+  {
+   "dimension": "Tyre width",
+   "published": 0.3099,
+   "model": 0.3163,
+   "unit": "m"
+  }
+ ],
+ "on_the_ground": true,
+ "triangles": 71510,
+ "meshes": 37
+}
